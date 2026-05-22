@@ -461,10 +461,19 @@ const Pricing = () => {
   );
 };
 
+const TREATMENT_OPTIONS = [
+  'Acne Treatment',
+  'Brightening Program',
+  'Anti-Aging',
+  'Laser Rejuvenation',
+  'Skin Booster',
+  'General Consultation'
+];
+
 const bookingSchema = z.object({
   fullName: z.string().min(2, 'Name is required'),
   phone: z.string().min(8, 'Valid phone number is required'),
-  treatment: z.string().min(1, 'Please select a treatment'),
+  treatments: z.array(z.string()).min(1, 'Please select at least one treatment'),
   moreInfo: z.string().optional()
 });
 
@@ -489,6 +498,7 @@ const useCalInit = () => {
 const BookingModal = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   useCalInit();
 
   useEffect(() => {
@@ -499,27 +509,31 @@ const BookingModal = () => {
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<BookingFormValues>({
     resolver: zodResolver(bookingSchema),
+    defaultValues: {
+      treatments: []
+    }
   });
 
   const onSubmit = async (data: BookingFormValues) => {
     setIsSubmitting(true);
-    setIsOpen(false);
+    setIsSuccess(true);
     reset();
     setIsSubmitting(false);
-    // Open Cal.com modal popup after form submit
-    const cal = await getCalApi({ namespace: 'auraskin-prototype' });
-    cal('modal', {
-      calLink: CAL_LINK,
-      config: {
-        name: data.fullName,
-        email: '',
-        notes: `Treatment: ${data.treatment} | Phone: ${data.phone} | More Info: ${data.moreInfo}`,
-        theme: 'light',
-      },
-    });
+    setTimeout(async () => {
+      const cal = await getCalApi({ namespace: 'auraskin-prototype' });
+      cal('modal', {
+        calLink: CAL_LINK,
+        config: {
+          name: data.fullName,
+          email: '',
+          notes: `Treatments: ${data.treatments.join(', ')} | Phone: ${data.phone} | More Info: ${data.moreInfo || ''}`,
+          theme: 'light',
+        },
+      });
+    }, 1200);
   };
 
-  const close = () => { setIsOpen(false); reset(); };
+  const close = () => { setIsOpen(false); reset(); setIsSuccess(false); };
 
   return (
     <AnimatePresence>
@@ -554,6 +568,17 @@ const BookingModal = () => {
               <p className="text-gray-500 text-sm">Fill in your details and we'll open the calendar for you to pick a slot.</p>
             </div>
 
+            {isSuccess ? (
+              <div className="text-center py-6">
+                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 200 }} className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-5">
+                  <Check className="w-10 h-10 text-green-600" />
+                </motion.div>
+                <h3 className="font-serif text-2xl font-bold text-gray-900 mb-2">You're All Set! 🎉</h3>
+                <p className="text-gray-500 text-sm mb-1">Your details have been received.</p>
+                <p className="text-primary font-medium text-sm">Your calendar is opening to pick a time slot...</p>
+                <button onClick={close} className="mt-8 text-sm text-gray-400 hover:text-gray-600 transition underline">Close</button>
+              </div>
+            ) : (
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
               <div className="grid md:grid-cols-2 gap-5">
                 <div>
@@ -583,37 +608,36 @@ const BookingModal = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Treatment Interest</label>
-                {/* Treatment select stays unchanged */}
-                <div className="relative">
-                  <select
-                    {...register('treatment')}
-                    className={`w-full px-4 py-3 rounded-xl border ${
-                      errors.treatment ? 'border-red-400 bg-red-50' : 'border-gray-200'
-                    } focus:ring-2 focus:ring-primary focus:border-primary outline-none transition appearance-none bg-white text-sm`}
-                  >
-                    <option value="">Select Treatment</option>
-                    <option value="Acne Treatment">Acne Treatment</option>
-                    <option value="Brightening Program">Brightening Program</option>
-                    <option value="Anti-Aging">Anti-Aging</option>
-                    <option value="Laser Rejuvenation">Laser Rejuvenation</option>
-                    <option value="Skin Booster">Skin Booster</option>
-                    <option value="Consultation">General Consultation</option>
-                  </select>
-                  <ChevronDown className="absolute right-4 top-3.5 text-gray-400 pointer-events-none w-4 h-4" />
+                <label className="block text-sm font-medium text-gray-700 mb-2">Treatment Interest (Choose 1 or more)</label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {TREATMENT_OPTIONS.map((option) => (
+                    <label
+                      key={option}
+                      className="flex items-center gap-3 p-3.5 rounded-2xl border border-gray-200 hover:border-primary hover:bg-primary/5 cursor-pointer transition-all duration-200"
+                    >
+                      <input
+                        type="checkbox"
+                        value={option}
+                        {...register('treatments')}
+                        className="rounded text-primary focus:ring-primary focus:ring-offset-0 w-4.5 h-4.5 border-gray-300 transition cursor-pointer"
+                      />
+                      <span className="text-sm font-medium text-gray-700 select-none">{option}</span>
+                    </label>
+                  ))}
                 </div>
-                {errors.treatment && <p className="text-red-500 text-xs mt-1">{errors.treatment.message}</p>}
-                              </div>
-                {/* More Info */}
-                <div className="mt-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">More Info</label>
-                  <textarea
-                    {...register('moreInfo')}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition text-sm"
-                    placeholder="Additional details (optional)"
-                    rows={3}
-                  />
-                </div>
+                {errors.treatments && <p className="text-red-500 text-xs mt-1">{errors.treatments.message}</p>}
+              </div>
+
+              {/* More Info */}
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">More Info</label>
+                <textarea
+                  {...register('moreInfo')}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition text-sm"
+                  placeholder="Additional details (optional)"
+                  rows={3}
+                />
+              </div>
 
               <Button
                 variant="primary"
@@ -626,6 +650,7 @@ const BookingModal = () => {
               </Button>
               <p className="text-center text-xs text-gray-400">We’ll schedule your appointment after you submit the form.</p>
             </form>
+            )}
           </motion.div>
         </motion.div>
       )}
@@ -633,21 +658,273 @@ const BookingModal = () => {
   );
 };
 
-// Inline Cal.com embed section replacing the old static BookingFunnel
-const InlineBookingSection = () => (
-  <section id="booking" className="py-24 bg-background">
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="text-center mb-10">
-        <h2 className="font-serif text-4xl font-bold text-gray-900 mb-4">Schedule Your Visit</h2>
-        <p className="text-gray-600 max-w-xl mx-auto">Choose a convenient time directly below, or click any <strong>"Book Consultation"</strong> button to pre-fill your details first.</p>
+const InlineBookingSection = () => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<BookingFormValues>({
+    resolver: zodResolver(bookingSchema),
+    defaultValues: {
+      treatments: []
+    }
+  });
+
+  const onSubmit = async (data: BookingFormValues) => {
+    setIsSubmitting(true);
+    setIsSuccess(true);
+    reset();
+    setIsSubmitting(false);
+    setTimeout(async () => {
+      const cal = await getCalApi({ namespace: 'auraskin-prototype' });
+      cal('modal', {
+        calLink: CAL_LINK,
+        config: {
+          name: data.fullName,
+          email: '',
+          notes: `Treatments: ${data.treatments.join(', ')} | Phone: ${data.phone} | More Info: ${data.moreInfo || ''}`,
+          theme: 'light',
+        },
+      });
+    }, 1200);
+    setTimeout(() => setIsSuccess(false), 8000);
+  };
+
+  return (
+    <section id="booking" className="py-24 bg-background">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/30 text-primary font-medium text-sm mb-4">
+            <Calendar className="w-4 h-4" /> Book a Free Consultation
+          </div>
+          <h2 className="font-serif text-4xl font-bold text-gray-900 mb-4">Schedule Your Visit</h2>
+          <p className="text-gray-600 max-w-xl mx-auto">
+            Fill in your details below and we'll open the calendar so you can pick your preferred time slot.
+          </p>
+        </div>
+
+        <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-8 md:p-12">
+          {isSuccess ? (
+            <div className="text-center py-10">
+              <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 200 }} className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-5">
+                <Check className="w-10 h-10 text-green-600" />
+              </motion.div>
+              <h3 className="font-serif text-2xl font-bold text-gray-900 mb-2">You're All Set! 🎉</h3>
+              <p className="text-gray-500 text-sm mb-1">Your details have been received.</p>
+              <p className="text-primary font-medium text-sm">Your calendar is opening to pick a time slot...</p>
+            </div>
+          ) : (
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            <div className="grid md:grid-cols-2 gap-5">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Full Name</label>
+                <input
+                  {...register('fullName')}
+                  type="text"
+                  className={`w-full px-4 py-3 rounded-xl border ${
+                    errors.fullName ? 'border-red-400 bg-red-50' : 'border-gray-200'
+                  } focus:ring-2 focus:ring-primary focus:border-primary outline-none transition text-sm`}
+                  placeholder="Jane Doe"
+                />
+                {errors.fullName && <p className="text-red-500 text-xs mt-1">{errors.fullName.message}</p>}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Phone Number</label>
+                <input
+                  {...register('phone')}
+                  type="tel"
+                  className={`w-full px-4 py-3 rounded-xl border ${
+                    errors.phone ? 'border-red-400 bg-red-50' : 'border-gray-200'
+                  } focus:ring-2 focus:ring-primary focus:border-primary outline-none transition text-sm`}
+                  placeholder="+62 812..."
+                />
+                {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Treatment Interest (Choose 1 or more)</label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {TREATMENT_OPTIONS.map((option) => (
+                  <label
+                    key={option}
+                    className="flex items-center gap-3 p-3.5 rounded-2xl border border-gray-200 hover:border-primary hover:bg-primary/5 cursor-pointer transition-all duration-200"
+                  >
+                    <input
+                      type="checkbox"
+                      value={option}
+                      {...register('treatments')}
+                      className="rounded text-primary focus:ring-primary focus:ring-offset-0 w-4.5 h-4.5 border-gray-300 transition cursor-pointer"
+                    />
+                    <span className="text-sm font-medium text-gray-700 select-none">{option}</span>
+                  </label>
+                ))}
+              </div>
+              {errors.treatments && <p className="text-red-500 text-xs mt-1">{errors.treatments.message}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">More Info</label>
+              <textarea
+                {...register('moreInfo')}
+                rows={3}
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition text-sm"
+                placeholder="Any additional details you'd like us to know... (optional)"
+              />
+            </div>
+
+            <Button
+              variant="primary"
+              className="w-full py-4 text-base gap-2"
+              type="submit"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? <Loader2 className="animate-spin w-4 h-4" /> : <Calendar className="w-4 h-4" />}
+              Confirm &amp; Choose Your Slot
+            </Button>
+            <p className="text-center text-xs text-gray-400">
+              No obligation. We'll open the live calendar so you can pick your exact date &amp; time.
+            </p>
+          </form>
+          )}
+        </div>
       </div>
-      <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100" style={{ minHeight: 650 }}>
-        <Cal
-          namespace="auraskin-prototype"
-          calLink={CAL_LINK}
-          style={{ width: '100%', height: '100%', minHeight: 650 }}
-          config={{ layout: 'month_view', theme: 'light' }}
-        />
+    </section>
+  );
+};
+
+
+// --- Gallery Section ---
+const GALLERY_ITEMS = [
+  { src: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=600&q=80', label: 'Acne Treatment' },
+  { src: 'https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?w=600&q=80', label: 'Brightening' },
+  { src: 'https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?w=600&q=80', label: 'Laser Therapy' },
+  { src: 'https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?w=600&q=80', label: 'Skin Booster' },
+  { src: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=600&q=80', label: 'Anti-Aging' },
+  { src: 'https://images.unsplash.com/photo-1519415943484-9fa1873496d4?w=600&q=80', label: 'Rejuvenation' },
+];
+
+const GallerySection = () => (
+  <section id="gallery" className="py-24 bg-white">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="text-center mb-12">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/30 text-primary font-medium text-sm mb-4">
+          <Heart className="w-4 h-4" /> Real Results
+        </div>
+        <h2 className="font-serif text-4xl font-bold text-gray-900 mb-4">Treatment Results</h2>
+        <p className="text-gray-600 max-w-xl mx-auto">Transformations experienced by our patients. All results are from real AuraSkin treatments.</p>
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        {GALLERY_ITEMS.map((item, i) => (
+          <motion.div key={i} whileHover={{ scale: 1.03 }} className="relative group overflow-hidden rounded-2xl aspect-square bg-gray-100">
+            <img src={item.src} alt={item.label} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" />
+            <div className="absolute inset-0 bg-gradient-to-t from-primary/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+              <span className="text-white font-semibold text-sm">{item.label}</span>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+      <div className="text-center mt-10">
+        <button onClick={() => window.dispatchEvent(new CustomEvent('openBookingModal'))} className="inline-flex items-center gap-2 bg-primary text-white px-8 py-4 rounded-xl font-semibold hover:bg-primary/90 transition shadow-lg">
+          <Calendar className="w-5 h-5" /> Book Your Transformation
+        </button>
+      </div>
+    </div>
+  </section>
+);
+
+// --- Promotions Section ---
+const PACKAGES = [
+  {
+    badge: 'Most Popular', name: 'Acne Clear Package', highlight: true,
+    description: 'Complete acne solution combining laser therapy, extraction, and skin barrier repair.',
+    treatments: ['Acne Laser Therapy', 'Deep Extraction', 'Skin Booster', 'Home Care Kit'],
+    original: 'Rp 4,500,000', price: 'Rp 2,999,000', sessions: '3 Sessions',
+  },
+  {
+    badge: 'Best Value', name: 'Bridal Glow Package', highlight: false,
+    description: "Look your absolute best on your special day with our signature bridal program.",
+    treatments: ['Brightening Program', 'Anti-Aging Facial', 'Hydra Infusion', 'Post-Care Kit'],
+    original: 'Rp 7,000,000', price: 'Rp 4,499,000', sessions: '5 Sessions',
+  },
+  {
+    badge: 'Premium', name: 'Anti-Aging Revival', highlight: false,
+    description: 'Turn back the clock with our scientifically-backed combination therapy.',
+    treatments: ['Laser Rejuvenation', 'Filler Consultation', 'Skin Booster', 'Monthly Follow-up'],
+    original: 'Rp 9,500,000', price: 'Rp 6,499,000', sessions: '6 Sessions',
+  },
+];
+
+const PromotionsSection = () => (
+  <section id="promotions" className="py-24 bg-primary/5">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="text-center mb-14">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/20 text-secondary font-medium text-sm mb-4">
+          <Sparkles className="w-4 h-4" /> Limited Time Packages
+        </div>
+        <h2 className="font-serif text-4xl font-bold text-gray-900 mb-4">Special Treatment Packages</h2>
+        <p className="text-gray-600 max-w-2xl mx-auto">Curated bundles for maximum results. Save up to 40% vs. individual sessions.</p>
+      </div>
+      <div className="grid md:grid-cols-3 gap-8">
+        {PACKAGES.map((pkg) => (
+          <motion.div key={pkg.name} whileHover={{ y: -8 }} className={`relative bg-white rounded-3xl shadow-xl border-2 overflow-hidden ${pkg.highlight ? 'border-primary' : 'border-gray-100'}`}>
+            {pkg.highlight && <div className="bg-primary text-white text-center text-xs font-bold py-1.5 tracking-widest uppercase">⭐ Most Popular</div>}
+            <div className={`p-8 ${pkg.highlight ? 'pt-6' : ''}`}>
+              <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold mb-4 ${pkg.highlight ? 'bg-primary/10 text-primary' : 'bg-secondary/10 text-secondary'}`}>{pkg.badge}</span>
+              <h3 className="font-serif text-2xl font-bold text-gray-900 mb-2">{pkg.name}</h3>
+              <p className="text-gray-500 text-sm mb-5">{pkg.description}</p>
+              <ul className="space-y-2 mb-8">
+                {pkg.treatments.map(t => (
+                  <li key={t} className="flex items-center gap-2 text-sm text-gray-700"><Check className="w-4 h-4 text-primary shrink-0" />{t}</li>
+                ))}
+              </ul>
+              <div className="border-t border-gray-100 pt-6">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-gray-400 text-sm line-through">{pkg.original}</span>
+                  <span className="bg-red-100 text-red-600 text-xs font-bold px-2 py-0.5 rounded-full">Save!</span>
+                </div>
+                <div className="text-3xl font-bold text-primary mb-1">{pkg.price}</div>
+                <div className="text-gray-500 text-xs mb-6">{pkg.sessions} included</div>
+                <button onClick={() => window.dispatchEvent(new CustomEvent('openBookingModal'))} className={`w-full py-3.5 rounded-xl font-semibold text-sm transition-all duration-300 ${pkg.highlight ? 'bg-primary text-white hover:bg-primary/90 shadow-lg' : 'border-2 border-primary text-primary hover:bg-primary hover:text-white'}`}>
+                  Claim This Package
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+      <p className="text-center text-xs text-gray-400 mt-8">* Packages valid for 3 months from purchase. Terms apply.</p>
+    </div>
+  </section>
+);
+
+// --- Location Section ---
+const LocationSection = () => (
+  <section id="location" className="py-24 bg-gray-50">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="text-center mb-12">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/30 text-primary font-medium text-sm mb-4">
+          <MapPin className="w-4 h-4" /> Find Us
+        </div>
+        <h2 className="font-serif text-4xl font-bold text-gray-900 mb-4">Visit Our Clinic</h2>
+        <p className="text-gray-600 max-w-xl mx-auto">Conveniently located in Jakarta's CBD. Easy access by car, MRT, or TransJakarta.</p>
+      </div>
+      <div className="grid md:grid-cols-2 gap-12 items-start">
+        <div className="rounded-3xl overflow-hidden shadow-xl border border-gray-200" style={{ height: 420 }}>
+          <iframe title="AuraSkin Jakarta" src="https://maps.google.com/maps?q=SCBD+Tower+2+Jakarta+Selatan&output=embed&z=15" width="100%" height="100%" style={{ border: 0 }} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
+        </div>
+        <div className="space-y-4">
+          {[
+            { icon: <MapPin className="w-5 h-5 text-primary" />, title: 'Address', content: <p className="text-gray-600 text-sm">SCBD Tower 2, Jl. Jend. Sudirman Kav. 52–53,<br />Jakarta Selatan 12190, Indonesia</p> },
+            { icon: <Clock className="w-5 h-5 text-primary" />, title: 'Clinic Hours', content: <div className="text-sm text-gray-600 space-y-1"><div className="flex justify-between gap-8"><span>Monday – Friday</span><span className="font-medium">09:00 – 20:00</span></div><div className="flex justify-between gap-8"><span>Saturday – Sunday</span><span className="font-medium">09:00 – 18:00</span></div></div> },
+            { icon: <Phone className="w-5 h-5 text-primary" />, title: 'Contact', content: <p className="text-sm text-gray-600">WhatsApp: <a href="https://wa.me/6281288882828" className="text-primary font-medium hover:underline">+62 812-8888-2828</a></p> },
+            { icon: <ArrowRight className="w-5 h-5 text-primary" />, title: 'Getting Here', content: <ul className="text-sm text-gray-600 space-y-1"><li>🚇 MRT: Senayan Station (5 min walk)</li><li>🚌 TransJakarta: Halte Bendungan Hilir</li><li>🚗 Valet parking available at SCBD Tower 2</li></ul> },
+          ].map(({ icon, title, content }) => (
+            <div key={title} className="flex gap-4 items-start bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+              <div className="bg-primary/10 p-3 rounded-xl shrink-0">{icon}</div>
+              <div><h4 className="font-bold text-gray-900 mb-1">{title}</h4>{content}</div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   </section>
@@ -703,11 +980,14 @@ function App() {
         <TrustBadges />
         <BeforeAfter />
         <Treatments />
+        <GallerySection />
+        <PromotionsSection />
         <WhyChooseUs />
         <SocialProof />
         <Experts />
         <Pricing />
         <InlineBookingSection />
+        <LocationSection />
         <FAQ />
         <FinalCTA />
       </main>
