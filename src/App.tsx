@@ -472,6 +472,7 @@ const TREATMENT_OPTIONS = [
 
 const bookingSchema = z.object({
   fullName: z.string().min(2, 'Name is required'),
+  email: z.string().email('Valid email is required'),
   phone: z.string().min(8, 'Valid phone number is required'),
   treatments: z.array(z.string()).min(1, 'Please select at least one treatment'),
   moreInfo: z.string().optional()
@@ -517,20 +518,31 @@ const BookingModal = () => {
   const onSubmit = async (data: BookingFormValues) => {
     setIsSubmitting(true);
     setIsSuccess(true);
-    reset();
-    setIsSubmitting(false);
+    const noteStr = `Treatments: ${data.treatments.join(', ')} | Phone: ${data.phone} | More Info: ${data.moreInfo || ''}`;
     setTimeout(async () => {
       const cal = await getCalApi({ namespace: 'auraskin-prototype' });
+      const queryParams = new URLSearchParams();
+      queryParams.set('name', data.fullName);
+      queryParams.set('email', data.email);
+      queryParams.set('phone', data.phone);
+      data.treatments.forEach(t => queryParams.append('Treatment_Interest', t));
+      queryParams.set('More_info', data.moreInfo || '');
+
       cal('modal', {
-        calLink: CAL_LINK,
+        calLink: `${CAL_LINK}?${queryParams.toString()}`,
         config: {
           name: data.fullName,
-          email: '',
-          notes: `Treatments: ${data.treatments.join(', ')} | Phone: ${data.phone} | More Info: ${data.moreInfo || ''}`,
+          email: data.email,
+          phone: data.phone,
+          notes: noteStr,
+          Treatment_Interest: data.treatments,
+          More_info: data.moreInfo || '',
           theme: 'light',
         },
       });
     }, 1200);
+    reset();
+    setIsSubmitting(false);
   };
 
   const close = () => { setIsOpen(false); reset(); setIsSuccess(false); };
@@ -594,17 +606,30 @@ const BookingModal = () => {
                   {errors.fullName && <p className="text-red-500 text-xs mt-1">{errors.fullName.message}</p>}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">WhatsApp Number</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Email Address</label>
                   <input
-                    {...register('phone')}
-                    type="tel"
+                    {...register('email')}
+                    type="email"
                     className={`w-full px-4 py-3 rounded-xl border ${
-                      errors.phone ? 'border-red-400 bg-red-50' : 'border-gray-200'
+                      errors.email ? 'border-red-400 bg-red-50' : 'border-gray-200'
                     } focus:ring-2 focus:ring-primary focus:border-primary outline-none transition text-sm`}
-                    placeholder="+62 812..."
+                    placeholder="jane@example.com"
                   />
-                  {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>}
+                  {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">WhatsApp Number</label>
+                <input
+                  {...register('phone')}
+                  type="tel"
+                  className={`w-full px-4 py-3 rounded-xl border ${
+                    errors.phone ? 'border-red-400 bg-red-50' : 'border-gray-200'
+                  } focus:ring-2 focus:ring-primary focus:border-primary outline-none transition text-sm`}
+                  placeholder="+62 812..."
+                />
+                {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>}
               </div>
 
               <div>
@@ -672,21 +697,32 @@ const InlineBookingSection = () => {
   const onSubmit = async (data: BookingFormValues) => {
     setIsSubmitting(true);
     setIsSuccess(true);
-    reset();
-    setIsSubmitting(false);
+    const noteStr = `Treatments: ${data.treatments.join(', ')} | Phone: ${data.phone} | More Info: ${data.moreInfo || ''}`;
     setTimeout(async () => {
       const cal = await getCalApi({ namespace: 'auraskin-prototype' });
+      const queryParams = new URLSearchParams();
+      queryParams.set('name', data.fullName);
+      queryParams.set('email', data.email);
+      queryParams.set('phone', data.phone);
+      data.treatments.forEach(t => queryParams.append('Treatment_Interest', t));
+      queryParams.set('More_info', data.moreInfo || '');
+
       cal('modal', {
-        calLink: CAL_LINK,
+        calLink: `${CAL_LINK}?${queryParams.toString()}`,
         config: {
           name: data.fullName,
-          email: '',
-          notes: `Treatments: ${data.treatments.join(', ')} | Phone: ${data.phone} | More Info: ${data.moreInfo || ''}`,
+          email: data.email,
+          phone: data.phone,
+          notes: noteStr,
+          Treatment_Interest: data.treatments,
+          More_info: data.moreInfo || '',
           theme: 'light',
         },
       });
     }, 1200);
     setTimeout(() => setIsSuccess(false), 8000);
+    reset();
+    setIsSubmitting(false);
   };
 
   return (
@@ -728,17 +764,30 @@ const InlineBookingSection = () => {
                 {errors.fullName && <p className="text-red-500 text-xs mt-1">{errors.fullName.message}</p>}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Phone Number</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Email Address</label>
                 <input
-                  {...register('phone')}
-                  type="tel"
+                  {...register('email')}
+                  type="email"
                   className={`w-full px-4 py-3 rounded-xl border ${
-                    errors.phone ? 'border-red-400 bg-red-50' : 'border-gray-200'
+                    errors.email ? 'border-red-400 bg-red-50' : 'border-gray-200'
                   } focus:ring-2 focus:ring-primary focus:border-primary outline-none transition text-sm`}
-                  placeholder="+62 812..."
+                  placeholder="jane@example.com"
                 />
-                {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>}
+                {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
               </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Phone Number</label>
+              <input
+                {...register('phone')}
+                type="tel"
+                className={`w-full px-4 py-3 rounded-xl border ${
+                  errors.phone ? 'border-red-400 bg-red-50' : 'border-gray-200'
+                } focus:ring-2 focus:ring-primary focus:border-primary outline-none transition text-sm`}
+                placeholder="+62 812..."
+              />
+              {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>}
             </div>
 
             <div>
