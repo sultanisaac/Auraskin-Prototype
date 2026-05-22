@@ -465,8 +465,7 @@ const bookingSchema = z.object({
   fullName: z.string().min(2, 'Name is required'),
   phone: z.string().min(8, 'Valid phone number is required'),
   treatment: z.string().min(1, 'Please select a treatment'),
-  date: z.string().min(1, 'Please select a date'),
-  time: z.string().min(1, 'Please select a time'),
+  moreInfo: z.string().optional()
 });
 
 type BookingFormValues = z.infer<typeof bookingSchema>;
@@ -514,7 +513,7 @@ const BookingModal = () => {
       config: {
         name: data.fullName,
         email: '',
-        notes: `Treatment: ${data.treatment} | Phone: ${data.phone} | Preferred: ${data.date} ${data.time}`,
+        notes: `Treatment: ${data.treatment} | Phone: ${data.phone} | More Info: ${data.moreInfo}`,
         theme: 'light',
       },
     });
@@ -551,9 +550,6 @@ const BookingModal = () => {
             </button>
 
             <div className="text-center mb-8">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/30 text-primary font-medium text-sm mb-4">
-                <Calendar className="w-4 h-4" /> Step 1 of 2 — Tell us about yourself
-              </div>
               <h2 className="font-serif text-3xl font-bold text-primary mb-2">Book Your Consultation</h2>
               <p className="text-gray-500 text-sm">Fill in your details and we'll open the calendar for you to pick a slot.</p>
             </div>
@@ -588,6 +584,7 @@ const BookingModal = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Treatment Interest</label>
+                {/* Treatment select stays unchanged */}
                 <div className="relative">
                   <select
                     {...register('treatment')}
@@ -606,39 +603,17 @@ const BookingModal = () => {
                   <ChevronDown className="absolute right-4 top-3.5 text-gray-400 pointer-events-none w-4 h-4" />
                 </div>
                 {errors.treatment && <p className="text-red-500 text-xs mt-1">{errors.treatment.message}</p>}
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-5">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Preferred Date</label>
-                  <input
-                    {...register('date')}
-                    type="date"
-                    className={`w-full px-4 py-3 rounded-xl border ${
-                      errors.date ? 'border-red-400 bg-red-50' : 'border-gray-200'
-                    } focus:ring-2 focus:ring-primary focus:border-primary outline-none transition text-sm`}
+                              </div>
+                {/* More Info */}
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">More Info</label>
+                  <textarea
+                    {...register('moreInfo')}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition text-sm"
+                    placeholder="Additional details (optional)"
+                    rows={3}
                   />
-                  {errors.date && <p className="text-red-500 text-xs mt-1">{errors.date.message}</p>}
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Preferred Time</label>
-                  <div className="relative">
-                    <select
-                      {...register('time')}
-                      className={`w-full px-4 py-3 rounded-xl border ${
-                        errors.time ? 'border-red-400 bg-red-50' : 'border-gray-200'
-                      } focus:ring-2 focus:ring-primary focus:border-primary outline-none transition appearance-none bg-white text-sm`}
-                    >
-                      <option value="">Select Time</option>
-                      <option value="Morning">Morning (09:00 - 12:00)</option>
-                      <option value="Afternoon">Afternoon (12:00 - 16:00)</option>
-                      <option value="Evening">Evening (16:00 - 20:00)</option>
-                    </select>
-                    <ChevronDown className="absolute right-4 top-3.5 text-gray-400 pointer-events-none w-4 h-4" />
-                  </div>
-                  {errors.time && <p className="text-red-500 text-xs mt-1">{errors.time.message}</p>}
-                </div>
-              </div>
 
               <Button
                 variant="primary"
@@ -649,7 +624,7 @@ const BookingModal = () => {
                 {isSubmitting ? <Loader2 className="animate-spin w-4 h-4" /> : <Calendar className="w-4 h-4" />}
                 Confirm & Choose Your Slot
               </Button>
-              <p className="text-center text-xs text-gray-400">You'll pick your exact date & time on the next step via our live calendar.</p>
+              <p className="text-center text-xs text-gray-400">We’ll schedule your appointment after you submit the form.</p>
             </form>
           </motion.div>
         </motion.div>
