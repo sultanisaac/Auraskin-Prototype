@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Phone, MessageCircle, MapPin, Calendar, Clock, ChevronDown, Check, Star, ArrowRight, ShieldCheck, Award, ThumbsUp, Users, Instagram, Heart, Sparkles, Loader2 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Phone, MessageCircle, MapPin, Calendar, Clock, ChevronDown, Check, Star, ArrowRight, ShieldCheck, Award, ThumbsUp, Users, Instagram, Heart, Sparkles, Loader2, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { ReactCompareSlider, ReactCompareSliderImage } from 'react-compare-slider';
+import Cal, { getCalApi } from '@calcom/embed-react';
+
+const CAL_LINK = (import.meta as any).env?.VITE_CALLINK?.replace('https://cal.com/', '') || 'sultan-isaac-jgohpm/auraskin-prototype';
 
 // --- Placeholder Components ---
 
@@ -28,7 +31,7 @@ const Button = ({ children, variant = 'primary', className = '', ...props }: any
 const TopBar = () => (
   <div className="bg-secondary text-white text-center py-2 px-4 text-sm font-medium">
     <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.2 }}>
-      12 consultation slots available this week • <span className="underline cursor-pointer">Book Now</span>
+      12 consultation slots available this week • <span className="underline cursor-pointer" onClick={() => window.dispatchEvent(new CustomEvent('openBookingModal'))}>Book Now</span>
     </motion.span>
   </div>
 );
@@ -55,7 +58,7 @@ const Header = () => {
           <a href="#about" className="text-gray-600 hover:text-primary transition font-medium">Why Us</a>
           <a href="#pricing" className="text-gray-600 hover:text-primary transition font-medium">Pricing</a>
         </nav>
-        <Button variant="primary" className="hidden md:flex">
+        <Button variant="primary" className="hidden md:flex" onClick={() => window.dispatchEvent(new CustomEvent('openBookingModal'))}>
           Book Consultation
         </Button>
       </div>
@@ -83,7 +86,7 @@ const Hero = () => (
             Advanced aesthetic treatments tailored to your skin goals. Trusted by thousands of women across Jakarta.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
-            <Button variant="primary" className="text-lg py-4 px-8">
+            <Button variant="primary" className="text-lg py-4 px-8" onClick={() => window.dispatchEvent(new CustomEvent('openBookingModal'))}>
               Book Free Consultation
             </Button>
             <Button variant="outline" className="text-lg py-4 px-8">
@@ -234,7 +237,7 @@ const Treatments = () => {
                 <span className="text-gray-500"><Clock className="w-4 h-4 inline mr-1" />{t.time}</span>
                 <span className="text-secondary">From {t.price}</span>
               </div>
-              <Button variant="outline" className="w-full group-hover:bg-primary group-hover:text-white group-hover:border-primary">
+              <Button variant="outline" className="w-full group-hover:bg-primary group-hover:text-white group-hover:border-primary" onClick={() => window.dispatchEvent(new CustomEvent('openBookingModal'))}>
                 Book Consultation
               </Button>
             </motion.div>
@@ -319,7 +322,7 @@ const FinalCTA = () => (
       <h2 className="font-serif text-4xl md:text-5xl font-bold mb-6">Ready To Transform Your Skin?</h2>
       <p className="text-xl text-gray-300 mb-10">Claim your free consultation and receive a personalized treatment plan from our expert team.</p>
       <div className="flex flex-col sm:flex-row justify-center gap-4">
-        <Button variant="secondary" className="text-lg py-4 px-8 text-primary font-bold">
+        <Button variant="secondary" className="text-lg py-4 px-8 text-primary font-bold" onClick={() => window.dispatchEvent(new CustomEvent('openBookingModal'))}>
           Book Free Consultation
         </Button>
         <Button variant="outline" className="text-lg py-4 px-8 border-white text-white hover:bg-white hover:text-primary">
@@ -414,7 +417,7 @@ const Experts = () => {
                   <div className="flex items-center gap-2"><Award className="w-4 h-4 text-primary" /> {doc.exp}</div>
                   <div className="flex items-center gap-2"><Sparkles className="w-4 h-4 text-primary" /> {doc.spec}</div>
                 </div>
-                <Button variant="outline" className="w-full">Book with {doc.name.split(' ')[1]}</Button>
+                <Button variant="outline" className="w-full" onClick={() => window.dispatchEvent(new CustomEvent('openBookingModal'))}>Book with {doc.name.split(' ')[1]}</Button>
               </div>
             </motion.div>
           ))}
@@ -450,7 +453,7 @@ const Pricing = () => {
             ))}
           </div>
           <div className="mt-10 text-center">
-            <Button variant="primary" className="w-full sm:w-auto">Check Eligibility & Promos</Button>
+            <Button variant="primary" className="w-full sm:w-auto" onClick={() => window.dispatchEvent(new CustomEvent('openBookingModal'))}>Check Eligibility & Promos</Button>
           </div>
         </div>
       </div>
@@ -468,95 +471,212 @@ const bookingSchema = z.object({
 
 type BookingFormValues = z.infer<typeof bookingSchema>;
 
-const BookingFunnel = () => {
+// Global Cal.com initializer
+const useCalInit = () => {
+  useEffect(() => {
+    (async () => {
+      const cal = await getCalApi({ namespace: 'auraskin-prototype' });
+      cal('ui', {
+        theme: 'light',
+        styles: { branding: { brandColor: '#0F4C5C' } },
+        hideEventTypeDetails: false,
+        layout: 'month_view',
+      });
+    })();
+  }, []);
+};
+
+// Booking Modal: collects user info, then triggers Cal.com popup
+const BookingModal = () => {
+  const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { register, handleSubmit, formState: { errors } } = useForm<BookingFormValues>({
-    resolver: zodResolver(bookingSchema)
+  useCalInit();
+
+  useEffect(() => {
+    const handleOpen = () => setIsOpen(true);
+    window.addEventListener('openBookingModal', handleOpen);
+    return () => window.removeEventListener('openBookingModal', handleOpen);
+  }, []);
+
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<BookingFormValues>({
+    resolver: zodResolver(bookingSchema),
   });
 
-  const onSubmit = (data: BookingFormValues) => {
+  const onSubmit = async (data: BookingFormValues) => {
     setIsSubmitting(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false);
-      const text = `Hi AuraSkin, I would like to book a consultation.\n\nName: ${data.fullName}\nPhone: ${data.phone}\nTreatment: ${data.treatment}\nDate: ${data.date}\nTime: ${data.time}`;
-      window.open(`https://wa.me/6281288882828?text=${encodeURIComponent(text)}`, '_blank');
-    }, 1500);
+    setIsOpen(false);
+    reset();
+    setIsSubmitting(false);
+    // Open Cal.com modal popup after form submit
+    const cal = await getCalApi({ namespace: 'auraskin-prototype' });
+    cal('modal', {
+      calLink: CAL_LINK,
+      config: {
+        name: data.fullName,
+        email: '',
+        notes: `Treatment: ${data.treatment} | Phone: ${data.phone} | Preferred: ${data.date} ${data.time}`,
+        theme: 'light',
+      },
+    });
   };
 
+  const close = () => { setIsOpen(false); reset(); };
+
   return (
-    <section className="py-24 bg-background">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-3xl shadow-xl p-8 md:p-12 border border-gray-100">
-          <div className="text-center mb-10">
-            <h2 className="font-serif text-3xl font-bold text-primary mb-3">Book Your Consultation</h2>
-            <p className="text-gray-600">Take the first step towards flawless skin.</p>
-          </div>
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          key="booking-modal-backdrop"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto"
+          onClick={(e) => { if (e.target === e.currentTarget) close(); }}
+        >
+          <motion.div
+            key="booking-modal-panel"
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            transition={{ duration: 0.25 }}
+            className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl relative p-8 md:p-12 my-auto"
+          >
+            {/* Header */}
+            <button
+              onClick={close}
+              className="absolute top-5 right-5 text-gray-400 hover:text-gray-700 transition p-1 rounded-full hover:bg-gray-100"
+              aria-label="Close"
+            >
+              <X className="w-5 h-5" />
+            </button>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
-                <input {...register('fullName')} type="text" className={`w-full px-4 py-3 rounded-xl border ${errors.fullName ? 'border-red-500' : 'border-gray-200'} focus:ring-2 focus:ring-primary focus:border-primary outline-none transition`} placeholder="Jane Doe" />
-                {errors.fullName && <p className="text-red-500 text-xs mt-1">{errors.fullName.message}</p>}
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/30 text-primary font-medium text-sm mb-4">
+                <Calendar className="w-4 h-4" /> Step 1 of 2 — Tell us about yourself
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">WhatsApp Number</label>
-                <input {...register('phone')} type="tel" className={`w-full px-4 py-3 rounded-xl border ${errors.phone ? 'border-red-500' : 'border-gray-200'} focus:ring-2 focus:ring-primary focus:border-primary outline-none transition`} placeholder="+62 812..." />
-                {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>}
-              </div>
+              <h2 className="font-serif text-3xl font-bold text-primary mb-2">Book Your Consultation</h2>
+              <p className="text-gray-500 text-sm">Fill in your details and we'll open the calendar for you to pick a slot.</p>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Treatment Interest</label>
-              <div className="relative">
-                <select {...register('treatment')} className={`w-full px-4 py-3 rounded-xl border ${errors.treatment ? 'border-red-500' : 'border-gray-200'} focus:ring-2 focus:ring-primary focus:border-primary outline-none transition appearance-none bg-white`}>
-                  <option value="">Select Treatment</option>
-                  <option value="Acne Treatment">Acne Treatment</option>
-                  <option value="Brightening Program">Brightening Program</option>
-                  <option value="Anti-Aging">Anti-Aging</option>
-                  <option value="Laser Rejuvenation">Laser Rejuvenation</option>
-                  <option value="Skin Booster">Skin Booster</option>
-                  <option value="Consultation">General Consultation</option>
-                </select>
-                <ChevronDown className="absolute right-4 top-4 text-gray-400 pointer-events-none" />
-              </div>
-              {errors.treatment && <p className="text-red-500 text-xs mt-1">{errors.treatment.message}</p>}
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Date</label>
-                <div className="relative">
-                  <input {...register('date')} type="date" className={`w-full px-4 py-3 rounded-xl border ${errors.date ? 'border-red-500' : 'border-gray-200'} focus:ring-2 focus:ring-primary focus:border-primary outline-none transition`} />
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+              <div className="grid md:grid-cols-2 gap-5">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Full Name</label>
+                  <input
+                    {...register('fullName')}
+                    type="text"
+                    className={`w-full px-4 py-3 rounded-xl border ${
+                      errors.fullName ? 'border-red-400 bg-red-50' : 'border-gray-200'
+                    } focus:ring-2 focus:ring-primary focus:border-primary outline-none transition text-sm`}
+                    placeholder="Jane Doe"
+                  />
+                  {errors.fullName && <p className="text-red-500 text-xs mt-1">{errors.fullName.message}</p>}
                 </div>
-                {errors.date && <p className="text-red-500 text-xs mt-1">{errors.date.message}</p>}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">WhatsApp Number</label>
+                  <input
+                    {...register('phone')}
+                    type="tel"
+                    className={`w-full px-4 py-3 rounded-xl border ${
+                      errors.phone ? 'border-red-400 bg-red-50' : 'border-gray-200'
+                    } focus:ring-2 focus:ring-primary focus:border-primary outline-none transition text-sm`}
+                    placeholder="+62 812..."
+                  />
+                  {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>}
+                </div>
               </div>
+
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Time</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Treatment Interest</label>
                 <div className="relative">
-                  <select {...register('time')} className={`w-full px-4 py-3 rounded-xl border ${errors.time ? 'border-red-500' : 'border-gray-200'} focus:ring-2 focus:ring-primary focus:border-primary outline-none transition appearance-none bg-white`}>
-                    <option value="">Select Time</option>
-                    <option value="Morning">Morning (09:00 - 12:00)</option>
-                    <option value="Afternoon">Afternoon (12:00 - 16:00)</option>
-                    <option value="Evening">Evening (16:00 - 20:00)</option>
+                  <select
+                    {...register('treatment')}
+                    className={`w-full px-4 py-3 rounded-xl border ${
+                      errors.treatment ? 'border-red-400 bg-red-50' : 'border-gray-200'
+                    } focus:ring-2 focus:ring-primary focus:border-primary outline-none transition appearance-none bg-white text-sm`}
+                  >
+                    <option value="">Select Treatment</option>
+                    <option value="Acne Treatment">Acne Treatment</option>
+                    <option value="Brightening Program">Brightening Program</option>
+                    <option value="Anti-Aging">Anti-Aging</option>
+                    <option value="Laser Rejuvenation">Laser Rejuvenation</option>
+                    <option value="Skin Booster">Skin Booster</option>
+                    <option value="Consultation">General Consultation</option>
                   </select>
-                  <ChevronDown className="absolute right-4 top-4 text-gray-400 pointer-events-none" />
+                  <ChevronDown className="absolute right-4 top-3.5 text-gray-400 pointer-events-none w-4 h-4" />
                 </div>
-                {errors.time && <p className="text-red-500 text-xs mt-1">{errors.time.message}</p>}
+                {errors.treatment && <p className="text-red-500 text-xs mt-1">{errors.treatment.message}</p>}
               </div>
-            </div>
 
-            <Button variant="primary" className="w-full py-4 text-lg mt-4" type="submit" disabled={isSubmitting}>
-              {isSubmitting ? <Loader2 className="animate-spin mr-2" /> : null}
-              Confirm Booking via WhatsApp
-            </Button>
-          </form>
-        </div>
-      </div>
-    </section>
+              <div className="grid md:grid-cols-2 gap-5">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Preferred Date</label>
+                  <input
+                    {...register('date')}
+                    type="date"
+                    className={`w-full px-4 py-3 rounded-xl border ${
+                      errors.date ? 'border-red-400 bg-red-50' : 'border-gray-200'
+                    } focus:ring-2 focus:ring-primary focus:border-primary outline-none transition text-sm`}
+                  />
+                  {errors.date && <p className="text-red-500 text-xs mt-1">{errors.date.message}</p>}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Preferred Time</label>
+                  <div className="relative">
+                    <select
+                      {...register('time')}
+                      className={`w-full px-4 py-3 rounded-xl border ${
+                        errors.time ? 'border-red-400 bg-red-50' : 'border-gray-200'
+                      } focus:ring-2 focus:ring-primary focus:border-primary outline-none transition appearance-none bg-white text-sm`}
+                    >
+                      <option value="">Select Time</option>
+                      <option value="Morning">Morning (09:00 - 12:00)</option>
+                      <option value="Afternoon">Afternoon (12:00 - 16:00)</option>
+                      <option value="Evening">Evening (16:00 - 20:00)</option>
+                    </select>
+                    <ChevronDown className="absolute right-4 top-3.5 text-gray-400 pointer-events-none w-4 h-4" />
+                  </div>
+                  {errors.time && <p className="text-red-500 text-xs mt-1">{errors.time.message}</p>}
+                </div>
+              </div>
+
+              <Button
+                variant="primary"
+                className="w-full py-4 text-base mt-2 gap-2"
+                type="submit"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? <Loader2 className="animate-spin w-4 h-4" /> : <Calendar className="w-4 h-4" />}
+                Confirm & Choose Your Slot
+              </Button>
+              <p className="text-center text-xs text-gray-400">You'll pick your exact date & time on the next step via our live calendar.</p>
+            </form>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };
+
+// Inline Cal.com embed section replacing the old static BookingFunnel
+const InlineBookingSection = () => (
+  <section id="booking" className="py-24 bg-background">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="text-center mb-10">
+        <h2 className="font-serif text-4xl font-bold text-gray-900 mb-4">Schedule Your Visit</h2>
+        <p className="text-gray-600 max-w-xl mx-auto">Choose a convenient time directly below, or click any <strong>"Book Consultation"</strong> button to pre-fill your details first.</p>
+      </div>
+      <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100" style={{ minHeight: 650 }}>
+        <Cal
+          namespace="auraskin-prototype"
+          calLink={CAL_LINK}
+          style={{ width: '100%', height: '100%', minHeight: 650 }}
+          config={{ layout: 'month_view', theme: 'light' }}
+        />
+      </div>
+    </div>
+  </section>
+);
 
 const Footer = () => (
   <footer className="bg-gray-900 text-gray-400 py-16">
@@ -612,7 +732,7 @@ function App() {
         <SocialProof />
         <Experts />
         <Pricing />
-        <BookingFunnel />
+        <InlineBookingSection />
         <FAQ />
         <FinalCTA />
       </main>
@@ -624,6 +744,7 @@ function App() {
         target="_blank" 
         rel="noreferrer"
         className="fixed bottom-6 right-6 bg-green-500 text-white p-4 rounded-full shadow-2xl hover:bg-green-600 transition-transform hover:scale-110 z-50 hidden md:flex items-center justify-center"
+        aria-label="WhatsApp"
       >
         <MessageCircle className="w-8 h-8" />
       </a>
@@ -634,12 +755,15 @@ function App() {
           <Phone className="w-5 h-5" />
           <span className="text-[10px] uppercase tracking-wider">Call Us</span>
         </a>
-        <a href="https://wa.me/6281288882828" className="flex-1 py-4 flex flex-col items-center justify-center gap-1 font-bold bg-primary text-white active:bg-primary/90">
+        <button onClick={() => window.dispatchEvent(new CustomEvent('openBookingModal'))} className="flex-1 py-4 flex flex-col items-center justify-center gap-1 font-bold bg-primary text-white active:bg-primary/90">
           <Calendar className="w-5 h-5" />
           <span className="text-[10px] uppercase tracking-wider">Book Now</span>
-        </a>
+        </button>
       </div>
       
+      {/* Booking Modal - global, rendered once */}
+      <BookingModal />
+
       {/* Padding to prevent content from hiding behind mobile bar */}
       <div className="h-20 md:hidden bg-gray-900 w-full"></div>
     </div>
