@@ -13,7 +13,7 @@ const CAL_LINK = (import.meta as any).env?.VITE_CALLINK?.replace('https://cal.co
 const TREATMENT_OPTIONS = [
   'Acne Treatment',
   'Brightening Program',
-  'Anti-Aging',
+  'Anti Aging',
   'Laser Rejuvenation',
   'Skin Booster',
   'General Consultation'
@@ -135,7 +135,7 @@ export default function BookingPage() {
             Start Your Journey to <span className="text-primary">Healthy, Radiant Skin</span>
           </h1>
           <p className="text-lg text-gray-600">
-            Book a complimentary 15-minute consultation with our medical specialists in SCBD, Jakarta. Receive a clinical skin assessment and customized roadmap with zero sales pressure.
+            Book a complimentary 15 minute consultation with our medical specialists in SCBD, Jakarta. Receive a clinical skin assessment and customized roadmap with zero sales pressure.
           </p>
         </div>
 
@@ -184,7 +184,7 @@ export default function BookingPage() {
               <h3 className="font-serif text-lg md:text-xl font-bold text-gray-900 px-2">AuraSkin Clinical Standards</h3>
               <div className="grid sm:grid-cols-2 gap-4">
                 {[
-                  { icon: <ShieldCheck className="text-secondary" />, title: "FDA-Approved Lasers" },
+                  { icon: <ShieldCheck className="text-secondary" />, title: "FDA Approved Lasers" },
                   { icon: <Award className="text-secondary" />, title: "Certified Specialist MDs" },
                   { icon: <Clock className="text-secondary" />, title: "SCBD CBD Location" },
                   { icon: <Star className="text-secondary" />, title: "4.9/5 Rating (1.5k+ Reviews)" }

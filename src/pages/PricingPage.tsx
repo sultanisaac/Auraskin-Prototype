@@ -30,13 +30,13 @@ const PACKAGES = [
   {
     badge: 'Best Value', name: 'Bridal Glow Package', highlight: false,
     description: "Look your absolute best on your special day with our signature bridal program.",
-    treatments: ['Brightening Program', 'Anti-Aging Facial', 'Hydra Infusion', 'Post-Care Kit'],
+    treatments: ['Brightening Program', 'Anti Aging Facial', 'Hydra Infusion', 'Post Care Kit'],
     original: 'Rp 7,000,000', price: 'Rp 4,499,000', sessions: '5 Sessions',
   },
   {
-    badge: 'Premium', name: 'Anti-Aging Revival', highlight: false,
-    description: 'Turn back the clock with our scientifically-backed combination therapy.',
-    treatments: ['Laser Rejuvenation', 'Filler Consultation', 'Skin Booster', 'Monthly Follow-up'],
+    badge: 'Premium', name: 'Anti Aging Revival', highlight: false,
+    description: 'Turn back the clock with our scientifically backed combination therapy.',
+    treatments: ['Laser Rejuvenation', 'Filler Consultation', 'Skin Booster', 'Monthly Follow up'],
     original: 'Rp 9,500,000', price: 'Rp 6,499,000', sessions: '6 Sessions',
   },
 ];
@@ -222,8 +222,8 @@ export default function PricingPage() {
               },
               {
                 icon: <HeartHandshake className="w-8 h-8 text-secondary" />,
-                title: "Post-Care Included",
-                desc: "Clinical treatments require recovery care. We include standard clinical post-care creams and sunscreens without charging extra."
+                title: "Post Care Included",
+                desc: "Clinical treatments require recovery care. We include standard clinical post care creams and sunscreens without charging extra."
               },
               {
                 icon: <ShieldCheck className="w-8 h-8 text-secondary" />,
