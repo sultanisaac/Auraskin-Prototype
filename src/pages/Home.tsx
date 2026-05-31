@@ -69,7 +69,7 @@ const Hero = () => (
               <ShieldCheck className="w-6 h-6 md:w-8 md:h-8 text-primary" />
             </div>
             <div>
-              <p className="font-bold text-xs md:text-sm text-gray-900 leading-tight">Board-Certified</p>
+              <p className="font-bold text-xs md:text-sm text-gray-900 leading-tight">Board Certified</p>
               <p className="text-[10px] md:text-xs text-gray-500">Aesthetic Doctors</p>
             </div>
           </div>
@@ -275,7 +275,7 @@ const GALLERY_ITEMS = [
   { src: 'https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?w=600&q=80', label: 'Brightening' },
   { src: 'https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?w=600&q=80', label: 'Laser Therapy' },
   { src: 'https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?w=600&q=80', label: 'Skin Booster' },
-  { src: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=600&q=80', label: 'Anti-Aging' },
+  { src: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=600&q=80', label: 'Anti Aging' },
   { src: 'https://images.unsplash.com/photo-1519415943484-9fa1873496d4?w=600&q=80', label: 'Rejuvenation' },
 ];
 
@@ -320,13 +320,13 @@ const PACKAGES = [
   {
     badge: 'Best Value', name: 'Bridal Glow Package', highlight: false,
     description: "Look your absolute best on your special day with our signature bridal program.",
-    treatments: ['Brightening Program', 'Anti-Aging Facial', 'Hydra Infusion', 'Post-Care Kit'],
+    treatments: ['Brightening Program', 'Anti Aging Facial', 'Hydra Infusion', 'Post Care Kit'],
     original: 'Rp 7,000,000', price: 'Rp 4,499,000', sessions: '5 Sessions',
   },
   {
-    badge: 'Premium', name: 'Anti-Aging Revival', highlight: false,
-    description: 'Turn back the clock with our scientifically-backed combination therapy.',
-    treatments: ['Laser Rejuvenation', 'Filler Consultation', 'Skin Booster', 'Monthly Follow-up'],
+    badge: 'Premium', name: 'Anti Aging Revival', highlight: false,
+    description: 'Turn back the clock with our scientifically backed combination therapy.',
+    treatments: ['Laser Rejuvenation', 'Filler Consultation', 'Skin Booster', 'Monthly Follow up'],
     original: 'Rp 9,500,000', price: 'Rp 6,499,000', sessions: '6 Sessions',
   },
 ];
@@ -389,9 +389,9 @@ const PromotionsSection = () => (
 
 const WhyChooseUs = () => {
   const reasons = [
-    { icon: <Award className="w-6 h-6" />, title: 'Certified Specialists', desc: '15+ board-certified aesthetic doctors and clinical dermatologists.' },
-    { icon: <Sparkles className="w-6 h-6" />, title: 'Modern Equipment', desc: 'State-of-the-art, FDA-approved laser and micro-hydration systems.' },
-    { icon: <ShieldCheck className="w-6 h-6" />, title: 'Safe Procedures', desc: 'Clinically validated, medical-grade protocols with zero compromises.' },
+    { icon: <Award className="w-6 h-6" />, title: 'Certified Specialists', desc: '15+ board certified aesthetic doctors and clinical dermatologists.' },
+    { icon: <Sparkles className="w-6 h-6" />, title: 'Modern Equipment', desc: 'State of the art, FDA approved laser and micro hydration systems.' },
+    { icon: <ShieldCheck className="w-6 h-6" />, title: 'Safe Procedures', desc: 'Clinically validated, medical grade protocols with zero compromises.' },
     { icon: <Heart className="w-6 h-6" />, title: 'Personalized Care', desc: 'Custom treatments based purely on your skin\'s biological needs.' },
     { icon: <MessageCircle className="w-6 h-6" />, title: 'Consultation Process', desc: 'Complimentary clinical analysis with zero pushy sales targets.' }
   ];
@@ -543,12 +543,11 @@ const Experts = () => {
 
 const FAQ = () => {
   const faqs = [
-    { q: "Does laser treatment hurt?", a: "Most patients describe it as a warm, tingling sensation. We apply high-grade topical numbing cream prior to treatments to ensure complete comfort." },
-    { q: "How many sessions are needed?", a: "This varies based on skin condition. While initial results are visible after 1 session, long-term conditions (scars, pigmentation) typically benefit from 3–5 sessions." },
-    { q: "How long is recovery?", a: "Most facial treatments have zero downtime. Laser treatments may leave slight redness for 12–24 hours, but you can return to work and apply sunscreen/makeup immediately." },
+    { q: "How many sessions are needed?", a: "This varies based on skin condition. While initial results are visible after 1 session, long-term conditions (scars, pigmentation) typically benefit from 3 to 5 sessions." },
+    { q: "How long is recovery?", a: "Most facial treatments have zero downtime. Laser treatments may leave slight redness for 12 to 24 hours, but you can return to work and apply sunscreen/makeup immediately." },
     { q: "Can men receive treatments?", a: "Absolutely. Around 30% of our patients are men seeking acne scar treatment, skin health restoration, and facial contouring." },
     { q: "How much does the consultation cost?", a: "Our initial consultation with an aesthetic doctor is completely free. We will analyze your skin type and suggest a tailored treatment plan with zero pressure to buy." },
-    { q: "Are treatments safe?", a: "Yes. All treatments are performed by board-certified doctors using FDA-approved technology and medical-grade skincare products under strict clinical protocols." }
+    { q: "Are treatments safe?", a: "Yes. All treatments are performed by board certified doctors using FDA approved technology and medical grade skincare products under strict clinical protocols." }
   ];
 
   return (
@@ -589,9 +588,9 @@ const LocationSection = () => (
         </div>
         <div className="space-y-4">
           {[
-            { icon: <MapPin className="w-5 h-5 text-primary" />, title: 'Address', content: <p className="text-gray-600 text-xs md:text-sm">SCBD Tower 2, Jl. Jend. Sudirman Kav. 52–53,<br />Jakarta Selatan 12190, Indonesia</p> },
-            { icon: <Clock className="w-5 h-5 text-primary" />, title: 'Clinic Hours', content: <div className="text-xs md:text-sm text-gray-600 space-y-1"><div className="flex justify-between gap-8"><span>Monday – Friday</span><span className="font-medium">09:00 – 20:00</span></div><div className="flex justify-between gap-8"><span>Saturday – Sunday</span><span className="font-medium">09:00 – 18:00</span></div></div> },
-            { icon: <Phone className="w-5 h-5 text-primary" />, title: 'Contact', content: <p className="text-xs md:text-sm text-gray-600">WhatsApp: <a href="https://wa.me/6281288882828" className="text-primary font-medium hover:underline">+62 812-8888-2828</a></p> },
+            { icon: <MapPin className="w-5 h-5 text-primary" />, title: 'Address', content: <p className="text-gray-600 text-xs md:text-sm">SCBD Tower 2, Jl. Jend. Sudirman Kav. 52, 53,<br />Jakarta Selatan 12190, Indonesia</p> },
+            { icon: <Clock className="w-5 h-5 text-primary" />, title: 'Clinic Hours', content: <div className="text-xs md:text-sm text-gray-600 space-y-1"><div className="flex justify-between gap-8"><span>Monday to Friday</span><span className="font-medium">09:00 to 20:00</span></div><div className="flex justify-between gap-8"><span>Saturday to Sunday</span><span className="font-medium">09:00 to 18:00</span></div></div> },
+            { icon: <Phone className="w-5 h-5 text-primary" />, title: 'Contact', content: <p className="text-xs md:text-sm text-gray-600">WhatsApp: <a href="https://wa.me/6281288882828" className="text-primary font-medium hover:underline">+62 812 8888 2828</a></p> },
             { icon: <ArrowRight className="w-5 h-5 text-primary" />, title: 'Getting Here', content: <ul className="text-xs md:text-sm text-gray-600 space-y-1"><li>🚇 MRT: Senayan Station (5 min walk)</li><li>🚌 TransJakarta: Halte Bendungan Hilir</li><li>🚗 Valet parking available at SCBD Tower 2</li></ul> },
           ].map(({ icon, title, content }) => (
             <div key={title} className="flex gap-4 items-start bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-gray-100">

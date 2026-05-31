@@ -20,14 +20,14 @@ export const Footer = () => (
         <h4 className="text-white font-bold mb-4">Contact</h4>
         <ul className="space-y-3">
           <li className="flex gap-2"><MapPin className="w-5 h-5 shrink-0" /> SCBD Tower 2, Jl. Jend. Sudirman, Jakarta Selatan 12190</li>
-          <li className="flex gap-2"><Phone className="w-5 h-5 shrink-0" /> +62 812-8888-2828</li>
+          <li className="flex gap-2"><Phone className="w-5 h-5 shrink-0" /> +62 812 8888 2828</li>
         </ul>
       </div>
       <div>
         <h4 className="text-white font-bold mb-4">Hours</h4>
         <ul className="space-y-2">
-          <li>Mon-Fri: 09:00 - 20:00</li>
-          <li>Sat-Sun: 09:00 - 18:00</li>
+          <li>Monday to Friday: 09:00 to 20:00</li>
+          <li>Saturday to Sunday: 09:00 to 18:00</li>
         </ul>
       </div>
       <div>
