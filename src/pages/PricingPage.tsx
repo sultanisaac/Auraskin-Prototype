@@ -120,26 +120,28 @@ export default function PricingPage() {
           <div className="divide-y divide-gray-100">
             {filteredTreatments.length > 0 ? (
               filteredTreatments.map((t, idx) => (
-                <div key={idx} className="py-6 first:pt-4 last:pb-2 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div key={idx} className="py-5 md:py-6 first:pt-4 last:pb-2 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                   <div className="space-y-1.5 max-w-2xl">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-serif font-bold text-xl text-primary">{t.name}</h3>
-                      <span className="text-[10px] bg-secondary/10 text-secondary font-bold uppercase tracking-wider px-2 py-0.5 rounded">
-                        {t.category}
-                      </span>
-                      <span className="text-xs text-gray-400 font-medium ml-2">⏱ {t.duration}</span>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="font-serif font-bold text-base md:text-lg lg:text-xl text-primary leading-snug">{t.name}</h3>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <span className="text-[9px] bg-secondary/10 text-secondary font-bold uppercase tracking-wider px-1.5 py-0.5 rounded">
+                          {t.category}
+                        </span>
+                        <span className="text-[11px] text-gray-400 font-medium">⏱ {t.duration}</span>
+                      </div>
                     </div>
-                    <p className="text-sm text-gray-500 leading-relaxed">{t.desc}</p>
+                    <p className="text-xs md:text-sm text-gray-500 leading-relaxed">{t.desc}</p>
                   </div>
                   
-                  <div className="flex flex-col items-end shrink-0 min-w-[180px]">
+                  <div className="flex flex-row md:flex-col justify-between md:justify-start items-center md:items-end w-full md:w-auto shrink-0 pt-3 md:pt-0 border-t border-gray-50 md:border-none">
                     <div className="flex items-center gap-2">
                       {t.originalPrice && (
-                        <span className="text-sm text-gray-400 line-through">{t.originalPrice}</span>
+                        <span className="text-xs md:text-sm text-gray-400 line-through">{t.originalPrice}</span>
                       )}
-                      <span className="font-serif font-bold text-2xl text-primary">{t.price}</span>
+                      <span className="font-serif font-bold text-lg md:text-2xl text-primary">{t.price}</span>
                     </div>
-                    <Link to={`/book-consultation?treatment=${encodeURIComponent(t.name)}`} className="mt-2 text-xs font-semibold text-secondary hover:text-primary transition flex items-center gap-1">
+                    <Link to={`/book-consultation?treatment=${encodeURIComponent(t.name)}`} className="text-xs font-semibold text-secondary hover:text-primary transition flex items-center gap-1">
                       Book Treatment <ArrowRight className="w-3 h-3" />
                     </Link>
                   </div>
@@ -157,39 +159,46 @@ export default function PricingPage() {
 
         {/* Pricing Packages Section */}
         <div className="mb-20">
-          <div className="text-center mb-12">
+          <div className="text-center mb-10 md:mb-12">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 text-secondary font-medium text-sm mb-4">
               <Percent className="w-4 h-4" /> Bundle & Save
             </div>
-            <h2 className="font-serif text-3xl font-bold text-gray-900">Treatment Bundles</h2>
-            <p className="text-gray-600 mt-2 max-w-xl mx-auto">Get maximum clinical results. Our packages offer up to 40% savings compared to single sessions.</p>
+            <h2 className="font-serif text-2xl md:text-3xl font-bold text-gray-900">Treatment Bundles</h2>
+            <p className="text-sm md:text-base text-gray-600 mt-2 max-w-xl mx-auto">Get maximum clinical results. Our packages offer up to 40% savings compared to single sessions.</p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="flex md:grid md:grid-cols-3 overflow-x-auto md:overflow-x-visible snap-x snap-mandatory md:snap-none gap-6 pb-6 md:pb-0 scrollbar-none -mx-4 px-4 md:mx-0 md:px-0">
             {PACKAGES.map((pkg) => (
-              <motion.div key={pkg.name} whileHover={{ y: -8 }} className={`relative bg-white rounded-3xl shadow-xl border-2 overflow-hidden flex flex-col justify-between ${pkg.highlight ? 'border-primary' : 'border-gray-100'}`}>
+              <motion.div 
+                key={pkg.name} 
+                whileHover={{ y: -8 }} 
+                className={`relative bg-white rounded-3xl shadow-xl border-2 overflow-hidden flex flex-col justify-between w-[85vw] sm:w-[320px] md:w-auto shrink-0 snap-center ${pkg.highlight ? 'border-primary' : 'border-gray-100'}`}
+              >
                 <div>
-                  {pkg.highlight && <div className="bg-primary text-white text-center text-xs font-bold py-1.5 tracking-widest uppercase">⭐ Most Popular</div>}
-                  <div className={`p-8 ${pkg.highlight ? 'pt-6' : ''}`}>
-                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold mb-4 ${pkg.highlight ? 'bg-primary/10 text-primary' : 'bg-secondary/10 text-secondary'}`}>{pkg.badge}</span>
-                    <h3 className="font-serif text-2xl font-bold text-gray-900 mb-2">{pkg.name}</h3>
-                    <p className="text-gray-500 text-sm mb-5">{pkg.description}</p>
-                    <ul className="space-y-2 mb-8">
+                  {pkg.highlight && <div className="bg-primary text-white text-center text-[10px] md:text-xs font-bold py-1.5 tracking-widest uppercase">⭐ Most Popular</div>}
+                  <div className={`p-6 md:p-8 ${pkg.highlight ? 'pt-5' : ''}`}>
+                    <span className={`inline-block px-3 py-1 rounded-full text-[10px] md:text-xs font-bold mb-4 ${pkg.highlight ? 'bg-primary/10 text-primary' : 'bg-secondary/10 text-secondary'}`}>{pkg.badge}</span>
+                    <h3 className="font-serif text-xl md:text-2xl font-bold text-gray-900 mb-2">{pkg.name}</h3>
+                    <p className="text-gray-500 text-xs md:text-sm mb-5 leading-relaxed">{pkg.description}</p>
+                    <ul className="space-y-2 mb-6">
                       {pkg.treatments.map(t => (
-                        <li key={t} className="flex items-center gap-2 text-sm text-gray-700"><Check className="w-4 h-4 text-primary shrink-0" />{t}</li>
+                        <li key={t} className="flex items-center gap-2 text-xs md:text-sm text-gray-700">
+                          <Check className="w-4 h-4 text-primary shrink-0" />
+                          <span>{t}</span>
+                        </li>
                       ))}
                     </ul>
                   </div>
                 </div>
-                <div className="p-8 pt-0 border-t border-gray-100 mt-auto">
-                  <div className="flex items-center gap-2 mb-1 pt-6">
-                    <span className="text-gray-400 text-sm line-through">{pkg.original}</span>
-                    <span className="bg-red-100 text-red-600 text-xs font-bold px-2 py-0.5 rounded-full">Save!</span>
+                <div className="p-6 md:p-8 pt-0 border-t border-gray-100 mt-auto">
+                  <div className="flex items-center gap-2 mb-1 pt-4">
+                    <span className="text-gray-400 text-xs md:text-sm line-through">{pkg.original}</span>
+                    <span className="bg-red-100 text-red-600 text-[10px] font-bold px-2 py-0.5 rounded-full">Save!</span>
                   </div>
-                  <div className="text-3xl font-bold text-primary mb-1">{pkg.price}</div>
-                  <div className="text-gray-500 text-xs mb-6">{pkg.sessions} included</div>
+                  <div className="text-2xl md:text-3xl font-bold text-primary mb-1">{pkg.price}</div>
+                  <div className="text-gray-500 text-[10px] md:text-xs mb-5">{pkg.sessions} included</div>
                   <Link to="/book-consultation" className="w-full block">
-                    <button className={`w-full py-3.5 rounded-xl font-semibold text-sm transition-all duration-300 ${pkg.highlight ? 'bg-primary text-white hover:bg-primary/90 shadow-lg' : 'border-2 border-primary text-primary hover:bg-primary hover:text-white'}`}>
+                    <button className={`w-full py-3 rounded-xl font-semibold text-xs md:text-sm transition-all duration-300 ${pkg.highlight ? 'bg-primary text-white hover:bg-primary/90 shadow-lg' : 'border-2 border-primary text-primary hover:bg-primary hover:text-white'}`}>
                       Claim This Package
                     </button>
                   </Link>

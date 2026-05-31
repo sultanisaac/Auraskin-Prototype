@@ -34,20 +34,27 @@ export const Layout = () => {
 
       {/* Mobile Sticky Action Bar - Hidden on Booking page to avoid duplication */}
       {!isBookingPage && (
-        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-50 flex">
-          <a href="tel:+6281288882828" className="flex-1 py-4 flex flex-col items-center justify-center gap-1 font-medium text-gray-700 border-r border-gray-200 active:bg-gray-50">
-            <Phone className="w-5 h-5" />
-            <span className="text-[10px] uppercase tracking-wider">Call Us</span>
+        <div className="md:hidden fixed bottom-4 left-4 right-4 bg-white/95 backdrop-blur-md border border-gray-100 rounded-2xl shadow-[0_10px_35px_rgba(15,76,92,0.15)] z-50 p-3 flex items-center gap-3">
+          <a 
+            href="https://wa.me/6281288882828" 
+            target="_blank" 
+            rel="noreferrer"
+            className="w-12 h-12 flex items-center justify-center bg-green-50 text-green-600 rounded-xl hover:bg-green-100 active:scale-95 transition-all shrink-0"
+            aria-label="WhatsApp Chat"
+          >
+            <MessageCircle className="w-6 h-6" />
           </a>
-          <Link to="/book-consultation" className="flex-1 py-4 flex flex-col items-center justify-center gap-1 font-bold bg-primary text-white active:bg-primary/90">
-            <Calendar className="w-5 h-5" />
-            <span className="text-[10px] uppercase tracking-wider">Book Now</span>
+          <Link to="/book-consultation" className="flex-1">
+            <button className="w-full bg-primary text-white py-3.5 px-4 rounded-xl font-bold text-sm shadow-md hover:bg-primary/95 hover:shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+              <Calendar className="w-4 h-4" />
+              Book Free Consultation
+            </button>
           </Link>
         </div>
       )}
       
       {/* Padding on mobile to prevent content from hiding behind mobile bar */}
-      {!isBookingPage && <div className="h-20 md:hidden bg-gray-900 w-full"></div>}
+      {!isBookingPage && <div className="h-28 md:hidden w-full"></div>}
     </div>
   );
 };

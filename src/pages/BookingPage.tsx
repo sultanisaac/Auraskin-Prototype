@@ -140,14 +140,14 @@ export default function BookingPage() {
         </div>
 
         {/* Two-Column Booking Hub */}
-        <div className="grid lg:grid-cols-12 gap-12 items-start">
+        <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-start">
           
-          {/* Left Column: Trust elements & expectations */}
-          <div className="lg:col-span-5 space-y-8">
+          {/* Left Column: Trust elements & expectations - Pushed below on mobile */}
+          <div className="lg:col-span-5 space-y-8 order-2 lg:order-1">
             
             {/* Consultation Blueprint */}
-            <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm">
-              <h2 className="font-serif text-2xl font-bold text-gray-900 mb-6">What to Expect</h2>
+            <div className="bg-white rounded-3xl p-6 md:p-8 border border-gray-100 shadow-sm">
+              <h2 className="font-serif text-xl md:text-2xl font-bold text-gray-900 mb-6">What to Expect</h2>
               <div className="space-y-6">
                 {[
                   {
@@ -171,17 +171,17 @@ export default function BookingPage() {
                       {item.step}
                     </span>
                     <div>
-                      <h3 className="font-bold text-gray-900 text-lg mb-1">{item.title}</h3>
-                      <p className="text-sm text-gray-500 leading-relaxed">{item.desc}</p>
+                      <h3 className="font-bold text-gray-900 text-base md:text-lg mb-1">{item.title}</h3>
+                      <p className="text-xs md:text-sm text-gray-500 leading-relaxed">{item.desc}</p>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
-
+ 
             {/* Clinic Standards */}
             <div className="space-y-4">
-              <h3 className="font-serif text-xl font-bold text-gray-900 px-2">AuraSkin Clinical Standards</h3>
+              <h3 className="font-serif text-lg md:text-xl font-bold text-gray-900 px-2">AuraSkin Clinical Standards</h3>
               <div className="grid sm:grid-cols-2 gap-4">
                 {[
                   { icon: <ShieldCheck className="text-secondary" />, title: "FDA-Approved Lasers" },
@@ -191,36 +191,36 @@ export default function BookingPage() {
                 ].map((std, idx) => (
                   <div key={idx} className="flex gap-3 items-center bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
                     <div className="bg-primary/5 p-2 rounded-lg">{std.icon}</div>
-                    <span className="text-sm font-semibold text-gray-700">{std.title}</span>
+                    <span className="text-xs md:text-sm font-semibold text-gray-700">{std.title}</span>
                   </div>
                 ))}
               </div>
             </div>
-
+ 
             {/* High-quality Patient Testimonial */}
-            <div className="bg-primary text-white rounded-3xl p-8 relative overflow-hidden">
+            <div className="bg-primary text-white rounded-3xl p-6 md:p-8 relative overflow-hidden">
               <div className="absolute top-0 right-0 opacity-10 font-serif text-9xl transform translate-x-4 -translate-y-4 font-bold select-none">“</div>
-              <p className="font-medium text-lg leading-relaxed relative z-10 mb-6 italic">
+              <p className="font-medium text-base md:text-lg leading-relaxed relative z-10 mb-6 italic">
                 "The doctor took 15 minutes to look at my skin barrier and told me exactly why my previous routine wasn't working. No upsells, just pure clinical science. My skin has never looked better."
               </p>
               <div className="flex items-center gap-4 relative z-10">
                 <img 
                   src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=120&h=120&fit=crop&q=80" 
                   alt="Reviewer" 
-                  className="w-12 h-12 object-cover rounded-full border-2 border-white/20"
+                  className="w-10 h-10 md:w-12 md:h-12 object-cover rounded-full border-2 border-white/20"
                 />
                 <div>
-                  <h4 className="font-bold">Valerie K.</h4>
-                  <p className="text-xs text-gray-300">SCBD Patient since 2024</p>
+                  <h4 className="font-bold text-sm md:text-base">Valerie K.</h4>
+                  <p className="text-[10px] md:text-xs text-gray-300">SCBD Patient since 2024</p>
                 </div>
               </div>
             </div>
-
+ 
           </div>
-
-          {/* Right Column: Dynamic Form / Cal.com Embed */}
-          <div className="lg:col-span-7">
-            <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-8 md:p-12">
+ 
+          {/* Right Column: Dynamic Form / Cal.com Embed - Rendered at top on mobile */}
+          <div className="lg:col-span-7 order-1 lg:order-2">
+            <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-5 sm:p-8 md:p-12">
               <AnimatePresence mode="wait">
                 {!submittedData ? (
                   <motion.div
