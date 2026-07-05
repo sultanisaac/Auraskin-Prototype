@@ -14,6 +14,8 @@
     "@calcom/embed-react": "^1.5.3",
     "@hookform/resolvers": "^5.4.0",
     "@supabase/supabase-js": "^2.57.4",
+    "@vercel/kv": "^3.0.0",
+    "date-fns": "^4.4.0",
     "framer-motion": "^12.40.0",
     "lucide-react": "^0.344.0",
     "react": "^18.3.1",

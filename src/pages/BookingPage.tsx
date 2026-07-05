@@ -4,11 +4,10 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, ShieldCheck, Clock, Award, Star, Loader2, Sparkles, ArrowLeft, ArrowRight, User } from 'lucide-react';
-import Cal, { getCalApi } from '@calcom/embed-react';
+import { Calendar, ShieldCheck, Clock, Award, Star, Loader2, Sparkles, ArrowLeft, ArrowRight, User, CheckCircle2 } from 'lucide-react';
 import { Button } from '../components/Button';
-
-const CAL_LINK = (import.meta as any).env?.VITE_CALLINK?.replace('https://cal.com/', '') || 'sultan-isaac-jgohpm/auraskin-prototype';
+import { submitBooking, getConfirmedBookings, Booking } from '../actions/booking';
+import { format, addDays } from 'date-fns';
 
 const TREATMENT_OPTIONS = [
   'Acne Treatment',
@@ -17,6 +16,10 @@ const TREATMENT_OPTIONS = [
   'Laser Rejuvenation',
   'Skin Booster',
   'General Consultation'
+];
+
+const TIME_SLOTS = [
+  '09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00'
 ];
 
 const bookingSchema = z.object({
@@ -35,22 +38,16 @@ export default function BookingPage() {
   const treatmentParam = searchParams.get('treatment') || '';
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submittedData, setSubmittedData] = useState<BookingFormValues | null>(null);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [step, setStep] = useState<1 | 2>(1); // 1: Details, 2: Date & Time
+  const [formData, setFormData] = useState<BookingFormValues | null>(null);
+  
+  // Date and Time selection state
+  const [selectedDate, setSelectedDate] = useState<Date>(addDays(new Date(), 1));
+  const [selectedTime, setSelectedTime] = useState<string>('');
+  const [confirmedBookings, setConfirmedBookings] = useState<Booking[]>([]);
+  const [isLoadingSlots, setIsLoadingSlots] = useState(false);
 
-  // Initialize Cal.com UI Styling
-  useEffect(() => {
-    (async () => {
-      const cal = await getCalApi({ namespace: 'auraskin-prototype' });
-      cal('ui', {
-        theme: 'light',
-        styles: { branding: { brandColor: '#0F4C5C' } },
-        hideEventTypeDetails: true,
-        layout: 'month_view',
-      });
-    })();
-  }, []);
-
-  // Pre-fill the form values based on URL parameters
   const defaultTreatments: string[] = [];
   if (treatmentParam && TREATMENT_OPTIONS.includes(treatmentParam)) {
     defaultTreatments.push(treatmentParam);
@@ -58,7 +55,7 @@ export default function BookingPage() {
     defaultTreatments.push('General Consultation');
   }
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<BookingFormValues>({
+  const { register, handleSubmit, formState: { errors } } = useForm<BookingFormValues>({
     resolver: zodResolver(bookingSchema),
     defaultValues: {
       treatments: defaultTreatments,
@@ -66,54 +63,73 @@ export default function BookingPage() {
     }
   });
 
-  const onSubmit = async (data: BookingFormValues) => {
+  const onDetailsSubmit = (data: BookingFormValues) => {
+    setFormData(data);
+    setStep(2);
+    loadConfirmedBookings();
+  };
+
+  const loadConfirmedBookings = async () => {
+    setIsLoadingSlots(true);
+    const bookings = await getConfirmedBookings();
+    setConfirmedBookings(bookings);
+    setIsLoadingSlots(false);
+  };
+
+  const onFinalSubmit = async () => {
+    if (!formData || !selectedTime) return;
     setIsSubmitting(true);
-    // Simulate API call before embedding calendar
-    setTimeout(() => {
-      setSubmittedData(data);
-      setIsSubmitting(false);
-    }, 1200);
-  };
-
-  const resetForm = () => {
-    setSubmittedData(null);
-    reset();
-  };
-
-  // Compile notes string for Cal.com
-  const getNoteStr = (data: BookingFormValues) => {
-    const list = [`Treatments Interest: ${data.treatments.join(', ')}`, `WhatsApp Phone: ${data.phone}`];
-    if (doctorParam) list.push(`Preferred Specialist: ${doctorParam}`);
-    if (data.moreInfo) list.push(`Additional Info: ${data.moreInfo}`);
-    return list.join(' | ');
-  };
-
-  // Compile dynamic link with pre-filled query parameters for Cal.com
-  const getDynamicCalLink = () => {
-    if (!submittedData) return CAL_LINK;
     
-    const params = new URLSearchParams();
-    params.set('name', submittedData.fullName);
-    params.set('email', submittedData.email);
-    params.set('phone', submittedData.phone);
-    params.set('notes', getNoteStr(submittedData));
-    params.set('theme', 'light');
-    params.set('hideEventTypeDetails', 'true');
-    if (submittedData.moreInfo) {
-      params.set('More_info', submittedData.moreInfo);
+    const formattedDate = format(selectedDate, 'yyyy-MM-dd');
+    
+    const res = await submitBooking({
+      ...formData,
+      date: formattedDate,
+      time: selectedTime
+    });
+
+    setIsSubmitting(false);
+    
+    if (res.success) {
+      setIsSuccess(true);
+    } else {
+      alert("Something went wrong. Please try again.");
     }
-    
-    let linkWithParams = `${CAL_LINK}?${params.toString()}`;
-    
-    // Append duplicate keys for multi-select field (Cal.com query format)
-    if (submittedData.treatments && submittedData.treatments.length > 0) {
-      submittedData.treatments.forEach((treatment) => {
-        linkWithParams += `&Treatment_Interest=${encodeURIComponent(treatment)}`;
-      });
-    }
-    
-    return linkWithParams;
   };
+
+  // Generate next 14 days for date picker
+  const availableDates = Array.from({ length: 14 }).map((_, i) => addDays(new Date(), i + 1));
+  
+  // Check if a time slot is already confirmed
+  const isTimeSlotTaken = (time: string) => {
+    const formattedDate = format(selectedDate, 'yyyy-MM-dd');
+    return confirmedBookings.some(b => b.date === formattedDate && b.time === time);
+  };
+
+  if (isSuccess) {
+    return (
+      <div className="bg-background min-h-screen flex items-center justify-center p-4">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-white rounded-3xl shadow-xl p-8 md:p-12 max-w-lg w-full text-center border border-gray-100"
+        >
+          <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
+            <CheckCircle2 className="w-10 h-10" />
+          </div>
+          <h2 className="font-serif text-3xl font-bold text-gray-900 mb-4">Request Sent!</h2>
+          <p className="text-gray-600 mb-8 leading-relaxed">
+            Thank you for choosing AuraSkin. We have received your booking request for <strong>{format(selectedDate, 'MMMM d, yyyy')}</strong> at <strong>{selectedTime}</strong>.
+            <br/><br/>
+            Our team will confirm your appointment shortly via WhatsApp.
+          </p>
+          <Link to="/">
+            <Button variant="primary" className="w-full">Return to Homepage</Button>
+          </Link>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-background min-h-screen py-12 md:py-20">
@@ -218,16 +234,16 @@ export default function BookingPage() {
  
           </div>
  
-          {/* Right Column: Dynamic Form / Cal.com Embed - Rendered at top on mobile */}
+          {/* Right Column: Dynamic Form */}
           <div className="lg:col-span-7 order-1 lg:order-2">
-            <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-5 sm:p-8 md:p-12">
+            <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-5 sm:p-8 md:p-12 overflow-hidden">
               <AnimatePresence mode="wait">
-                {!submittedData ? (
+                {step === 1 ? (
                   <motion.div
                     key="booking-form"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
                     className="space-y-6"
                   >
                     <div>
@@ -247,7 +263,7 @@ export default function BookingPage() {
                       </div>
                     )}
 
-                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+                    <form onSubmit={handleSubmit(onDetailsSubmit)} className="space-y-5">
                       <div className="grid md:grid-cols-2 gap-5">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1.5">Full Name</label>
@@ -323,53 +339,109 @@ export default function BookingPage() {
                         variant="primary"
                         className="w-full py-4 text-base mt-2 gap-2"
                         type="submit"
-                        disabled={isSubmitting}
                       >
-                        {isSubmitting ? (
-                          <>
-                            <Loader2 className="animate-spin w-5 h-5" /> Verifying Profile...
-                          </>
-                        ) : (
-                          <>
-                            <Calendar className="w-5 h-5" /> Verify & View Available Slots <ArrowRight className="w-4 h-4" />
-                          </>
-                        )}
+                        <Calendar className="w-5 h-5" /> Choose Date & Time <ArrowRight className="w-4 h-4" />
                       </Button>
-                      <p className="text-center text-xs text-gray-400">
-                        By submitting, you consent to receive booking updates via WhatsApp/Email.
-                      </p>
                     </form>
                   </motion.div>
                 ) : (
                   <motion.div
                     key="booking-calendar"
-                    initial={{ opacity: 0, scale: 0.98 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.98 }}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 20 }}
                     className="space-y-6"
                   >
                     <div className="flex justify-between items-center border-b border-gray-100 pb-5">
                       <div>
                         <h2 className="font-serif text-2xl font-bold text-primary">Pick Your Slot</h2>
-                        <p className="text-sm text-gray-500">Welcome, <span className="font-bold text-gray-800">{submittedData.fullName}</span>. Please choose a consultation slot below.</p>
+                        <p className="text-sm text-gray-500">Welcome, <span className="font-bold text-gray-800">{formData?.fullName}</span>. Please choose a consultation slot below.</p>
                       </div>
                       <button 
-                        onClick={resetForm} 
-                        className="text-xs text-gray-400 hover:text-primary transition underline font-medium"
+                        onClick={() => setStep(1)} 
+                        className="text-xs text-gray-400 hover:text-primary transition underline font-medium whitespace-nowrap ml-4"
                       >
-                        Edit Details
+                        Back to Details
                       </button>
                     </div>
 
-                    {/* Inline Cal.com scheduler with prefilled details */}
-                    <div className="h-[550px] border border-gray-100 rounded-2xl overflow-hidden shadow-inner bg-gray-50">
-                      <Cal
-                        namespace="auraskin-prototype"
-                        calLink={getDynamicCalLink()}
-                        style={{ width: "100%", height: "100%", overflow: "scroll" }}
-                        config={{}}
-                      />
+                    <div className="space-y-8">
+                      {/* Date Selection */}
+                      <div>
+                        <label className="block text-sm font-bold text-gray-900 mb-3 uppercase tracking-wider">1. Select Date</label>
+                        <div className="flex gap-3 overflow-x-auto pb-4 hide-scrollbar snap-x">
+                          {availableDates.map(date => (
+                            <button
+                              key={date.toISOString()}
+                              onClick={() => {
+                                setSelectedDate(date);
+                                setSelectedTime('');
+                              }}
+                              className={`flex flex-col items-center min-w-[80px] p-3 rounded-2xl border-2 transition-all snap-start ${
+                                selectedDate.toDateString() === date.toDateString() 
+                                  ? 'border-primary bg-primary text-white shadow-md' 
+                                  : 'border-gray-200 bg-white text-gray-600 hover:border-primary/50'
+                              }`}
+                            >
+                              <span className="text-xs font-semibold uppercase">{format(date, 'EEE')}</span>
+                              <span className="text-2xl font-bold mt-1">{format(date, 'd')}</span>
+                              <span className="text-xs mt-1 opacity-80">{format(date, 'MMM')}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Time Selection */}
+                      <div>
+                        <label className="block text-sm font-bold text-gray-900 mb-3 uppercase tracking-wider">
+                          2. Select Time <span className="text-gray-400 font-normal lowercase">(For {format(selectedDate, 'MMM d')})</span>
+                        </label>
+                        
+                        {isLoadingSlots ? (
+                          <div className="flex items-center justify-center p-8 text-primary">
+                            <Loader2 className="animate-spin w-8 h-8" />
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                            {TIME_SLOTS.map(time => {
+                              const isTaken = isTimeSlotTaken(time);
+                              return (
+                                <button
+                                  key={time}
+                                  disabled={isTaken}
+                                  onClick={() => setSelectedTime(time)}
+                                  className={`py-3 rounded-xl border text-sm font-medium transition-all ${
+                                    isTaken ? 'border-gray-100 bg-gray-50 text-gray-300 cursor-not-allowed' :
+                                    selectedTime === time 
+                                      ? 'border-primary bg-primary/10 text-primary ring-2 ring-primary ring-offset-1' 
+                                      : 'border-gray-200 bg-white text-gray-700 hover:border-primary/50'
+                                  }`}
+                                >
+                                  {time}
+                                  {isTaken && <span className="block text-[10px] mt-0.5">Booked</span>}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
                     </div>
+
+                    <div className="pt-6 border-t border-gray-100">
+                      <Button
+                        variant="primary"
+                        className="w-full py-4 text-base gap-2 shadow-lg shadow-primary/20"
+                        onClick={onFinalSubmit}
+                        disabled={!selectedTime || isSubmitting}
+                      >
+                        {isSubmitting ? (
+                          <><Loader2 className="animate-spin w-5 h-5" /> Processing...</>
+                        ) : (
+                          <>Confirm Booking Request</>
+                        )}
+                      </Button>
+                    </div>
+
                   </motion.div>
                 )}
               </AnimatePresence>
