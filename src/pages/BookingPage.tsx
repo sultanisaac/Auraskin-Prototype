@@ -143,7 +143,7 @@ export default function BookingPage() {
           </Link>
         </div>
 
-        <PrototypeNotice className="mb-8 md:mb-12" />
+        <PrototypeNotice className="mt-28 md:mt-0 mb-8 md:mb-12" />
 
         {/* Page Title & Intro */}
         <div className="max-w-3xl mb-12 md:mb-16">

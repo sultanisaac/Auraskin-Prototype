@@ -13,7 +13,7 @@ import { PrototypeNotice } from '../components/PrototypeNotice';
 const Hero = () => (
   <section className="relative pt-6 pb-16 md:pt-16 md:pb-24 lg:pt-20 lg:pb-32 overflow-hidden bg-background">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-      <PrototypeNotice className="mb-8 lg:mb-12" />
+      <PrototypeNotice className="mt-28 md:mt-0 mb-8 lg:mb-12" />
       <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
         {/* Left/Top Content Column */}
         <motion.div 
