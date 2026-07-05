@@ -8,7 +8,7 @@ import { Calendar, ShieldCheck, Clock, Award, Star, Loader2, Sparkles, ArrowLeft
 import { Button } from '../components/Button';
 import { PrototypeNotice } from '../components/PrototypeNotice';
 import { submitBooking, getConfirmedBookings, Booking } from '../actions/booking';
-import { format, addDays } from 'date-fns';
+import { format, addDays, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, isBefore, startOfDay, getDay, setMonth, setYear } from 'date-fns';
 
 const TREATMENT_OPTIONS = [
   'Acne Treatment',
@@ -17,10 +17,6 @@ const TREATMENT_OPTIONS = [
   'Laser Rejuvenation',
   'Skin Booster',
   'General Consultation'
-];
-
-const TIME_SLOTS = [
-  '09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00'
 ];
 
 const bookingSchema = z.object({
@@ -98,8 +94,37 @@ export default function BookingPage() {
     }
   };
 
-  // Generate next 14 days for date picker
-  const availableDates = Array.from({ length: 14 }).map((_, i) => addDays(new Date(), i + 1));
+  const [currentMonth, setCurrentMonth] = useState(startOfMonth(new Date()));
+  const today = startOfDay(new Date());
+
+  const daysInMonth = eachDayOfInterval({
+    start: startOfWeek(startOfMonth(currentMonth)),
+    end: endOfWeek(endOfMonth(currentMonth))
+  });
+  
+  const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
+  const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
+
+  const handleMonthChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setCurrentMonth(setMonth(currentMonth, parseInt(e.target.value)));
+  };
+
+  const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setCurrentMonth(setYear(currentMonth, parseInt(e.target.value)));
+  };
+
+  // Determine available time slots based on selected date
+  const getAvailableTimeSlots = (date: Date) => {
+    const dayOfWeek = getDay(date); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+    const endHour = isWeekend ? 18 : 20; // 18:00 for weekends, 20:00 for weekdays
+
+    const slots = [];
+    for (let hour = 9; hour <= endHour; hour++) {
+      slots.push(`${hour.toString().padStart(2, '0')}:00`);
+    }
+    return slots;
+  };
   
   // Check if a time slot is already confirmed
   const isTimeSlotTaken = (time: string) => {
@@ -371,33 +396,90 @@ export default function BookingPage() {
                     <div className="space-y-8">
                       {/* Date Selection */}
                       <div>
-                        <label className="block text-sm font-bold text-gray-900 mb-3 uppercase tracking-wider">1. Select Date</label>
-                        <div className="flex gap-3 overflow-x-auto pb-4 hide-scrollbar snap-x">
-                          {availableDates.map(date => (
-                            <button
-                              key={date.toISOString()}
-                              onClick={() => {
-                                setSelectedDate(date);
-                                setSelectedTime('');
-                              }}
-                              className={`flex flex-col items-center min-w-[80px] p-3 rounded-2xl border-2 transition-all snap-start ${
-                                selectedDate.toDateString() === date.toDateString() 
-                                  ? 'border-primary bg-primary text-white shadow-md' 
-                                  : 'border-gray-200 bg-white text-gray-600 hover:border-primary/50'
-                              }`}
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+                          <label className="block text-sm font-bold text-gray-900 uppercase tracking-wider">1. Select Date</label>
+                          <div className="flex items-center gap-1 sm:gap-2 bg-gray-50/80 rounded-xl p-1 border border-gray-100 shadow-sm w-full sm:w-auto justify-between sm:justify-start">
+                            <button 
+                              onClick={prevMonth} 
+                              disabled={isBefore(currentMonth, startOfMonth(today))} 
+                              className="p-2 rounded-lg hover:bg-white hover:shadow-sm hover:text-primary disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:shadow-none disabled:hover:text-gray-600 transition-all"
                             >
-                              <span className="text-xs font-semibold uppercase">{format(date, 'EEE')}</span>
-                              <span className="text-2xl font-bold mt-1">{format(date, 'd')}</span>
-                              <span className="text-xs mt-1 opacity-80">{format(date, 'MMM')}</span>
+                              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
                             </button>
-                          ))}
+                            <div className="flex gap-1.5 justify-center bg-white p-1 rounded-lg border border-gray-100 shadow-sm">
+                              <select 
+                                value={currentMonth.getMonth()} 
+                                onChange={handleMonthChange}
+                                className="appearance-none bg-transparent text-gray-800 font-bold text-sm sm:text-base cursor-pointer outline-none hover:text-primary transition-colors focus:ring-2 focus:ring-primary/20 rounded px-2 py-1 text-center"
+                              >
+                                {Array.from({ length: 12 }).map((_, i) => (
+                                  <option key={i} value={i} className="text-gray-900">{format(new Date(2026, i, 1), 'MMMM')}</option>
+                                ))}
+                              </select>
+                              <span className="text-gray-300 font-light select-none py-1">/</span>
+                              <select 
+                                value={currentMonth.getFullYear()} 
+                                onChange={handleYearChange}
+                                className="appearance-none bg-transparent text-gray-800 font-bold text-sm sm:text-base cursor-pointer outline-none hover:text-primary transition-colors focus:ring-2 focus:ring-primary/20 rounded px-2 py-1 text-center"
+                              >
+                                {Array.from({ length: 5 }).map((_, i) => {
+                                  const year = today.getFullYear() + i;
+                                  return <option key={year} value={year} className="text-gray-900">{year}</option>;
+                                })}
+                              </select>
+                            </div>
+                            <button 
+                              onClick={nextMonth} 
+                              className="p-2 rounded-lg hover:bg-white hover:shadow-sm hover:text-primary transition-all"
+                            >
+                              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="border border-gray-200 rounded-3xl overflow-hidden bg-white shadow-sm">
+                          <div className="grid grid-cols-7 border-b border-gray-100 bg-gray-50/80">
+                            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                              <div key={day} className="py-2.5 sm:py-3 text-center text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-widest">
+                                {day}
+                              </div>
+                            ))}
+                          </div>
+                          <div className="grid grid-cols-7 p-1.5 sm:p-3 gap-1 sm:gap-1.5">
+                            {daysInMonth.map(date => {
+                              const isPast = isBefore(date, today);
+                              const isCurrentMonth = isSameMonth(date, currentMonth);
+                              const isSelected = isSameDay(date, selectedDate);
+                              
+                              return (
+                                <button
+                                  key={date.toISOString()}
+                                  disabled={isPast || !isCurrentMonth}
+                                  onClick={() => {
+                                    setSelectedDate(date);
+                                    setSelectedTime('');
+                                  }}
+                                  className={`aspect-square flex flex-col items-center justify-center rounded-xl sm:rounded-2xl text-xs sm:text-sm transition-all duration-200 ${
+                                    isSelected ? 'bg-primary text-white font-bold shadow-lg shadow-primary/30 ring-2 ring-primary ring-offset-2 scale-95' :
+                                    isPast || !isCurrentMonth ? 'text-gray-300 cursor-not-allowed opacity-30 bg-transparent' :
+                                    'text-gray-700 bg-gray-50 hover:bg-primary/10 hover:text-primary font-medium hover:scale-105 active:scale-95'
+                                  }`}
+                                >
+                                  <span>{format(date, 'd')}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
                         </div>
                       </div>
 
                       {/* Time Selection */}
-                      <div>
-                        <label className="block text-sm font-bold text-gray-900 mb-3 uppercase tracking-wider">
-                          2. Select Time <span className="text-gray-400 font-normal lowercase">(For {format(selectedDate, 'MMM d')})</span>
+                      <div className="pt-2">
+                        <label className="block text-sm font-bold text-gray-900 mb-4 uppercase tracking-wider flex items-center justify-between">
+                          <span>2. Select Time</span>
+                          <span className="text-primary font-medium bg-primary/10 px-3 py-1 rounded-full normal-case text-xs">
+                            {format(selectedDate, 'MMM d, yyyy')}
+                          </span>
                         </label>
                         
                         {isLoadingSlots ? (
@@ -406,7 +488,7 @@ export default function BookingPage() {
                           </div>
                         ) : (
                           <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-                            {TIME_SLOTS.map(time => {
+                            {getAvailableTimeSlots(selectedDate).map(time => {
                               const isTaken = isTimeSlotTaken(time);
                               return (
                                 <button
