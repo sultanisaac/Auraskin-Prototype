@@ -6,6 +6,7 @@ import * as z from 'zod';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, ShieldCheck, Clock, Award, Star, Loader2, Sparkles, ArrowLeft, ArrowRight, User, CheckCircle2 } from 'lucide-react';
 import { Button } from '../components/Button';
+import { PrototypeNotice } from '../components/PrototypeNotice';
 import { submitBooking, getConfirmedBookings, Booking } from '../actions/booking';
 import { format, addDays } from 'date-fns';
 
@@ -141,6 +142,8 @@ export default function BookingPage() {
             <ArrowLeft className="w-4 h-4" /> Back to Home Page
           </Link>
         </div>
+
+        <PrototypeNotice className="mb-8 md:mb-12" />
 
         {/* Page Title & Intro */}
         <div className="max-w-3xl mb-12 md:mb-16">
