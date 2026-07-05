@@ -10,7 +10,8 @@ export type Booking = {
   time: string;
   phone: string;
   moreInfo?: string;
-  status: "pending" | "confirmed" | "declined";
+  status: "pending" | "confirmed" | "declined" | "cancelled";
+  cancelReason?: string;
 };
 
 // Helper function to get data from KV via REST API
