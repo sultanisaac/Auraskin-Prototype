@@ -5,6 +5,7 @@ import { Header } from './Header';
 import { Footer } from './Footer';
 import { ScrollToHash } from './ScrollToHash';
 import { AdminDemoWidget } from './AdminDemoWidget';
+import { DownloadAppWidget } from './DownloadAppWidget';
 
 export const Layout = () => {
   const location = useLocation();
@@ -22,6 +23,7 @@ export const Layout = () => {
       </div>
       <Footer />
       <AdminDemoWidget />
+      <DownloadAppWidget />
       
       {/* Floating WhatsApp - Desktop Only */}
       <a 
