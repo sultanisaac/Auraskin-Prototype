@@ -6,7 +6,7 @@ export const Footer = () => (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-4 gap-12">
       <div>
         <div className="flex items-center gap-2 mb-3">
-          <Sparkles className="text-secondary w-6 h-6" />
+          <img src="/logo.png" alt="AuraSkin Logo" className="w-8 h-8 object-contain rounded-md shadow-sm" />
           <span className="font-serif text-2xl font-bold text-white">AuraSkin</span>
           <span className="ml-2 px-2 py-0.5 bg-yellow-400 text-yellow-900 text-[10px] font-bold tracking-widest uppercase rounded">Prototype</span>
         </div>

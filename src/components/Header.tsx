@@ -32,7 +32,7 @@ export const Header = () => {
     <header className={`sticky top-0 transition-all duration-300 ${isOpen ? 'z-[100]' : 'z-50'} ${isScrolled ? 'bg-white/95 backdrop-blur-md shadow-md py-3' : 'bg-transparent py-5'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
         <Link to="/" className="flex items-center gap-2 relative z-[60]">
-          <Sparkles className="text-secondary w-7 h-7 md:w-8 md:h-8 animate-pulse" />
+          <img src="/logo.png" alt="AuraSkin Logo" className="w-8 h-8 md:w-10 md:h-10 object-contain rounded-md shadow-sm" />
           <span className="font-serif text-xl md:text-2xl font-bold text-primary">AuraSkin</span>
           <span className="ml-2 px-1.5 py-0.5 bg-yellow-400 text-yellow-900 text-[9px] md:text-[10px] font-bold tracking-widest uppercase rounded shadow-sm">Prototype</span>
         </Link>
