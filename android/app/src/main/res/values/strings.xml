@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">AuraSkin</string>
+    <string name="title_activity_main">AuraSkin</string>
+    <string name="package_name">com.auraskin.app</string>
+    <string name="custom_url_scheme">com.auraskin.app</string>
+</resources>
