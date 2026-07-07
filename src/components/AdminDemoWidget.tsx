@@ -18,9 +18,7 @@ export const AdminDemoWidget = () => {
         <span className="text-xs md:text-sm font-serif">Admin Demo</span>
       </div>
       
-      <p className="text-[10px] md:text-xs text-gray-600 leading-tight">
-        Try confirming or declining appointments here.
-      </p>
+
       
       <div className="flex items-center gap-1 text-[9px] md:text-[10px] uppercase font-bold tracking-wider text-secondary mt-1 group-hover:text-primary transition-colors">
         <span>Open Admin</span>
