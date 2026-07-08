@@ -11,73 +11,59 @@ import { PrototypeNotice } from '../components/PrototypeNotice';
 // --- Sub-sections of the Homepage ---
 
 const Hero = () => (
-  <section className="relative pt-6 pb-16 md:pt-16 md:pb-24 lg:pt-20 lg:pb-32 overflow-hidden bg-background">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-      <PrototypeNotice className="mt-28 md:mt-0 mb-8 lg:mb-12" />
-      <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-        {/* Left/Top Content Column */}
-        <motion.div 
-          initial={{ opacity: 0, x: -50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8 }}
-          className="space-y-6 md:space-y-8 flex flex-col justify-center text-left"
-        >
-          <div className="inline-flex items-center self-start gap-2 px-3 py-1 rounded-full bg-accent/30 text-primary font-medium text-xs md:text-sm">
-            <Star className="w-3.5 h-3.5 fill-secondary text-secondary" /> 4.9 Rating • 20,000+ Treatments
-          </div>
-          <h1 className="font-serif text-3xl sm:text-4xl lg:text-6xl font-bold text-gray-900 leading-tight">
-            Reveal Your Best Skin With <span className="text-primary">Expert Care</span>
-          </h1>
-          <p className="text-[15px] sm:text-base md:text-lg text-gray-600 max-w-lg leading-relaxed">
-            Advanced aesthetic treatments tailored to your skin goals. Trusted by thousands of women across Jakarta.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 md:gap-4 w-full sm:w-auto">
-            <Link to="/book-consultation" className="w-full sm:w-auto">
-              <Button variant="primary" className="text-base md:text-lg py-3.5 md:py-4 px-6 md:px-8 w-full">
-                Book Free Consultation
-              </Button>
-            </Link>
-            <Link to="/#treatments" className="w-full sm:w-auto">
-              <Button variant="outline" className="text-base md:text-lg py-3.5 md:py-4 px-6 md:px-8 w-full">
-                View Treatments
-              </Button>
-            </Link>
-          </div>
-          
-          {/* Mobile Trust Indicators directly below CTAs */}
-          <div className="flex flex-col gap-2 pt-2 text-sm text-gray-600 font-medium">
-            <div className="flex items-center gap-2"><Check className="w-4.5 h-4.5 text-secondary shrink-0" /> Licensed Professionals</div>
-            <div className="flex items-center gap-2"><Check className="w-4.5 h-4.5 text-secondary shrink-0" /> Personalized Treatments</div>
-            <div className="flex items-center gap-2"><Check className="w-4.5 h-4.5 text-secondary shrink-0" /> Premium Technology</div>
-          </div>
-        </motion.div>
-        
-        {/* Right/Bottom Image Column */}
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="relative mt-6 lg:mt-0"
-        >
-          <div className="absolute inset-0 bg-secondary rounded-[1.5rem] md:rounded-[2rem] transform rotate-3 scale-105 opacity-20"></div>
-          <img 
-            src="https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=1200&h=800&q=80" 
-            alt="Premium Beauty Clinic SCBD" 
-            className="rounded-[1.5rem] md:rounded-[2rem] shadow-2xl relative z-10 object-cover h-[220px] sm:h-[350px] md:h-[450px] lg:h-[600px] w-full"
-            loading="eager"
-          />
-          <div className="absolute -bottom-4 -left-4 md:-bottom-6 md:-left-6 bg-white p-3 md:p-4 rounded-xl shadow-xl z-20 flex items-center gap-3 md:gap-4 border border-gray-50 scale-90 sm:scale-100">
-            <div className="bg-primary/10 p-2 md:p-3 rounded-full shrink-0">
-              <ShieldCheck className="w-6 h-6 md:w-8 md:h-8 text-primary" />
-            </div>
-            <div>
-              <p className="font-bold text-xs md:text-sm text-gray-900 leading-tight">Board Certified</p>
-              <p className="text-[10px] md:text-xs text-gray-500">Aesthetic Doctors</p>
-            </div>
-          </div>
-        </motion.div>
-      </div>
+  <section className="relative min-h-[90vh] flex flex-col justify-center overflow-hidden bg-background">
+    {/* Background Image */}
+    <div className="absolute inset-0">
+      <img 
+        src="https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=2400&q=80"
+        alt="Premium Clinic"
+        className="w-full h-full object-cover object-center"
+      />
+      {/* Elegant Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-background/95" />
     </div>
+
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full flex flex-col items-center text-center mt-16 md:mt-24">
+      <PrototypeNotice className="mb-8 md:mb-12 max-w-2xl mx-auto" />
+      
+      <motion.div 
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1, ease: "easeOut" }}
+        className="space-y-6 md:space-y-8 max-w-3xl"
+      >
+        <h1 className="font-serif text-4xl sm:text-5xl lg:text-7xl font-light text-white leading-[1.1]">
+          Reclaim Your <span className="font-bold italic text-secondary">Natural Glow</span>
+        </h1>
+        <p className="text-base sm:text-lg md:text-xl text-gray-200 font-light leading-relaxed max-w-2xl mx-auto">
+          A bespoke approach to aesthetic medicine, designed to honor your unique beauty and elevate your confidence through science and artistry.
+        </p>
+        
+        <div className="flex flex-col sm:flex-row justify-center items-center gap-4 pt-4">
+          <Link to="/book-consultation" className="w-full sm:w-auto">
+            <Button variant="primary" className="text-base md:text-lg py-4 px-10 w-full hover:scale-105 transition-transform duration-300">
+              Schedule Your Treatment
+            </Button>
+          </Link>
+          <Link to="/#treatments" className="w-full sm:w-auto">
+            <Button variant="outline" className="text-base md:text-lg py-4 px-10 w-full border-white/30 text-white hover:bg-white hover:text-gray-900 transition-colors duration-300">
+              Explore Treatments
+            </Button>
+          </Link>
+        </div>
+      </motion.div>
+    </div>
+    
+    {/* Scroll indicator */}
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: 1.5, duration: 1 }}
+      className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/50"
+    >
+      <span className="text-[10px] tracking-widest uppercase">Scroll</span>
+      <div className="w-[1px] h-12 bg-gradient-to-b from-white/50 to-transparent" />
+    </motion.div>
   </section>
 );
 
@@ -125,8 +111,8 @@ const BeforeAfter = () => {
   return (
     <section id="results" className="py-16 md:py-24 bg-background scroll-mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 className="font-serif text-2xl md:text-4xl font-bold text-gray-900 mb-3">Real Results. Real Confidence.</h2>
-        <p className="text-sm md:text-base text-gray-600 mb-10 md:mb-16 max-w-2xl mx-auto">See the transformative power of our personalized treatment plans.</p>
+        <h2 className="font-serif text-2xl md:text-4xl font-bold text-gray-900 mb-3">The Beautiful Transformations</h2>
+        <p className="text-sm md:text-base text-gray-600 mb-10 md:mb-16 max-w-2xl mx-auto">Witness the artistry of our personalized care through the journeys of our beloved community.</p>
         
         {/* Swipable carousel on mobile, Grid on desktop */}
         <div className="flex md:grid md:grid-cols-3 overflow-x-auto md:overflow-x-visible snap-x snap-mandatory md:snap-none gap-6 pb-6 md:pb-0 scrollbar-none -mx-4 px-4 md:mx-0 md:px-0">
@@ -141,12 +127,13 @@ const BeforeAfter = () => {
                   itemOne={<ReactCompareSliderImage src={r.before} alt="Before" />}
                   itemTwo={<ReactCompareSliderImage src={r.after} alt="After" />}
                   className="h-full w-full"
+                  onlyHandleDraggable={true}
                 />
                 <div className="absolute top-3 left-3 bg-black/60 text-white text-[10px] md:text-xs px-2 py-1 rounded backdrop-blur-sm z-10 pointer-events-none">Before</div>
                 <div className="absolute top-3 right-3 bg-primary/80 text-white text-[10px] md:text-xs px-2 py-1 rounded backdrop-blur-sm z-10 pointer-events-none">After</div>
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20">
                   <div className="bg-white/80 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-medium text-gray-800 shadow-lg flex items-center gap-1">
-                    Drag <ArrowRight className="w-3 h-3" />
+                    Drag Handle <ArrowRight className="w-3 h-3" />
                   </div>
                 </div>
               </div>
@@ -170,103 +157,132 @@ const BeforeAfter = () => {
 const Treatments = () => {
   const treatments = [
     { 
-      name: 'Acne Reset Program', 
+      name: 'Acne & Clarity Treatment', 
       price: 'Rp 799.000', 
-      desc: 'Clear acne and prevent breakouts', 
+      desc: 'Reclaim your confidence with a clear, glowing complexion. A gentle yet effective approach to purifying and balancing troubled skin.', 
       time: '60 mins', 
-      img: 'https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?auto=format&fit=crop&w=500&h=500&q=80',
-      benefits: ['Fades active acne', 'Reduces redness', 'Prevents scars']
+      img: 'https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?auto=format&fit=crop&w=1200&h=800&q=80',
+      benefits: ['Soothes inflammation', 'Purifies congested pores', 'Restores natural barrier']
     },
     { 
-      name: 'Glass Skin Facial', 
+      name: 'Luminous Glass Skin', 
       price: 'Rp 999.000', 
-      desc: 'Deep hydration and instant glow', 
+      desc: 'A deeply nourishing journey to lasting radiance. Plump, hydrate, and revive your skin for that coveted dewy finish.', 
       time: '90 mins', 
-      img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=500&h=500&q=80',
-      benefits: ['Instant dewy finish', 'Exfoliates dead cells', 'Plumps skin cells']
+      img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&h=800&q=80',
+      benefits: ['Intense cellular hydration', 'Silky smooth texture', 'Immediate visible glow']
     },
     { 
-      name: 'Pico Laser Brightening', 
+      name: 'Pico Brilliance Therapy', 
       price: 'Rp 1.490.000', 
-      desc: 'Target pigmentation and dark spots', 
+      desc: 'Shatter pigmentation and unveil a flawless canvas. Our advanced laser technology brings your skin tone into perfect harmony.', 
       time: '45 mins', 
-      img: 'https://images.unsplash.com/photo-1607613009820-a29f7bb81c04?auto=format&fit=crop&w=500&h=500&q=80',
-      benefits: ['Breaks down melanin', 'Improves skin tone', 'Minimal downtime']
+      img: 'https://images.unsplash.com/photo-1607613009820-a29f7bb81c04?auto=format&fit=crop&w=1200&h=800&q=80',
+      benefits: ['Evens skin tone', 'Targets stubborn spots', 'Zero social downtime']
     },
     { 
-      name: 'Skin Booster', 
+      name: 'Youthful Contour Infusion', 
       price: 'Rp 2.490.000', 
-      desc: 'Deep nourishment and anti-aging', 
+      desc: 'Defy time with profound nourishment. Stimulate your skin’s innate collagen production for a lifted, rejuvenated appearance.', 
       time: '30 mins', 
-      img: 'https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&w=500&h=500&q=80',
-      benefits: ['Boosts collagen', 'Fills fine lines', 'Deep moisture lock']
+      img: 'https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&w=1200&h=800&q=80',
+      benefits: ['Stimulates natural collagen', 'Softens fine expression lines', 'Lifts and firms']
     },
   ];
 
   return (
-    <section id="treatments" className="py-16 md:py-24 bg-white scroll-mt-20">
+    <section id="treatments" className="py-20 md:py-32 bg-white scroll-mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-10 md:mb-16">
-          <h2 className="font-serif text-2xl md:text-4xl font-bold text-gray-900 mb-3">Popular Treatments</h2>
-          <p className="text-sm md:text-base text-gray-600 max-w-2xl mx-auto">Expertly curated procedures designed to deliver visible, long-lasting results.</p>
+        <div className="text-center mb-16 md:mb-24">
+          <h2 className="font-serif text-3xl md:text-5xl font-bold text-gray-900 mb-4">Our Signature Treatments</h2>
+          <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto font-light">Experience aesthetic excellence designed to honor your natural beauty and elevate your spirit.</p>
         </div>
         
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="space-y-16 md:space-y-32">
           {treatments.map((t, i) => (
-            <motion.div 
-              key={i}
-              whileHover={{ scale: 1.02 }}
-              className="group bg-background rounded-3xl p-5 border border-transparent hover:border-secondary transition-all flex flex-col justify-between"
-            >
-              <div>
-                <div className="h-44 rounded-2xl mb-5 overflow-hidden relative bg-gray-100">
+            <div key={i} className={`flex flex-col ${i % 2 === 1 ? 'md:flex-row-reverse' : 'md:flex-row'} items-center gap-8 md:gap-16`}>
+              {/* Image Side */}
+              <motion.div 
+                initial={{ opacity: 0, x: i % 2 === 1 ? 50 : -50 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.8 }}
+                className="w-full md:w-1/2 relative group"
+              >
+                <div className="absolute inset-0 bg-primary/10 -m-4 md:-m-6 rounded-3xl transform rotate-2 group-hover:rotate-1 transition-transform duration-500" />
+                <div className="aspect-[4/3] rounded-2xl overflow-hidden relative shadow-2xl">
                   <img 
                     src={t.img} 
                     alt={t.name} 
-                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
                     loading="lazy"
                   />
                 </div>
-                <h3 className="font-serif font-bold text-lg md:text-xl mb-1 text-primary">{t.name}</h3>
-                <p className="text-xs md:text-sm text-gray-600 mb-4 h-auto leading-relaxed">{t.desc}</p>
+              </motion.div>
+              
+              {/* Text Side */}
+              <motion.div 
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="w-full md:w-1/2 space-y-6"
+              >
+                <div className="flex items-center gap-4 text-xs font-medium tracking-widest text-secondary uppercase">
+                  <span className="flex items-center gap-1.5"><Clock className="w-4 h-4" /> {t.time}</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-gray-300" />
+                  <span>From {t.price}</span>
+                </div>
                 
-                {/* Benefits checklist inside card */}
-                <ul className="text-xs text-gray-500 space-y-1.5 mb-5 border-t border-gray-200/50 pt-4 flex-1">
+                <h3 className="font-serif text-2xl md:text-4xl font-bold text-gray-900">{t.name}</h3>
+                <p className="text-gray-600 text-base md:text-lg leading-relaxed font-light">{t.desc}</p>
+                
+                <ul className="space-y-3 pt-2">
                   {t.benefits.map((b, idx) => (
-                    <li key={idx} className="flex items-center gap-1.5">
-                      <Check className="w-3.5 h-3.5 text-secondary shrink-0 animate-pulse" />
-                      <span>{b}</span>
+                    <li key={idx} className="flex items-center gap-3 text-gray-700">
+                      <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                        <Check className="w-3.5 h-3.5 text-primary" />
+                      </div>
+                      <span className="text-sm md:text-base">{b}</span>
                     </li>
                   ))}
                 </ul>
 
-                <div className="flex justify-between items-center mb-5 text-xs font-semibold">
-                  <span className="text-gray-400"><Clock className="w-3.5 h-3.5 inline mr-1 text-gray-400" />{t.time}</span>
-                  <span className="text-secondary font-bold">From {t.price}</span>
+                <div className="pt-6">
+                  <Link to="/book-consultation">
+                    <Button variant="outline" className="px-8 py-3.5 border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white rounded-full transition-all duration-300">
+                      Reserve This Treatment
+                    </Button>
+                  </Link>
                 </div>
-              </div>
-              <Link to="/book-consultation" className="w-full block mt-2">
-                <Button variant="outline" className="w-full group-hover:bg-primary group-hover:text-white group-hover:border-primary text-xs py-2.5 rounded-xl">
-                  Book Consultation
-                </Button>
-              </Link>
-            </motion.div>
+              </motion.div>
+            </div>
           ))}
         </div>
 
         {/* Dynamic visual CTA placed strategically after Treatments */}
-        <div className="bg-primary/5 rounded-3xl p-6 md:p-8 mt-12 border border-primary/10 text-center max-w-4xl mx-auto">
-          <h3 className="font-serif text-xl md:text-2xl font-bold text-primary mb-2">Unsure which treatment fits your skin?</h3>
-          <p className="text-xs md:text-sm text-gray-600 mb-6 max-w-lg mx-auto">Schedule a free 15-minute clinical consultation with our doctor for a personalized roadmap.</p>
-          <div className="flex flex-col sm:flex-row justify-center gap-3">
-            <Link to="/book-consultation" className="w-full sm:w-auto">
-              <Button variant="primary" className="w-full text-sm py-3 rounded-xl">Book Free Consultation</Button>
-            </Link>
-            <Link to="/pricing" className="w-full sm:w-auto">
-              <Button variant="outline" className="w-full text-sm py-3 rounded-xl">View Full Price List</Button>
-            </Link>
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="bg-gray-50 rounded-[2.5rem] p-8 md:p-16 mt-20 md:mt-32 text-center max-w-4xl mx-auto border border-gray-100 shadow-sm relative overflow-hidden"
+        >
+          <div className="absolute top-0 right-0 p-8 opacity-10">
+            <Sparkles className="w-32 h-32 text-primary" />
           </div>
-        </div>
+          <div className="relative z-10">
+            <h3 className="font-serif text-2xl md:text-4xl font-bold text-gray-900 mb-4">Not Sure Where To Begin?</h3>
+            <p className="text-base md:text-lg text-gray-600 mb-8 max-w-xl mx-auto font-light">Allow our experts to guide you. Schedule a complimentary clinical consultation for a personalized roadmap.</p>
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <Link to="/book-consultation" className="w-full sm:w-auto">
+                <Button variant="primary" className="w-full px-8 py-4 rounded-full text-base shadow-lg shadow-primary/20">Book Complimentary Consultation</Button>
+              </Link>
+              <Link to="/pricing" className="w-full sm:w-auto">
+                <Button variant="outline" className="w-full px-8 py-4 rounded-full text-base">View Full Price List</Button>
+              </Link>
+            </div>
+          </div>
+        </motion.div>
       </div>
     </section>
   );
