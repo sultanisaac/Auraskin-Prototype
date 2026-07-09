@@ -70,6 +70,26 @@ export async function submitBooking(formData: any) {
     existing.push(newBooking);
     await kvSet('bookings', existing);
     
+    // Trigger email notifications via the Admin API
+    try {
+      const adminApiUrl = import.meta.env.VITE_ADMIN_API_URL || 'https://admin-auraskin-prototype.vercel.app/api';
+      await fetch(`${adminApiUrl}/notify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          patientName: newBooking.name,
+          patientEmail: newBooking.email,
+          patientPhone: newBooking.phone,
+          treatment: newBooking.treatment,
+          date: newBooking.date,
+          time: newBooking.time
+        })
+      });
+    } catch (notifyError) {
+      console.error("Failed to trigger notifications:", notifyError);
+      // We don't fail the booking if emails fail
+    }
+    
     return { success: true, booking: newBooking };
   } catch (error) {
     console.error("Error submitting booking:", error);
