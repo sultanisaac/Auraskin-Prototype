@@ -70,7 +70,7 @@ export const Header = () => {
         </button>
       </div>
 
-      {/* Mobile Drawer Navigation */}
+      {/* Mobile Dropdown Navigation */}
       <AnimatePresence>
         {isOpen && (
           <>
@@ -82,21 +82,20 @@ export const Header = () => {
               onClick={() => setIsOpen(false)}
               className="fixed inset-0 bg-primary/20 backdrop-blur-sm z-[40] md:hidden"
             />
-            {/* Content Drawer */}
+            {/* Content Dropdown */}
             <motion.div 
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              style={{ backgroundColor: '#ffffff', height: '100vh' }}
-              className="fixed top-0 right-0 bottom-0 w-[80vw] max-w-[340px] shadow-2xl z-[50] flex flex-col p-6 pt-24 md:hidden border-l border-gray-100"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+              className="absolute top-full left-0 right-0 bg-white shadow-2xl z-[50] flex flex-col p-6 md:hidden border-t border-gray-100 max-h-[85vh] overflow-y-auto rounded-b-3xl"
             >
-              <div className="flex flex-col space-y-5 flex-1">
+              <div className="flex flex-col space-y-4 flex-1">
                 {navItems.map((item) => (
                   <Link 
                     key={item.label} 
                     to={item.path} 
-                    className="text-lg font-medium text-gray-800 hover:text-primary transition-colors py-2 border-b border-gray-50 flex items-center justify-between"
+                    className="text-lg font-medium text-gray-800 hover:text-primary transition-colors py-2.5 border-b border-gray-50 flex items-center justify-between"
                   >
                     <span>{item.label}</span>
                     <span className="w-1.5 h-1.5 rounded-full bg-secondary/60 opacity-0 hover:opacity-100 transition-opacity" />
@@ -104,18 +103,18 @@ export const Header = () => {
                 ))}
                 
                 <div className="pt-2 mt-2 border-t border-gray-100 flex flex-col space-y-2">
-                  <a href="/Auraskin-Prototype.apk" download className="flex items-center text-base font-medium text-gray-700 hover:text-primary transition-colors py-2">
+                  <a href="/Auraskin-Prototype.apk" download className="flex items-center text-base font-medium text-gray-700 hover:text-primary transition-colors py-2.5">
                     <div className="bg-primary/5 p-2 rounded-lg text-primary mr-3"><Smartphone className="w-5 h-5"/></div>
                     Get Mobile App (APK)
                   </a>
-                  <a href="https://admin-auraskin-prototype.vercel.app/" target="_blank" rel="noreferrer" className="flex items-center text-base font-medium text-gray-700 hover:text-primary transition-colors py-2">
+                  <a href="https://admin-auraskin-prototype.vercel.app/" target="_blank" rel="noreferrer" className="flex items-center text-base font-medium text-gray-700 hover:text-primary transition-colors py-2.5">
                     <div className="bg-primary/5 p-2 rounded-lg text-primary mr-3"><ShieldCheck className="w-5 h-5"/></div>
                     Open Admin Demo
                   </a>
                 </div>
               </div>
-              <div className="space-y-4 mt-auto">
-                <a href="tel:+6281288882828" className="flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl border border-gray-200 text-gray-700 font-medium text-sm hover:bg-gray-50 transition-colors">
+              <div className="mt-6 pt-4 border-t border-gray-100">
+                <a href="tel:+6281288882828" className="flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-gray-50 text-gray-700 font-bold text-sm hover:bg-gray-100 transition-colors">
                   <Phone className="w-4 h-4 text-primary" />
                   Contact Clinic
                 </a>
