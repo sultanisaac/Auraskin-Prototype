@@ -89,6 +89,12 @@ export default function BookingPage() {
     
     if (res.success) {
       setIsSuccess(true);
+      
+      const message = `*New Booking Request*\n\n*Name:* ${formData.fullName}\n*Email:* ${formData.email}\n*Phone:* ${formData.phone}\n*Treatments:* ${formData.treatments.join(', ')}\n*Notes:* ${formData.moreInfo || '-'}\n*Date:* ${format(selectedDate, 'MMMM d, yyyy')}\n*Time:* ${selectedTime}`;
+      const whatsappUrl = `https://api.whatsapp.com/send/?phone=6281288882828&text=${encodeURIComponent(message)}&type=phone_number&app_absent=0`;
+      
+      // Attempt to open WhatsApp automatically
+      window.open(whatsappUrl, '_blank');
     } else {
       alert("Something went wrong. Please try again.");
     }
@@ -147,11 +153,23 @@ export default function BookingPage() {
           <p className="text-gray-600 mb-8 leading-relaxed">
             Thank you for choosing AuraSkin. We have received your booking request for <strong>{format(selectedDate, 'MMMM d, yyyy')}</strong> at <strong>{selectedTime}</strong>.
             <br/><br/>
-            Our team will confirm your appointment shortly via WhatsApp.
+            If WhatsApp didn't open automatically, please click below to send us your booking details to finalize your appointment.
           </p>
-          <Link to="/">
-            <Button variant="primary" className="w-full">Return to Homepage</Button>
-          </Link>
+          <div className="space-y-3">
+            <a 
+              href={`https://api.whatsapp.com/send/?phone=6281288882828&text=${encodeURIComponent(`*New Booking Request*\n\n*Name:* ${formData?.fullName}\n*Email:* ${formData?.email}\n*Phone:* ${formData?.phone}\n*Treatments:* ${formData?.treatments.join(', ')}\n*Notes:* ${formData?.moreInfo || '-'}\n*Date:* ${format(selectedDate, 'MMMM d, yyyy')}\n*Time:* ${selectedTime}`)}&type=phone_number&app_absent=0`}
+              target="_blank" 
+              rel="noreferrer" 
+              className="block w-full"
+            >
+              <Button variant="primary" className="w-full bg-[#25D366] hover:bg-[#128C7E] border-transparent shadow-md">
+                Confirm via WhatsApp
+              </Button>
+            </a>
+            <Link to="/" className="block w-full">
+              <Button variant="outline" className="w-full border-gray-200 text-gray-600 hover:bg-gray-50">Return to Homepage</Button>
+            </Link>
+          </div>
         </motion.div>
       </div>
     );
