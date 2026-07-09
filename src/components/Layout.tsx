@@ -4,26 +4,22 @@ import { TopBar } from './TopBar';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { ScrollToHash } from './ScrollToHash';
-import { AdminDemoWidget } from './AdminDemoWidget';
-import { DownloadAppWidget } from './DownloadAppWidget';
 
 export const Layout = () => {
   const location = useLocation();
   const isBookingPage = location.pathname === '/book-consultation';
 
   return (
-    <div className="min-h-screen bg-background font-sans text-text flex flex-col justify-between">
+    <div className="min-h-screen bg-background font-sans text-text flex flex-col justify-between w-full relative">
       <ScrollToHash />
       <div>
         <TopBar />
         <Header />
-        <main>
+        <main className="overflow-x-hidden w-full relative">
           <Outlet />
         </main>
       </div>
       <Footer />
-      <AdminDemoWidget />
-      <DownloadAppWidget />
       
       {/* Floating WhatsApp - Desktop Only */}
       <a 
