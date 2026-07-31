@@ -186,6 +186,7 @@ const Treatments = () => {
   const treatments = [
     { 
       name: 'Acne & Clarity Treatment', 
+      slug: 'acne-clarity',
       price: 'Rp 799.000', 
       desc: 'Reclaim your confidence with a clear, glowing complexion. A gentle yet effective approach to purifying and balancing troubled skin.', 
       time: '60 mins', 
@@ -194,6 +195,7 @@ const Treatments = () => {
     },
     { 
       name: 'Luminous Glass Skin', 
+      slug: 'luminous-glass-skin',
       price: 'Rp 999.000', 
       desc: 'A deeply nourishing journey to lasting radiance. Plump, hydrate, and revive your skin for that coveted dewy finish.', 
       time: '90 mins', 
@@ -202,6 +204,7 @@ const Treatments = () => {
     },
     { 
       name: 'Pico Brilliance Therapy', 
+      slug: 'pico-brilliance',
       price: 'Rp 1.490.000', 
       desc: 'Shatter pigmentation and unveil a flawless canvas. Our advanced laser technology brings your skin tone into perfect harmony.', 
       time: '45 mins', 
@@ -210,6 +213,7 @@ const Treatments = () => {
     },
     { 
       name: 'Youthful Contour Infusion', 
+      slug: 'youthful-contour',
       price: 'Rp 2.490.000', 
       desc: 'Defy time with profound nourishment. Stimulate your skin’s innate collagen production for a lifted, rejuvenated appearance.', 
       time: '30 mins', 
@@ -277,9 +281,9 @@ const Treatments = () => {
                 </ul>
 
                 <div className="pt-6">
-                  <Link to="/book-consultation">
+                  <Link to={`/treatments/${t.slug}`}>
                     <Button variant="outline" className="px-8 py-3.5 border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white rounded-full transition-all duration-300">
-                      Reserve This Treatment
+                      View Treatment Details
                     </Button>
                   </Link>
                 </div>
