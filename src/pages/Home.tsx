@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -10,18 +11,44 @@ import { PrototypeNotice } from '../components/PrototypeNotice';
 
 // --- Sub-sections of the Homepage ---
 
-const Hero = () => (
-  <section className="relative min-h-[90vh] flex flex-col justify-center overflow-hidden bg-background">
-    {/* Background Image */}
-    <div className="absolute inset-0">
-      <img 
-        src="https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=2400&q=80"
-        alt="Premium Clinic"
-        className="w-full h-full object-cover object-center"
-      />
-      {/* Elegant Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-background/95" />
-    </div>
+const Hero = () => {
+  const [isSlowConnection, setIsSlowConnection] = useState(false);
+
+  useEffect(() => {
+    // Check if the user has a slow connection or data saver enabled
+    if ('connection' in navigator) {
+      const conn = (navigator as any).connection;
+      if (conn.saveData || conn.effectiveType === 'slow-2g' || conn.effectiveType === '2g' || conn.effectiveType === '3g') {
+        setIsSlowConnection(true);
+      }
+    }
+  }, []);
+
+  return (
+    <section className="relative min-h-[90vh] flex flex-col justify-center overflow-hidden bg-background">
+      {/* Background Media */}
+      <div className="absolute inset-0">
+        {!isSlowConnection ? (
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full object-cover object-center"
+            poster="https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=2400&q=80"
+          >
+            <source src="/hero-image.mp4.mp4" type="video/mp4" />
+          </video>
+        ) : (
+          <img 
+            src="https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=2400&q=80"
+            alt="Premium Clinic"
+            className="w-full h-full object-cover object-center"
+          />
+        )}
+        {/* Elegant Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-background/95" />
+      </div>
 
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full flex flex-col items-center text-center mt-16 md:mt-24">
       <PrototypeNotice className="mb-8 md:mb-12 max-w-2xl mx-auto" />
@@ -65,7 +92,8 @@ const Hero = () => (
       <div className="w-[1px] h-12 bg-gradient-to-b from-white/50 to-transparent" />
     </motion.div>
   </section>
-);
+  );
+};
 
 const TrustBadges = () => (
   <div className="bg-white py-6 md:py-10 border-y border-gray-100">
@@ -158,6 +186,7 @@ const Treatments = () => {
   const treatments = [
     { 
       name: 'Acne & Clarity Treatment', 
+      slug: 'acne-clarity',
       price: 'Rp 799.000', 
       desc: 'Reclaim your confidence with a clear, glowing complexion. A gentle yet effective approach to purifying and balancing troubled skin.', 
       time: '60 mins', 
@@ -166,6 +195,7 @@ const Treatments = () => {
     },
     { 
       name: 'Luminous Glass Skin', 
+      slug: 'luminous-glass-skin',
       price: 'Rp 999.000', 
       desc: 'A deeply nourishing journey to lasting radiance. Plump, hydrate, and revive your skin for that coveted dewy finish.', 
       time: '90 mins', 
@@ -174,6 +204,7 @@ const Treatments = () => {
     },
     { 
       name: 'Pico Brilliance Therapy', 
+      slug: 'pico-brilliance',
       price: 'Rp 1.490.000', 
       desc: 'Shatter pigmentation and unveil a flawless canvas. Our advanced laser technology brings your skin tone into perfect harmony.', 
       time: '45 mins', 
@@ -182,6 +213,7 @@ const Treatments = () => {
     },
     { 
       name: 'Youthful Contour Infusion', 
+      slug: 'youthful-contour',
       price: 'Rp 2.490.000', 
       desc: 'Defy time with profound nourishment. Stimulate your skin’s innate collagen production for a lifted, rejuvenated appearance.', 
       time: '30 mins', 
@@ -249,9 +281,9 @@ const Treatments = () => {
                 </ul>
 
                 <div className="pt-6">
-                  <Link to="/book-consultation">
+                  <Link to={`/treatments/${t.slug}`}>
                     <Button variant="outline" className="px-8 py-3.5 border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white rounded-full transition-all duration-300">
-                      Reserve This Treatment
+                      View Treatment Details
                     </Button>
                   </Link>
                 </div>
