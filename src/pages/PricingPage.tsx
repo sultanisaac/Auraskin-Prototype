@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   Search, Check, ShieldCheck, ArrowLeft, ArrowRight, 
@@ -22,16 +22,16 @@ const INDIVIDUAL_TREATMENTS = [
 
 const PACKAGES = [
   {
-    badge: 'Most Popular', name: 'Acne Clear Package', highlight: true,
-    description: 'Complete acne solution combining laser therapy, extraction, and skin barrier repair.',
-    treatments: ['Acne Laser Therapy', 'Deep Extraction', 'Skin Booster', 'Home Care Kit'],
-    original: 'Rp 4,500,000', price: 'Rp 2,999,000', sessions: '3 Sessions',
-  },
-  {
     badge: 'Best Value', name: 'Bridal Glow Package', highlight: false,
     description: "Look your absolute best on your special day with our signature bridal program.",
     treatments: ['Brightening Program', 'Anti Aging Facial', 'Hydra Infusion', 'Post Care Kit'],
     original: 'Rp 7,000,000', price: 'Rp 4,499,000', sessions: '5 Sessions',
+  },
+  {
+    badge: 'Most Popular', name: 'Acne Clear Package', highlight: true,
+    description: 'Complete acne solution combining laser therapy, extraction, and skin barrier repair.',
+    treatments: ['Acne Laser Therapy', 'Deep Extraction', 'Skin Booster', 'Home Care Kit'],
+    original: 'Rp 4,500,000', price: 'Rp 2,999,000', sessions: '3 Sessions',
   },
   {
     badge: 'Premium', name: 'Anti Aging Revival', highlight: false,
@@ -44,6 +44,7 @@ const PACKAGES = [
 const CATEGORIES = ['All', 'Facial', 'Laser', 'Skin Booster', 'General'];
 
 export default function PricingPage() {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
 
@@ -61,9 +62,9 @@ export default function PricingPage() {
         
         {/* Navigation Back Link */}
         <div className="mb-8">
-          <Link to="/" className="inline-flex items-center gap-2 text-gray-500 hover:text-primary transition font-medium text-sm">
-            <ArrowLeft className="w-4 h-4" /> Back to Home Page
-          </Link>
+          <button onClick={() => navigate(-1)} className="inline-flex items-center gap-2 text-gray-500 hover:text-primary transition font-medium text-sm">
+            <ArrowLeft className="w-4 h-4" /> Back
+          </button>
         </div>
 
         {/* Page Title */}

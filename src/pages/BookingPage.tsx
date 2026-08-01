@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -33,6 +33,7 @@ export default function BookingPage() {
   const [searchParams] = useSearchParams();
   const doctorParam = searchParams.get('doctor') || '';
   const treatmentParam = searchParams.get('treatment') || '';
+  const navigate = useNavigate();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -181,9 +182,9 @@ export default function BookingPage() {
         
         {/* Navigation Back Link */}
         <div className="mb-8">
-          <Link to="/" className="inline-flex items-center gap-2 text-gray-500 hover:text-primary transition font-medium text-sm">
-            <ArrowLeft className="w-4 h-4" /> Back to Home Page
-          </Link>
+          <button onClick={() => navigate(-1)} className="inline-flex items-center gap-2 text-gray-500 hover:text-primary transition font-medium text-sm">
+            <ArrowLeft className="w-4 h-4" /> Back
+          </button>
         </div>
 
         <PrototypeNotice className="mt-28 md:mt-0 mb-8 md:mb-12" />

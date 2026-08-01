@@ -8,15 +8,6 @@ export const PrototypeNotice = ({ className = '' }: { className?: string }) => {
       </div>
       <div className="flex-1 text-sm leading-relaxed">
         <span className="font-bold">Prototype Notice:</span> This is the public website to see information about AuraSkin and book appointments. 
-        To test the confirmation, declining, and canceling workflow, please visit the admin site:
-        <a 
-          href="https://admin-auraskin-prototype.vercel.app/" 
-          target="_blank" 
-          rel="noreferrer"
-          className="inline-flex items-center gap-1 font-bold ml-1 text-blue-700 hover:text-blue-900 underline underline-offset-2 transition-colors whitespace-nowrap"
-        >
-          Admin Dashboard <ExternalLink className="w-3.5 h-3.5" />
-        </a>
       </div>
     </div>
   );

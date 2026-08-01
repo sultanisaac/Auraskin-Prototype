@@ -102,7 +102,7 @@ export default function TreatmentDetail() {
   const { id } = useParams<{ id: string }>();
   
   if (!id || !treatmentsData[id]) {
-    return <Navigate to="/#treatments" replace />;
+    return <Navigate to="/treatments" replace />;
   }
 
   const treatment = treatmentsData[id];
@@ -145,7 +145,7 @@ export default function TreatmentDetail() {
         
         {/* Back Button */}
         <div className="mb-10">
-          <Link to="/#treatments" className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-primary transition-colors">
+          <Link to="/treatments" className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-primary transition-colors">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Treatments
           </Link>
