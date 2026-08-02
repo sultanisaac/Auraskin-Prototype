@@ -1,10 +1,14 @@
+"use client";
+
 import { Award, Sparkles, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Link, useNavigate } from 'react-router-dom';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Button } from '../components/Button';
 
 export default function ExpertsPage() {
-  const navigate = useNavigate();
+  const router = useRouter();
+  const navigate = (path) => { if (path === -1) router.back(); else router.push(path); };
   const doctors = [
     { name: 'Dr. Amanda Wijaya', role: 'Aesthetic Medicine', exp: '12 Years Exp.', spec: 'Laser & Rejuvenation', img: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=600&h=800&fit=crop&q=80' },
     { name: 'Dr. Budi Santoso', role: 'Dermatologist', exp: '15 Years Exp.', spec: 'Acne & Scar Treatment', img: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=600&h=800&fit=crop&q=80' },
@@ -41,7 +45,7 @@ export default function ExpertsPage() {
                 </div>
               </div>
               <div className="p-6 md:p-8 pt-0 mt-auto">
-                <Link to={`/book-consultation?doctor=${encodeURIComponent(doc.name)}`} className="w-full block">
+                <Link href={`/book-consultation?doctor=${encodeURIComponent(doc.name)}`} className="w-full block">
                   <Button variant="outline" className="w-full text-sm py-3">
                     Book with {doc.name.split(' ')[1]}
                   </Button>

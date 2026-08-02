@@ -1,5 +1,8 @@
+"use client";
+
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { 
   Search, Check, ShieldCheck, ArrowLeft, ArrowRight, 
@@ -44,7 +47,8 @@ const PACKAGES = [
 const CATEGORIES = ['All', 'Facial', 'Laser', 'Skin Booster', 'General'];
 
 export default function PricingPage() {
-  const navigate = useNavigate();
+  const router = useRouter();
+  const navigate = (path) => { if (path === -1) router.back(); else router.push(path); };
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
 
@@ -142,7 +146,7 @@ export default function PricingPage() {
                       )}
                       <span className="font-serif font-bold text-lg md:text-2xl text-primary">{t.price}</span>
                     </div>
-                    <Link to={`/book-consultation?treatment=${encodeURIComponent(t.name)}`} className="text-xs font-semibold text-secondary hover:text-primary transition flex items-center gap-1">
+                    <Link href={`/book-consultation?treatment=${encodeURIComponent(t.name)}`} className="text-xs font-semibold text-secondary hover:text-primary transition flex items-center gap-1">
                       Book Treatment <ArrowRight className="w-3 h-3" />
                     </Link>
                   </div>
@@ -198,7 +202,7 @@ export default function PricingPage() {
                   </div>
                   <div className="text-2xl md:text-3xl font-bold text-primary mb-1">{pkg.price}</div>
                   <div className="text-gray-500 text-[10px] md:text-xs mb-5">{pkg.sessions} included</div>
-                  <Link to="/book-consultation" className="w-full block">
+                  <Link href="/book-consultation" className="w-full block">
                     <button className={`w-full py-3 rounded-xl font-semibold text-xs md:text-sm transition-all duration-300 ${pkg.highlight ? 'bg-primary text-white hover:bg-primary/90 shadow-lg' : 'border-2 border-primary text-primary hover:bg-primary hover:text-white'}`}>
                       Claim This Package
                     </button>
@@ -250,7 +254,7 @@ export default function PricingPage() {
               Get an accurate clinical plan. Book a 100% free skin consult. Our aesthetic doctors will inspect your skin barrier and give you an honest pricing breakdown.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4 pt-2">
-              <Link to="/book-consultation">
+              <Link href="/book-consultation">
                 <Button variant="secondary" className="text-primary font-bold text-md px-8 py-3.5 w-full sm:w-auto">
                   Book Free Consultation
                 </Button>

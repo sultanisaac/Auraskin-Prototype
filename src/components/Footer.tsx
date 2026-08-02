@@ -1,4 +1,6 @@
-import { Link } from 'react-router-dom';
+"use client";
+
+import Link from 'next/link';
 import { Sparkles, MapPin, Phone } from 'lucide-react';
 
 export const Footer = () => (
@@ -30,8 +32,8 @@ export const Footer = () => (
       <div>
         <h4 className="text-white font-bold mb-4">Links</h4>
         <ul className="space-y-2">
-          <li><Link to="/privacy-policy" className="hover:text-white transition">Privacy Policy</Link></li>
-          <li><Link to="/terms-of-service" className="hover:text-white transition">Terms of Service</Link></li>
+          <li><Link href="/privacy-policy" className="hover:text-white transition">Privacy Policy</Link></li>
+          <li><Link href="/terms-of-service" className="hover:text-white transition">Terms of Service</Link></li>
         </ul>
       </div>
     </div>

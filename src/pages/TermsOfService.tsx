@@ -1,8 +1,11 @@
-import { useNavigate } from 'react-router-dom';
+"use client";
+
+import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 
 export default function TermsOfService() {
-  const navigate = useNavigate();
+  const router = useRouter();
+  const navigate = (path) => { if (path === -1) router.back(); else router.push(path); };
 
   return (
     <div className="min-h-screen bg-white pt-28 pb-16">

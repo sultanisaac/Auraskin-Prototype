@@ -1,4 +1,7 @@
-import { useParams, Link, Navigate, useNavigate } from 'react-router-dom';
+"use client";
+
+import Link from 'next/link';
+import { useRouter, useParams } from 'next/navigation';
 import { Button } from '../components/Button';
 import { Clock, Check, ArrowRight, ArrowLeft, ShieldCheck, Heart, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -100,6 +103,7 @@ const treatmentsData: Record<string, any> = {
 
 export default function TreatmentDetail() {
   const { id } = useParams<{ id: string }>();
+  const router = useRouter();
   
   if (!id || !treatmentsData[id]) {
     return <Navigate to="/treatments" replace />;
@@ -145,10 +149,10 @@ export default function TreatmentDetail() {
         
         {/* Back Button */}
         <div className="mb-10">
-          <Link to="/treatments" className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-primary transition-colors">
+          <button onClick={() => router.back()} className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-primary transition-colors cursor-pointer">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Treatments
-          </Link>
+            Back
+          </button>
         </div>
 
         {/* Detail text */}
@@ -205,7 +209,7 @@ export default function TreatmentDetail() {
         {/* Final CTA */}
         <div className="text-center pt-8 border-t border-gray-100">
           <h2 className="font-serif text-2xl md:text-3xl font-bold text-gray-900 mb-6">Ready to Experience the Glow?</h2>
-          <Link to={`/book-consultation?treatment=${encodeURIComponent(treatment.name)}`}>
+          <Link href={`/book-consultation?treatment=${encodeURIComponent(treatment.name)}`}>
             <Button variant="primary" className="px-10 py-4 text-lg shadow-xl shadow-primary/20 w-full sm:w-auto">
               Reserve This Treatment <ArrowRight className="inline w-5 h-5 ml-2" />
             </Button>

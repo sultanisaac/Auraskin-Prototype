@@ -1,5 +1,7 @@
+"use client";
+
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Phone, MessageCircle, MapPin, Calendar, Clock, ChevronDown, Check, Star, 
@@ -7,7 +9,7 @@ import {
 } from 'lucide-react';
 import { ReactCompareSlider, ReactCompareSliderImage } from 'react-compare-slider';
 import { Button } from '../components/Button';
-import { PrototypeNotice } from '../components/PrototypeNotice';
+
 
 // --- Sub-sections of the Homepage ---
 
@@ -51,7 +53,7 @@ const Hero = () => {
       </div>
 
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full flex flex-col items-center text-center mt-16 md:mt-24">
-      <PrototypeNotice className="mb-8 md:mb-12 max-w-2xl mx-auto" />
+
       
       <motion.div 
         initial={{ opacity: 0, y: 30 }}
@@ -67,12 +69,12 @@ const Hero = () => {
         </p>
         
         <div className="flex flex-col sm:flex-row justify-center items-center gap-4 pt-4">
-          <Link to="/book-consultation" className="w-full sm:w-auto">
+          <Link href="/book-consultation" className="w-full sm:w-auto">
             <Button variant="primary" className="text-base md:text-lg py-4 px-10 w-full hover:scale-105 transition-transform duration-300">
               Schedule Your Treatment
             </Button>
           </Link>
-          <Link to="/treatments" className="w-full sm:w-auto">
+          <Link href="/treatments" className="w-full sm:w-auto">
             <Button variant="outline" className="text-base md:text-lg py-4 px-10 w-full border-white/30 text-white hover:bg-white hover:text-gray-900 transition-colors duration-300">
               Explore Treatments
             </Button>
@@ -115,6 +117,12 @@ const TrustBadges = () => (
 );
 
 const BeforeAfter = () => {
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const results = [
     {
       title: "Acne Reset Program",
@@ -151,12 +159,18 @@ const BeforeAfter = () => {
               className="bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-100 w-[85vw] sm:w-[320px] md:w-auto shrink-0 snap-center flex flex-col justify-between"
             >
               <div className="h-60 sm:h-64 relative group">
-                <ReactCompareSlider
-                  itemOne={<ReactCompareSliderImage src={r.before} alt="Before" />}
-                  itemTwo={<ReactCompareSliderImage src={r.after} alt="After" />}
-                  className="h-full w-full"
-                  onlyHandleDraggable={true}
-                />
+                {mounted ? (
+                  <ReactCompareSlider
+                    itemOne={<ReactCompareSliderImage src={r.before} alt="Before" />}
+                    itemTwo={<ReactCompareSliderImage src={r.after} alt="After" />}
+                    className="h-full w-full"
+                    onlyHandleDraggable={true}
+                  />
+                ) : (
+                  <div className="h-full w-full bg-gray-200 animate-pulse flex items-center justify-center">
+                    <img src={r.after} alt="After" className="h-full w-full object-cover" />
+                  </div>
+                )}
                 <div className="absolute top-3 left-3 bg-black/60 text-white text-[10px] md:text-xs px-2 py-1 rounded backdrop-blur-sm z-10 pointer-events-none">Before</div>
                 <div className="absolute top-3 right-3 bg-primary/80 text-white text-[10px] md:text-xs px-2 py-1 rounded backdrop-blur-sm z-10 pointer-events-none">After</div>
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20">
@@ -173,7 +187,7 @@ const BeforeAfter = () => {
           ))}
         </div>
         <div className="mt-8 md:mt-12">
-          <Link to="/book-consultation">
+          <Link href="/book-consultation">
             <Button variant="primary">Book Free Consultation</Button>
           </Link>
         </div>
@@ -214,7 +228,7 @@ const GallerySection = () => (
         ))}
       </div>
       <div className="text-center mt-10">
-        <Link to="/book-consultation">
+        <Link href="/book-consultation">
           <Button variant="primary" className="gap-2 shadow-lg">
             <Calendar className="w-4 h-4" /> Book Free Consultation
           </Button>
@@ -287,7 +301,7 @@ const PromotionsSection = () => (
               </div>
               <div className="text-2xl md:text-3xl font-bold text-primary mb-1">{pkg.price}</div>
               <div className="text-gray-500 text-[10px] md:text-xs mb-5">{pkg.sessions} included</div>
-              <Link to="/book-consultation" className="w-full block">
+              <Link href="/book-consultation" className="w-full block">
                 <button className={`w-full py-3 rounded-xl font-semibold text-xs md:text-sm transition-all duration-300 ${pkg.highlight ? 'bg-primary text-white hover:bg-primary/90 shadow-lg' : 'border-2 border-primary text-primary hover:bg-primary hover:text-white'}`}>
                   Book Consultation
                 </button>
@@ -379,7 +393,7 @@ const SocialProof = () => {
 
         {/* Strategic CTA placed right after testimonials */}
         <div className="text-center mt-8 md:mt-12">
-          <Link to="/book-consultation">
+          <Link href="/book-consultation">
             <Button variant="primary">Book Free Consultation</Button>
           </Link>
         </div>
@@ -471,7 +485,7 @@ const FinalCTA = () => (
       <h2 className="font-serif text-2xl sm:text-3xl md:text-5xl font-bold leading-tight">Ready To Transform Your Skin?</h2>
       <p className="text-sm md:text-xl text-gray-300 max-w-2xl mx-auto">Claim your free consultation and receive a personalized treatment plan from our expert team.</p>
       <div className="flex flex-col sm:flex-row justify-center gap-3 md:gap-4 max-w-md mx-auto sm:max-w-none">
-        <Link to="/book-consultation" className="w-full sm:w-auto">
+        <Link href="/book-consultation" className="w-full sm:w-auto">
           <Button variant="secondary" className="text-primary font-bold text-sm md:text-lg py-3.5 md:py-4 px-6 md:px-8 w-full">
             Book Free Consultation
           </Button>

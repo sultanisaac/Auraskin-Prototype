@@ -1,10 +1,14 @@
-import { Link, useNavigate } from 'react-router-dom';
+"use client";
+
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Clock, Check, Sparkles, ArrowLeft } from 'lucide-react';
 import { Button } from '../components/Button';
 
 export default function TreatmentsPage() {
-  const navigate = useNavigate();
+  const router = useRouter();
+  const navigate = (path) => { if (path === -1) router.back(); else router.push(path); };
   const treatments = [
     { 
       name: 'Acne & Clarity Treatment', 
@@ -107,7 +111,7 @@ export default function TreatmentsPage() {
                   </ul>
 
                   <div className="pt-6">
-                    <Link to={`/treatments/${t.slug}`}>
+                    <Link href={`/treatments/${t.slug}`}>
                       <Button variant="outline" className="px-8 py-3.5 border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white rounded-full transition-all duration-300">
                         View Treatment Details
                       </Button>
@@ -132,10 +136,10 @@ export default function TreatmentsPage() {
               <h3 className="font-serif text-2xl md:text-4xl font-bold text-gray-900 mb-4">Not Sure Where To Begin?</h3>
               <p className="text-base md:text-lg text-gray-600 mb-8 max-w-xl mx-auto font-light">Allow our experts to guide you. Schedule a complimentary clinical consultation for a personalized roadmap.</p>
               <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <Link to="/book-consultation" className="w-full sm:w-auto">
+                <Link href="/book-consultation" className="w-full sm:w-auto">
                   <Button variant="primary" className="w-full px-8 py-4 rounded-full text-base shadow-lg shadow-primary/20">Book Complimentary Consultation</Button>
                 </Link>
-                <Link to="/pricing" className="w-full sm:w-auto">
+                <Link href="/pricing" className="w-full sm:w-auto">
                   <Button variant="outline" className="w-full px-8 py-4 rounded-full text-base">View Full Price List</Button>
                 </Link>
               </div>

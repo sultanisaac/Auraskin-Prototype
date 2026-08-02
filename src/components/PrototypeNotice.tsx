@@ -1,3 +1,5 @@
+"use client";
+
 import { Info, ExternalLink } from 'lucide-react';
 
 export const PrototypeNotice = ({ className = '' }: { className?: string }) => {

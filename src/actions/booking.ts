@@ -1,5 +1,7 @@
-const KV_REST_API_URL = import.meta.env.VITE_KV_REST_API_URL || '';
-const KV_REST_API_TOKEN = import.meta.env.VITE_KV_REST_API_TOKEN || '';
+"use server";
+
+const KV_REST_API_URL = process.env.KV_REST_API_URL || '';
+const KV_REST_API_TOKEN = process.env.KV_REST_API_TOKEN || '';
 
 export type Booking = {
   id: string;
@@ -72,7 +74,7 @@ export async function submitBooking(formData: any) {
     
     // Trigger email notifications via the Admin API
     try {
-      const adminApiUrl = import.meta.env.VITE_ADMIN_API_URL || 'https://admin-auraskin-prototype.vercel.app/api';
+      const adminApiUrl = process.env.ADMIN_API_URL || 'http://localhost:3000/api';
       await fetch(`${adminApiUrl}/notify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

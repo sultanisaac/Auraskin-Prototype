@@ -1,12 +1,17 @@
-import { Outlet, Link, useLocation } from 'react-router-dom';
+"use client";
+
+import Link from 'next/link';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { MessageCircle, Phone, Calendar } from 'lucide-react';
 import { TopBar } from './TopBar';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { ScrollToHash } from './ScrollToHash';
 
-export const Layout = () => {
-  const location = useLocation();
+export const Layout = ({ children }: { children: React.ReactNode }) => {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const location = { pathname, search: searchParams?.toString() || '', hash: '' };
   const isBookingPage = location.pathname === '/book-consultation';
 
   return (
@@ -16,7 +21,7 @@ export const Layout = () => {
         <TopBar />
         <Header />
         <main className="overflow-x-hidden w-full relative">
-          <Outlet />
+          {children}
         </main>
       </div>
       <Footer />
@@ -44,7 +49,7 @@ export const Layout = () => {
           >
             <MessageCircle className="w-6 h-6" />
           </a>
-          <Link to="/book-consultation" className="flex-1">
+          <Link href="/book-consultation" className="flex-1">
             <button className="w-full bg-primary text-white py-3.5 px-4 rounded-xl font-bold text-sm shadow-md hover:bg-primary/95 hover:shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2">
               <Calendar className="w-4 h-4" />
               Book Free Consultation

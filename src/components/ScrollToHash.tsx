@@ -1,9 +1,10 @@
+"use client";
+
 import { useEffect } from 'react';
-import { useLocation, useNavigationType } from 'react-router-dom';
+import { usePathname, useSearchParams } from 'next/navigation';
 
 export const ScrollToHash = () => {
-  const { pathname, hash } = useLocation();
-  const navType = useNavigationType();
+  const pathname = usePathname();
 
   // Save scroll position for the current path
   useEffect(() => {
@@ -23,8 +24,9 @@ export const ScrollToHash = () => {
     };
   }, [pathname]);
 
-  // Handle routing scroll behavior
+  // Handle hash scrolling
   useEffect(() => {
+    const hash = window.location.hash;
     if (hash) {
       const id = hash.replace('#', '');
       const element = document.getElementById(id);
@@ -34,17 +36,10 @@ export const ScrollToHash = () => {
         }, 100);
         return () => clearTimeout(timer);
       }
-    } else if (navType === 'POP') {
-      const savedPosition = sessionStorage.getItem(`scrollPosition-${pathname}`);
-      if (savedPosition) {
-        setTimeout(() => {
-          window.scrollTo({ top: parseInt(savedPosition, 10), behavior: 'auto' });
-        }, 50);
-      }
     } else {
       window.scrollTo({ top: 0, behavior: 'auto' });
     }
-  }, [pathname, hash, navType]);
+  }, [pathname]);
 
   return null;
 };
