@@ -24,3 +24,6 @@ dist-ssr
 .env.local
 .env.example
 
+# Next.js
+.next
+out

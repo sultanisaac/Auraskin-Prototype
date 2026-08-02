@@ -1,13 +1,15 @@
+"use client";
+
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Phone, MessageCircle, MapPin, Calendar, Clock, ChevronDown, Check, Star, 
   ArrowRight, ShieldCheck, Award, ThumbsUp, Heart, Sparkles 
 } from 'lucide-react';
 import { ReactCompareSlider, ReactCompareSliderImage } from 'react-compare-slider';
 import { Button } from '../components/Button';
-import { PrototypeNotice } from '../components/PrototypeNotice';
+
 
 // --- Sub-sections of the Homepage ---
 
@@ -51,7 +53,7 @@ const Hero = () => {
       </div>
 
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full flex flex-col items-center text-center mt-16 md:mt-24">
-      <PrototypeNotice className="mb-8 md:mb-12 max-w-2xl mx-auto" />
+
       
       <motion.div 
         initial={{ opacity: 0, y: 30 }}
@@ -67,12 +69,12 @@ const Hero = () => {
         </p>
         
         <div className="flex flex-col sm:flex-row justify-center items-center gap-4 pt-4">
-          <Link to="/book-consultation" className="w-full sm:w-auto">
+          <Link href="/book-consultation" className="w-full sm:w-auto">
             <Button variant="primary" className="text-base md:text-lg py-4 px-10 w-full hover:scale-105 transition-transform duration-300">
               Schedule Your Treatment
             </Button>
           </Link>
-          <Link to="/#treatments" className="w-full sm:w-auto">
+          <Link href="/treatments" className="w-full sm:w-auto">
             <Button variant="outline" className="text-base md:text-lg py-4 px-10 w-full border-white/30 text-white hover:bg-white hover:text-gray-900 transition-colors duration-300">
               Explore Treatments
             </Button>
@@ -115,24 +117,30 @@ const TrustBadges = () => (
 );
 
 const BeforeAfter = () => {
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const results = [
     {
       title: "Acne Reset Program",
       duration: "3 Months (4 Sessions)",
-      before: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=500&h=500&q=80",
-      after: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=500&h=500&q=80"
+      before: "/transformations/acne_before.png",
+      after: "/transformations/acne_after.png"
     },
     {
       title: "Pico Laser Brightening",
       duration: "1 Month (2 Sessions)",
-      before: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=500&h=500&q=80",
-      after: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=500&h=500&q=80"
+      before: "/transformations/pico_before.png",
+      after: "/transformations/pico_after.png"
     },
     {
       title: "Skin Booster & Contouring",
       duration: "Instant Result",
-      before: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=500&h=500&q=80",
-      after: "https://images.unsplash.com/photo-1620121692029-d088224ddc74?auto=format&fit=crop&w=500&h=500&q=80"
+      before: "/transformations/contour_before.png",
+      after: "/transformations/contour_after.png"
     }
   ];
 
@@ -151,12 +159,18 @@ const BeforeAfter = () => {
               className="bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-100 w-[85vw] sm:w-[320px] md:w-auto shrink-0 snap-center flex flex-col justify-between"
             >
               <div className="h-60 sm:h-64 relative group">
-                <ReactCompareSlider
-                  itemOne={<ReactCompareSliderImage src={r.before} alt="Before" />}
-                  itemTwo={<ReactCompareSliderImage src={r.after} alt="After" />}
-                  className="h-full w-full"
-                  onlyHandleDraggable={true}
-                />
+                {mounted ? (
+                  <ReactCompareSlider
+                    itemOne={<ReactCompareSliderImage src={r.before} alt="Before" />}
+                    itemTwo={<ReactCompareSliderImage src={r.after} alt="After" />}
+                    className="h-full w-full"
+                    onlyHandleDraggable={true}
+                  />
+                ) : (
+                  <div className="h-full w-full bg-gray-200 animate-pulse flex items-center justify-center">
+                    <img src={r.after} alt="After" className="h-full w-full object-cover" />
+                  </div>
+                )}
                 <div className="absolute top-3 left-3 bg-black/60 text-white text-[10px] md:text-xs px-2 py-1 rounded backdrop-blur-sm z-10 pointer-events-none">Before</div>
                 <div className="absolute top-3 right-3 bg-primary/80 text-white text-[10px] md:text-xs px-2 py-1 rounded backdrop-blur-sm z-10 pointer-events-none">After</div>
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20">
@@ -173,7 +187,7 @@ const BeforeAfter = () => {
           ))}
         </div>
         <div className="mt-8 md:mt-12">
-          <Link to="/book-consultation">
+          <Link href="/book-consultation">
             <Button variant="primary">Book Free Consultation</Button>
           </Link>
         </div>
@@ -182,151 +196,15 @@ const BeforeAfter = () => {
   );
 };
 
-const Treatments = () => {
-  const treatments = [
-    { 
-      name: 'Acne & Clarity Treatment', 
-      slug: 'acne-clarity',
-      price: 'Rp 799.000', 
-      desc: 'Reclaim your confidence with a clear, glowing complexion. A gentle yet effective approach to purifying and balancing troubled skin.', 
-      time: '60 mins', 
-      img: 'https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?auto=format&fit=crop&w=1200&h=800&q=80',
-      benefits: ['Soothes inflammation', 'Purifies congested pores', 'Restores natural barrier']
-    },
-    { 
-      name: 'Luminous Glass Skin', 
-      slug: 'luminous-glass-skin',
-      price: 'Rp 999.000', 
-      desc: 'A deeply nourishing journey to lasting radiance. Plump, hydrate, and revive your skin for that coveted dewy finish.', 
-      time: '90 mins', 
-      img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&h=800&q=80',
-      benefits: ['Intense cellular hydration', 'Silky smooth texture', 'Immediate visible glow']
-    },
-    { 
-      name: 'Pico Brilliance Therapy', 
-      slug: 'pico-brilliance',
-      price: 'Rp 1.490.000', 
-      desc: 'Shatter pigmentation and unveil a flawless canvas. Our advanced laser technology brings your skin tone into perfect harmony.', 
-      time: '45 mins', 
-      img: 'https://images.unsplash.com/photo-1607613009820-a29f7bb81c04?auto=format&fit=crop&w=1200&h=800&q=80',
-      benefits: ['Evens skin tone', 'Targets stubborn spots', 'Zero social downtime']
-    },
-    { 
-      name: 'Youthful Contour Infusion', 
-      slug: 'youthful-contour',
-      price: 'Rp 2.490.000', 
-      desc: 'Defy time with profound nourishment. Stimulate your skin’s innate collagen production for a lifted, rejuvenated appearance.', 
-      time: '30 mins', 
-      img: 'https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&w=1200&h=800&q=80',
-      benefits: ['Stimulates natural collagen', 'Softens fine expression lines', 'Lifts and firms']
-    },
-  ];
 
-  return (
-    <section id="treatments" className="py-20 md:py-32 bg-white scroll-mt-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16 md:mb-24">
-          <h2 className="font-serif text-3xl md:text-5xl font-bold text-gray-900 mb-4">Our Signature Treatments</h2>
-          <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto font-light">Experience aesthetic excellence designed to honor your natural beauty and elevate your spirit.</p>
-        </div>
-        
-        <div className="space-y-16 md:space-y-32">
-          {treatments.map((t, i) => (
-            <div key={i} className={`flex flex-col ${i % 2 === 1 ? 'md:flex-row-reverse' : 'md:flex-row'} items-center gap-8 md:gap-16`}>
-              {/* Image Side */}
-              <motion.div 
-                initial={{ opacity: 0, x: i % 2 === 1 ? 50 : -50 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.8 }}
-                className="w-full md:w-1/2 relative group"
-              >
-                <div className="absolute inset-0 bg-primary/10 -m-4 md:-m-6 rounded-3xl transform rotate-2 group-hover:rotate-1 transition-transform duration-500" />
-                <div className="aspect-[4/3] rounded-2xl overflow-hidden relative shadow-2xl">
-                  <img 
-                    src={t.img} 
-                    alt={t.name} 
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
-                    loading="lazy"
-                  />
-                </div>
-              </motion.div>
-              
-              {/* Text Side */}
-              <motion.div 
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-                className="w-full md:w-1/2 space-y-6"
-              >
-                <div className="flex items-center gap-4 text-xs font-medium tracking-widest text-secondary uppercase">
-                  <span className="flex items-center gap-1.5"><Clock className="w-4 h-4" /> {t.time}</span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-gray-300" />
-                  <span>From {t.price}</span>
-                </div>
-                
-                <h3 className="font-serif text-2xl md:text-4xl font-bold text-gray-900">{t.name}</h3>
-                <p className="text-gray-600 text-base md:text-lg leading-relaxed font-light">{t.desc}</p>
-                
-                <ul className="space-y-3 pt-2">
-                  {t.benefits.map((b, idx) => (
-                    <li key={idx} className="flex items-center gap-3 text-gray-700">
-                      <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                        <Check className="w-3.5 h-3.5 text-primary" />
-                      </div>
-                      <span className="text-sm md:text-base">{b}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="pt-6">
-                  <Link to={`/treatments/${t.slug}`}>
-                    <Button variant="outline" className="px-8 py-3.5 border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white rounded-full transition-all duration-300">
-                      View Treatment Details
-                    </Button>
-                  </Link>
-                </div>
-              </motion.div>
-            </div>
-          ))}
-        </div>
-
-        {/* Dynamic visual CTA placed strategically after Treatments */}
-        <motion.div 
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="bg-gray-50 rounded-[2.5rem] p-8 md:p-16 mt-20 md:mt-32 text-center max-w-4xl mx-auto border border-gray-100 shadow-sm relative overflow-hidden"
-        >
-          <div className="absolute top-0 right-0 p-8 opacity-10">
-            <Sparkles className="w-32 h-32 text-primary" />
-          </div>
-          <div className="relative z-10">
-            <h3 className="font-serif text-2xl md:text-4xl font-bold text-gray-900 mb-4">Not Sure Where To Begin?</h3>
-            <p className="text-base md:text-lg text-gray-600 mb-8 max-w-xl mx-auto font-light">Allow our experts to guide you. Schedule a complimentary clinical consultation for a personalized roadmap.</p>
-            <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <Link to="/book-consultation" className="w-full sm:w-auto">
-                <Button variant="primary" className="w-full px-8 py-4 rounded-full text-base shadow-lg shadow-primary/20">Book Complimentary Consultation</Button>
-              </Link>
-              <Link to="/pricing" className="w-full sm:w-auto">
-                <Button variant="outline" className="w-full px-8 py-4 rounded-full text-base">View Full Price List</Button>
-              </Link>
-            </div>
-          </div>
-        </motion.div>
-      </div>
-    </section>
-  );
-}
 
 const GALLERY_ITEMS = [
-  { src: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=600&q=80', label: 'Acne Treatment' },
-  { src: 'https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?w=600&q=80', label: 'Brightening' },
-  { src: 'https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?w=600&q=80', label: 'Laser Therapy' },
-  { src: 'https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?w=600&q=80', label: 'Skin Booster' },
-  { src: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=600&q=80', label: 'Anti Aging' },
-  { src: 'https://images.unsplash.com/photo-1519415943484-9fa1873496d4?w=600&q=80', label: 'Rejuvenation' },
+  { src: '/gallery/acne.png', label: 'Acne Treatment' },
+  { src: '/gallery/brightening.png', label: 'Brightening' },
+  { src: '/gallery/laser.png', label: 'Laser Therapy' },
+  { src: '/gallery/skin_booster.png', label: 'Skin Booster' },
+  { src: '/gallery/anti_aging.png', label: 'Anti Aging' },
+  { src: '/gallery/rejuvenation.png', label: 'Rejuvenation' },
 ];
 
 const GallerySection = () => (
@@ -350,7 +228,7 @@ const GallerySection = () => (
         ))}
       </div>
       <div className="text-center mt-10">
-        <Link to="/book-consultation">
+        <Link href="/book-consultation">
           <Button variant="primary" className="gap-2 shadow-lg">
             <Calendar className="w-4 h-4" /> Book Free Consultation
           </Button>
@@ -362,16 +240,16 @@ const GallerySection = () => (
 
 const PACKAGES = [
   {
-    badge: 'Most Popular', name: 'Acne Clear Package', highlight: true,
-    description: 'Complete acne solution combining laser therapy, extraction, and skin barrier repair.',
-    treatments: ['Acne Laser Therapy', 'Deep Extraction', 'Skin Booster', 'Home Care Kit'],
-    original: 'Rp 4,500,000', price: 'Rp 2,999,000', sessions: '3 Sessions',
-  },
-  {
     badge: 'Best Value', name: 'Bridal Glow Package', highlight: false,
     description: "Look your absolute best on your special day with our signature bridal program.",
     treatments: ['Brightening Program', 'Anti Aging Facial', 'Hydra Infusion', 'Post Care Kit'],
     original: 'Rp 7,000,000', price: 'Rp 4,499,000', sessions: '5 Sessions',
+  },
+  {
+    badge: 'Most Popular', name: 'Acne Clear Package', highlight: true,
+    description: 'Complete acne solution combining laser therapy, extraction, and skin barrier repair.',
+    treatments: ['Acne Laser Therapy', 'Deep Extraction', 'Skin Booster', 'Home Care Kit'],
+    original: 'Rp 4,500,000', price: 'Rp 2,999,000', sessions: '3 Sessions',
   },
   {
     badge: 'Premium', name: 'Anti Aging Revival', highlight: false,
@@ -423,7 +301,7 @@ const PromotionsSection = () => (
               </div>
               <div className="text-2xl md:text-3xl font-bold text-primary mb-1">{pkg.price}</div>
               <div className="text-gray-500 text-[10px] md:text-xs mb-5">{pkg.sessions} included</div>
-              <Link to="/book-consultation" className="w-full block">
+              <Link href="/book-consultation" className="w-full block">
                 <button className={`w-full py-3 rounded-xl font-semibold text-xs md:text-sm transition-all duration-300 ${pkg.highlight ? 'bg-primary text-white hover:bg-primary/90 shadow-lg' : 'border-2 border-primary text-primary hover:bg-primary hover:text-white'}`}>
                   Book Consultation
                 </button>
@@ -443,7 +321,8 @@ const WhyChooseUs = () => {
     { icon: <Sparkles className="w-6 h-6" />, title: 'Modern Equipment', desc: 'State of the art, FDA approved laser and micro hydration systems.' },
     { icon: <ShieldCheck className="w-6 h-6" />, title: 'Safe Procedures', desc: 'Clinically validated, medical grade protocols with zero compromises.' },
     { icon: <Heart className="w-6 h-6" />, title: 'Personalized Care', desc: 'Custom treatments based purely on your skin\'s biological needs.' },
-    { icon: <MessageCircle className="w-6 h-6" />, title: 'Consultation Process', desc: 'Complimentary clinical analysis with zero pushy sales targets.' }
+    { icon: <MessageCircle className="w-6 h-6" />, title: 'Consultation Process', desc: 'Complimentary clinical analysis with zero pushy sales targets.' },
+    { icon: <Star className="w-6 h-6" />, title: 'Premium Experience', desc: 'A luxurious environment designed for your ultimate comfort and relaxation.' }
   ];
 
   return (
@@ -514,7 +393,7 @@ const SocialProof = () => {
 
         {/* Strategic CTA placed right after testimonials */}
         <div className="text-center mt-8 md:mt-12">
-          <Link to="/book-consultation">
+          <Link href="/book-consultation">
             <Button variant="primary">Book Free Consultation</Button>
           </Link>
         </div>
@@ -542,52 +421,35 @@ const SocialProof = () => {
   );
 };
 
-const Experts = () => {
-  const doctors = [
-    { name: 'Dr. Amanda Wijaya', role: 'Aesthetic Medicine', exp: '12 Years Exp.', spec: 'Laser & Rejuvenation', img: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=600&h=800&fit=crop&q=80' },
-    { name: 'Dr. Budi Santoso', role: 'Dermatologist', exp: '15 Years Exp.', spec: 'Acne & Scar Treatment', img: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=600&h=800&fit=crop&q=80' },
-    { name: 'Dr. Clara Lee', role: 'Aesthetic Doctor', exp: '8 Years Exp.', spec: 'Facial Contouring', img: 'https://images.unsplash.com/photo-1614608682850-e0d6ed316d47?w=600&h=800&fit=crop&q=80' }
-  ];
 
+
+const FAQItem = ({ q, a }: { q: string, a: string }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  
   return (
-    <section id="experts" className="py-16 md:py-24 bg-background scroll-mt-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-10 md:mb-16">
-          <h2 className="font-serif text-2xl md:text-4xl font-bold text-gray-900 mb-3">Meet Our Experts</h2>
-          <p className="text-sm md:text-base text-gray-600 max-w-2xl mx-auto">Board-certified specialists dedicated to your skin's health and beauty.</p>
-        </div>
-
-        {/* Swipeable carousel on mobile, Grid on desktop */}
-        <div className="flex md:grid md:grid-cols-3 overflow-x-auto md:overflow-x-visible snap-x snap-mandatory md:snap-none gap-6 pb-6 md:pb-0 scrollbar-none -mx-4 px-4 md:mx-0 md:px-0">
-          {doctors.map((doc, i) => (
-            <motion.div 
-              key={i} 
-              whileHover={{ y: -10 }} 
-              className="bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-100 flex flex-col justify-between w-[80vw] sm:w-[300px] md:w-auto shrink-0 snap-center"
-            >
-              <div>
-                <img src={doc.img} alt={doc.name} className="w-full h-64 sm:h-72 md:h-80 object-cover object-top" loading="lazy" />
-                <div className="p-5 md:p-6">
-                  <h3 className="font-serif font-bold text-lg md:text-2xl text-primary mb-1">{doc.name}</h3>
-                  <p className="text-secondary font-medium text-xs md:text-sm mb-4">{doc.role}</p>
-                  <div className="space-y-2 text-xs md:text-sm text-gray-600 mb-4">
-                    <div className="flex items-center gap-2"><Award className="w-4 h-4 text-primary shrink-0" /> {doc.exp}</div>
-                    <div className="flex items-center gap-2"><Sparkles className="w-4 h-4 text-primary shrink-0" /> {doc.spec}</div>
-                  </div>
-                </div>
-              </div>
-              <div className="p-5 md:p-6 pt-0 mt-auto">
-                <Link to={`/book-consultation?doctor=${encodeURIComponent(doc.name)}`} className="w-full block">
-                  <Button variant="outline" className="w-full text-xs md:text-sm py-2.5">
-                    Book with {doc.name.split(' ')[1]}
-                  </Button>
-                </Link>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between p-5 md:p-6 text-left cursor-pointer font-medium text-sm md:text-lg text-gray-900 select-none outline-none focus:ring-2 focus:ring-primary/20"
+      >
+        {q}
+        <ChevronDown className={`w-5 h-5 text-gray-500 transition-transform duration-300 shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+          >
+            <div className="p-5 md:p-6 pt-0 text-[13px] md:text-sm text-gray-600 border-t border-gray-100 leading-relaxed">
+              {a}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 };
 
@@ -606,15 +468,7 @@ const FAQ = () => {
         <h2 className="font-serif text-2xl md:text-4xl font-bold text-center text-gray-900 mb-8 md:mb-12">Frequently Asked Questions</h2>
         <div className="space-y-4">
           {faqs.map((item, i) => (
-            <details key={i} className="group bg-white rounded-xl shadow-sm border border-gray-100 [&_summary::-webkit-details-marker]:hidden">
-              <summary className="flex items-center justify-between p-5 md:p-6 cursor-pointer font-medium text-sm md:text-lg text-gray-900 select-none">
-                {item.q}
-                <ChevronDown className="w-5 h-5 text-gray-500 group-open:rotate-180 transition-transform shrink-0" />
-              </summary>
-              <div className="p-5 md:p-6 pt-0 text-[13px] md:text-sm text-gray-600 border-t border-gray-100 leading-relaxed">
-                {item.a}
-              </div>
-            </details>
+            <FAQItem key={i} q={item.q} a={item.a} />
           ))}
         </div>
       </div>
@@ -622,37 +476,7 @@ const FAQ = () => {
   );
 }
 
-const LocationSection = () => (
-  <section id="location" className="py-16 md:py-24 bg-gray-50 scroll-mt-20">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="text-center mb-10">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/30 text-primary font-medium text-xs mb-3">
-          <MapPin className="w-3.5 h-3.5" /> Find Us
-        </div>
-        <h2 className="font-serif text-2xl md:text-4xl font-bold text-gray-900 mb-3">Visit Our Clinic</h2>
-        <p className="text-sm md:text-base text-gray-600 max-w-xl mx-auto">Conveniently located in Jakarta's CBD. Easy access by car, MRT, or TransJakarta.</p>
-      </div>
-      <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-start">
-        <div className="rounded-3xl overflow-hidden shadow-lg border border-gray-200 h-[280px] sm:h-[350px] md:h-[420px]">
-          <iframe title="AuraSkin Jakarta" src="https://maps.google.com/maps?q=SCBD+Tower+2+Jakarta+Selatan&output=embed&z=15" width="100%" height="100%" style={{ border: 0 }} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
-        </div>
-        <div className="space-y-4">
-          {[
-            { icon: <MapPin className="w-5 h-5 text-primary" />, title: 'Address', content: <p className="text-gray-600 text-xs md:text-sm">SCBD Tower 2, Jl. Jend. Sudirman Kav. 52, 53,<br />Jakarta Selatan 12190, Indonesia</p> },
-            { icon: <Clock className="w-5 h-5 text-primary" />, title: 'Clinic Hours', content: <div className="text-xs md:text-sm text-gray-600 space-y-1"><div className="flex justify-between gap-8"><span>Monday to Friday</span><span className="font-medium">09:00 to 20:00</span></div><div className="flex justify-between gap-8"><span>Saturday to Sunday</span><span className="font-medium">09:00 to 18:00</span></div></div> },
-            { icon: <Phone className="w-5 h-5 text-primary" />, title: 'Contact', content: <p className="text-xs md:text-sm text-gray-600">WhatsApp: <a href="https://wa.me/6281288882828" className="text-primary font-medium hover:underline">+62 812 8888 2828</a></p> },
-            { icon: <ArrowRight className="w-5 h-5 text-primary" />, title: 'Getting Here', content: <ul className="text-xs md:text-sm text-gray-600 space-y-1"><li>🚇 MRT: Senayan Station (5 min walk)</li><li>🚌 TransJakarta: Halte Bendungan Hilir</li><li>🚗 Valet parking available at SCBD Tower 2</li></ul> },
-          ].map(({ icon, title, content }) => (
-            <div key={title} className="flex gap-4 items-start bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-gray-100">
-              <div className="bg-primary/10 p-2.5 md:p-3 rounded-xl shrink-0">{icon}</div>
-              <div><h4 className="font-bold text-sm md:text-base text-gray-900 mb-1">{title}</h4>{content}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  </section>
-);
+
 
 const FinalCTA = () => (
   <section className="py-16 md:py-24 bg-primary relative overflow-hidden text-center">
@@ -661,7 +485,7 @@ const FinalCTA = () => (
       <h2 className="font-serif text-2xl sm:text-3xl md:text-5xl font-bold leading-tight">Ready To Transform Your Skin?</h2>
       <p className="text-sm md:text-xl text-gray-300 max-w-2xl mx-auto">Claim your free consultation and receive a personalized treatment plan from our expert team.</p>
       <div className="flex flex-col sm:flex-row justify-center gap-3 md:gap-4 max-w-md mx-auto sm:max-w-none">
-        <Link to="/book-consultation" className="w-full sm:w-auto">
+        <Link href="/book-consultation" className="w-full sm:w-auto">
           <Button variant="secondary" className="text-primary font-bold text-sm md:text-lg py-3.5 md:py-4 px-6 md:px-8 w-full">
             Book Free Consultation
           </Button>
@@ -683,13 +507,11 @@ export default function Home() {
       <Hero />
       <TrustBadges />
       <BeforeAfter />
-      <Treatments />
+
       <GallerySection />
       <PromotionsSection />
       <WhyChooseUs />
       <SocialProof />
-      <Experts />
-      <LocationSection />
       <FAQ />
       <FinalCTA />
     </>

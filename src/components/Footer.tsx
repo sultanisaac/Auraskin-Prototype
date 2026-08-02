@@ -1,5 +1,7 @@
-import { Link } from 'react-router-dom';
-import { Sparkles, MapPin, Phone, Instagram } from 'lucide-react';
+"use client";
+
+import Link from 'next/link';
+import { Sparkles, MapPin, Phone } from 'lucide-react';
 
 export const Footer = () => (
   <footer className="bg-gray-900 text-gray-400 py-16">
@@ -12,9 +14,6 @@ export const Footer = () => (
         </div>
         <p className="text-sm text-yellow-400 font-medium mb-4 italic">*This website is a design prototype for demonstration purposes only.*</p>
         <p className="mb-6">Natural Beauty. Expert Results. Premium aesthetic clinic in Jakarta.</p>
-        <div className="flex space-x-4">
-          <Instagram className="w-6 h-6 hover:text-white cursor-pointer transition" />
-        </div>
       </div>
       <div>
         <h4 className="text-white font-bold mb-4">Contact</h4>
@@ -33,8 +32,8 @@ export const Footer = () => (
       <div>
         <h4 className="text-white font-bold mb-4">Links</h4>
         <ul className="space-y-2">
-          <li><Link to="/privacy-policy" className="hover:text-white transition">Privacy Policy</Link></li>
-          <li><Link to="/terms-of-service" className="hover:text-white transition">Terms of Service</Link></li>
+          <li><Link href="/privacy-policy" className="hover:text-white transition">Privacy Policy</Link></li>
+          <li><Link href="/terms-of-service" className="hover:text-white transition">Terms of Service</Link></li>
         </ul>
       </div>
     </div>

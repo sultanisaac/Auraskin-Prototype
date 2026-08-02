@@ -1,12 +1,15 @@
+"use client";
+
 import { useState, useEffect } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, ShieldCheck, Clock, Award, Star, Loader2, Sparkles, ArrowLeft, ArrowRight, User, CheckCircle2 } from 'lucide-react';
 import { Button } from '../components/Button';
-import { PrototypeNotice } from '../components/PrototypeNotice';
+
 import { submitBooking, getConfirmedBookings, Booking } from '../actions/booking';
 import { format, addDays, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, isBefore, startOfDay, getDay, setMonth, setYear } from 'date-fns';
 
@@ -30,9 +33,11 @@ const bookingSchema = z.object({
 type BookingFormValues = z.infer<typeof bookingSchema>;
 
 export default function BookingPage() {
-  const [searchParams] = useSearchParams();
-  const doctorParam = searchParams.get('doctor') || '';
-  const treatmentParam = searchParams.get('treatment') || '';
+  const searchParams = useSearchParams();
+  const doctorParam = searchParams?.get('doctor') || '';
+  const treatmentParam = searchParams?.get('treatment') || '';
+  const router = useRouter();
+  const navigate = (path: string | -1) => { if (path === -1) router.back(); else router.push(path); };
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -166,7 +171,7 @@ export default function BookingPage() {
                 Confirm via WhatsApp
               </Button>
             </a>
-            <Link to="/" className="block w-full">
+            <Link href="/" className="block w-full">
               <Button variant="outline" className="w-full border-gray-200 text-gray-600 hover:bg-gray-50">Return to Homepage</Button>
             </Link>
           </div>
@@ -181,12 +186,12 @@ export default function BookingPage() {
         
         {/* Navigation Back Link */}
         <div className="mb-8">
-          <Link to="/" className="inline-flex items-center gap-2 text-gray-500 hover:text-primary transition font-medium text-sm">
-            <ArrowLeft className="w-4 h-4" /> Back to Home Page
-          </Link>
+          <button onClick={() => navigate(-1)} className="inline-flex items-center gap-2 text-gray-500 hover:text-primary transition font-medium text-sm">
+            <ArrowLeft className="w-4 h-4" /> Back
+          </button>
         </div>
 
-        <PrototypeNotice className="mt-28 md:mt-0 mb-8 md:mb-12" />
+
 
         {/* Page Title & Intro */}
         <div className="max-w-3xl mb-12 md:mb-16">

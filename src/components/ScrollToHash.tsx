@@ -1,24 +1,45 @@
+"use client";
+
 import { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { usePathname } from 'next/navigation';
 
 export const ScrollToHash = () => {
-  const { pathname, hash } = useLocation();
+  const pathname = usePathname();
 
+  // Save scroll position for the current path
   useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout>;
+    
+    const handleScroll = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        sessionStorage.setItem(`scrollPosition-${pathname}`, window.scrollY.toString());
+      }, 100);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      clearTimeout(timeoutId);
+    };
+  }, [pathname]);
+
+  // Handle hash scrolling
+  useEffect(() => {
+    const hash = window.location.hash;
     if (hash) {
       const id = hash.replace('#', '');
       const element = document.getElementById(id);
       if (element) {
-        // Delay slightly to ensure page components are fully mounted and layout has settled
         const timer = setTimeout(() => {
           element.scrollIntoView({ behavior: 'smooth' });
         }, 100);
         return () => clearTimeout(timer);
       }
     } else {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: 'auto' });
     }
-  }, [pathname, hash]);
+  }, [pathname]);
 
   return null;
 };
