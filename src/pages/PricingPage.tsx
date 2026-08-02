@@ -48,7 +48,7 @@ const CATEGORIES = ['All', 'Facial', 'Laser', 'Skin Booster', 'General'];
 
 export default function PricingPage() {
   const router = useRouter();
-  const navigate = (path) => { if (path === -1) router.back(); else router.push(path); };
+  const navigate = (path: string | -1) => { if (path === -1) router.back(); else router.push(path); };
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
 

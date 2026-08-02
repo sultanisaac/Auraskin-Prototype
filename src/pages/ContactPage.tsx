@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 
 export default function ContactPage() {
   const router = useRouter();
-  const navigate = (path) => { if (path === -1) router.back(); else router.push(path); };
+  const navigate = (path: string | -1) => { if (path === -1) router.back(); else router.push(path); };
   return (
     <section className="py-16 md:py-24 bg-gray-50 min-h-[calc(100vh-200px)] flex items-center">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">

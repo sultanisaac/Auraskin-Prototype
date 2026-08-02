@@ -15,7 +15,6 @@ interface HeaderProps {
 function HeaderContent({ title, subtitle, pendingCount = 0 }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);

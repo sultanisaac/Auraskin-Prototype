@@ -8,7 +8,7 @@ import { Button } from '../components/Button';
 
 export default function TreatmentsPage() {
   const router = useRouter();
-  const navigate = (path) => { if (path === -1) router.back(); else router.push(path); };
+  const navigate = (path: string | -1) => { if (path === -1) router.back(); else router.push(path); };
   const treatments = [
     { 
       name: 'Acne & Clarity Treatment', 

@@ -103,7 +103,7 @@ export default function PatientsClient({ bookings }: { bookings: Booking[] }) {
     setIsDeleting(true);
     const bookingIds = patient.history.map(b => b.id);
     await deleteBookings(bookingIds);
-    setSelectedIds(new Set([...selectedIds].filter(id => id !== patient.id)));
+    setSelectedIds(new Set(Array.from(selectedIds).filter(id => id !== patient.id)));
     if (selectedPatient?.id === patient.id) {
       setSelectedPatient(null);
     }

@@ -8,7 +8,7 @@ import { Button } from '../components/Button';
 
 export default function ExpertsPage() {
   const router = useRouter();
-  const navigate = (path) => { if (path === -1) router.back(); else router.push(path); };
+  const navigate = (path: string | -1) => { if (path === -1) router.back(); else router.push(path); };
   const doctors = [
     { name: 'Dr. Amanda Wijaya', role: 'Aesthetic Medicine', exp: '12 Years Exp.', spec: 'Laser & Rejuvenation', img: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=600&h=800&fit=crop&q=80' },
     { name: 'Dr. Budi Santoso', role: 'Dermatologist', exp: '15 Years Exp.', spec: 'Acne & Scar Treatment', img: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=600&h=800&fit=crop&q=80' },

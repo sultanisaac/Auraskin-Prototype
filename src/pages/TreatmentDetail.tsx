@@ -1,4 +1,5 @@
 "use client";
+import { useEffect } from 'react';
 
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
@@ -102,11 +103,18 @@ const treatmentsData: Record<string, any> = {
 };
 
 export default function TreatmentDetail() {
-  const { id } = useParams<{ id: string }>();
+  const params = useParams<{ id: string }>();
+  const id = params?.id;
   const router = useRouter();
   
+  useEffect(() => {
+    if (!id || !treatmentsData[id]) {
+      router.replace('/treatments');
+    }
+  }, [id, router]);
+
   if (!id || !treatmentsData[id]) {
-    return <Navigate to="/treatments" replace />;
+    return null;
   }
 
   const treatment = treatmentsData[id];

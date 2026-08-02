@@ -34,10 +34,10 @@ type BookingFormValues = z.infer<typeof bookingSchema>;
 
 export default function BookingPage() {
   const searchParams = useSearchParams();
-  const doctorParam = searchParams.get('doctor') || '';
-  const treatmentParam = searchParams.get('treatment') || '';
+  const doctorParam = searchParams?.get('doctor') || '';
+  const treatmentParam = searchParams?.get('treatment') || '';
   const router = useRouter();
-  const navigate = (path) => { if (path === -1) router.back(); else router.push(path); };
+  const navigate = (path: string | -1) => { if (path === -1) router.back(); else router.push(path); };
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);

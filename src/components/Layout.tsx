@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { MessageCircle, Phone, Calendar } from 'lucide-react';
 import { TopBar } from './TopBar';
 import { Header } from './Header';
@@ -10,9 +10,7 @@ import { ScrollToHash } from './ScrollToHash';
 
 export const Layout = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const location = { pathname, search: searchParams?.toString() || '', hash: '' };
-  const isBookingPage = location.pathname === '/book-consultation';
+  const isBookingPage = pathname === '/book-consultation';
 
   return (
     <div className="min-h-screen bg-background font-sans text-text flex flex-col justify-between w-full relative">
