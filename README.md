@@ -1,28 +1,28 @@
 # AuraSkin — Premium Aesthetic Clinic Prototype
 
 ## Overview
-AuraSkin is a premium medical aesthetic clinic web application designed for a luxury clinic located in Jakarta's central business district (SCBD). The application delivers an elegant, high-performance landing page combined with a transparent pricing model and a custom, integrated booking system that links directly to the administrative CRM dashboard.
+AuraSkin is a premium medical aesthetic clinic web application designed for a luxury clinic located in Jakarta's central business district (SCBD). The application delivers an elegant, high-performance landing page combined with a transparent pricing model, dedicated treatment pages, and a custom booking system. 
 
-Designed as a modern single-page experience, it converts prospective patients by establishing trust through credentials, showcasing before/after results, and providing a seamless booking experience.
+It is a full-stack monolithic application powered by **Next.js (App Router)**. It features both the public-facing patient portal and a secure internal **Admin Dashboard** for clinic staff to manage, approve, and track appointments in real-time.
 
 ## Key Features
-* **Custom Booking Workflow**: Built from the ground up to replace third-party schedulers. A custom React Hook Form with Zod validation collects patient details and securely synchronizes with a centralized Supabase database.
-* **Treatment Catalog & Dynamic Filter**: Interactive pricing table with categories (Acne, Brightening, Laser, etc.) and search capabilities.
-* **Before & After Showcases**: Immersive image comparison sliders demonstrating treatment results.
-* **Interactive FAQ & Doctor Profiles**: Expandable accordions to handle user objections and credential-based cards highlighting specialist credentials.
+* **Unified Full-Stack Architecture**: Both the public website and the CRM admin dashboard are housed in a single Next.js codebase, utilizing React Server Components and Server Actions for maximum performance and security.
+* **Custom Booking Workflow**: Built to replace third-party schedulers. A custom React Hook Form with Zod validation collects patient details and securely synchronizes with the database.
+* **Integrated Admin Dashboard**: Accessible via `/admin` (secured via PIN), allowing clinic staff to view the calendar, manage patients, and approve/decline bookings seamlessly.
+* **Automated Email Notifications**: Integrated SMTP email service (via Nodemailer) that automatically sends branded email confirmations to patients when their bookings are approved, declined, or canceled.
+* **Treatment Catalog**: Dedicated pages for individual treatments (Acne, Brightening, Laser, etc.) with detailed clinical information, aftercare instructions, and direct booking links.
 * **Premium Brand System**: A luxury-focused visual design utilizing a sophisticated color palette (Deep Emerald Teal, Champagne Gold, Warm Ivory, and Graphite) with fluid animations powered by Framer Motion.
-* **Admin Appointment Widget**: A top-right widget providing administrators quick access to appointment status management directly from the main portal.
 
 ## Tech Stack
-* **Framework**: React 18 (Vite & TypeScript)
-* **Routing**: React Router DOM
-* **Database & Architecture**: Supabase (Shared architecture with Admin Dashboard)
-* **Data Management**: Vercel KV for fast access/caching
+* **Framework**: Next.js 14+ (App Router) & React 18
+* **Language**: TypeScript
+* **Database / Caching**: Vercel KV (Redis REST API) for fast appointment and patient data management
+* **Email Service**: Nodemailer (SMTP integration for patient notifications)
 * **Styling**: Tailwind CSS & Autoprefixer
 * **Form & Validation**: React Hook Form & Zod
 * **Animations**: Framer Motion
 * **Icons**: Lucide React
-* **Image Slider**: React Compare Slider
+* **Deployment**: Vercel
 
 ## Getting Started
 
@@ -38,14 +38,17 @@ Designed as a modern single-page experience, it converts prospective patients by
    ```
 
 3. **Configure Environment Variables:**
-   Create a local `.env` file based on `.env.example` and ensure you connect to the centralized Supabase instance shared with the Admin Dashboard:
-   ```bash
-   cp .env.example .env
+   Create a local `.env` file based on `.env.example` and ensure you connect to your Vercel KV instance and SMTP server for emails:
+   ```env
+   KV_REST_API_URL="your-vercel-kv-url"
+   KV_REST_API_TOKEN="your-vercel-kv-token"
+   EMAIL_USER="your-clinic-email@gmail.com"
+   EMAIL_PASS="your-app-password"
    ```
 
 4. **Run Development Server:**
    ```bash
-   # Starts the development server at http://localhost:5173
+   # Starts the development server at http://localhost:3000
    npm run dev
    ```
 
@@ -53,16 +56,18 @@ Designed as a modern single-page experience, it converts prospective patients by
 ```text
 Auraskin-Prototype/
 ├── src/
-│   ├── components/         # Reusable UI elements (Button, Layout, PrototypeNotice)
-│   ├── pages/              # Primary views (Home, Booking, Pricing)
-│   ├── App.tsx             # Route definitions
-│   └── index.css           # Global stylesheet & Tailwind directives
-├── index.html              # HTML base skeleton
-└── tailwind.config.js      # Custom theme configurations
+│   ├── app/                # Next.js App Router (Public routes & /admin dashboard)
+│   ├── actions/            # Next.js Server Actions (Database & Email logic)
+│   ├── components/         # Reusable UI elements (Buttons, Layouts, Modals)
+│   ├── pages/              # Client-side page components
+│   └── lib/                # Utility functions, email templates, and configurations
+├── public/                 # Static assets (Logos, Images)
+├── tailwind.config.js      # Custom theme configurations
+└── next.config.mjs         # Next.js configuration
 ```
 
-## Integration Architecture
-This public-facing application is closely integrated with the [AuraSkin Admin Dashboard](https://github.com/sultanisaac/Admin-Auraskin-Prototype). Booking requests submitted here are routed to the shared Supabase instance where they can be managed, confirmed, or declined by clinic staff.
+## Admin Dashboard Access
+The admin dashboard is located at `/admin`. It is protected by a PIN system (Default PIN: `271302` for testing purposes) to ensure only authorized staff can manage patient data and booking statuses.
 
 ## License
 *Proprietary / Closed Source*
