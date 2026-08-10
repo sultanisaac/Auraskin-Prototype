@@ -9,7 +9,7 @@ import { useCartStore } from "@/store/cartStore";
 
 function SuccessContent() {
   const searchParams = useSearchParams();
-  const orderNumber = searchParams.get("order");
+  const orderNumber = searchParams?.get("order");
   const clearCart = useCartStore(state => state.clearCart);
   
   const [mounted, setMounted] = useState(false);
