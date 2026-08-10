@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { Sparkles, MapPin, Phone } from 'lucide-react';
+import { Sparkles, MapPin, Phone, Mail } from 'lucide-react';
 
 export const Footer = () => (
   <footer className="bg-gray-900 text-gray-400 py-16">
@@ -16,10 +16,13 @@ export const Footer = () => (
         <p className="mb-6">Natural Beauty. Expert Results. Premium aesthetic clinic in Jakarta.</p>
       </div>
       <div>
-        <h4 className="text-white font-bold mb-4">Contact</h4>
-        <ul className="space-y-3">
-          <li className="flex gap-2"><MapPin className="w-5 h-5 shrink-0" /> SCBD Tower 2, Jl. Jend. Sudirman, Jakarta Selatan 12190</li>
-          <li className="flex gap-2"><Phone className="w-5 h-5 shrink-0" /> +62 812 8888 2828</li>
+        <h4 className="text-white font-bold mb-4">Quick Links</h4>
+        <ul className="grid grid-cols-2 gap-y-2 gap-x-4">
+          <li><Link href="/treatments" className="hover:text-white transition">Treatments</Link></li>
+          <li><Link href="/pricing" className="hover:text-white transition">Pricing</Link></li>
+          <li><Link href="/our-team" className="hover:text-white transition">Our Team</Link></li>
+          <li><Link href="/store" className="hover:text-white transition">Store</Link></li>
+          <li><Link href="/faq" className="hover:text-white transition">FAQ</Link></li>
         </ul>
       </div>
       <div>
@@ -30,11 +33,19 @@ export const Footer = () => (
         </ul>
       </div>
       <div>
-        <h4 className="text-white font-bold mb-4">Links</h4>
-        <ul className="space-y-2">
-          <li><Link href="/privacy-policy" className="hover:text-white transition">Privacy Policy</Link></li>
-          <li><Link href="/terms-of-service" className="hover:text-white transition">Terms of Service</Link></li>
+        <h4 className="text-white font-bold mb-4">Contact</h4>
+        <ul className="space-y-3">
+          <li className="flex gap-2"><MapPin className="w-5 h-5 shrink-0" /> SCBD Tower 2, Jl. Jend. Sudirman, Jakarta Selatan 12190</li>
+          <li className="flex gap-2"><Phone className="w-5 h-5 shrink-0" /> +62 812 8888 2828</li>
+          <li className="flex gap-2"><Mail className="w-5 h-5 shrink-0" /> hello@auraskin.co.id</li>
         </ul>
+      </div>
+    </div>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500">
+      <p>&copy; {new Date().getFullYear()} AuraSkin. All rights reserved.</p>
+      <div className="flex gap-6 mt-4 md:mt-0">
+        <Link href="/terms-of-service" className="hover:text-white transition">Terms of Service</Link>
+        <Link href="/privacy-policy" className="hover:text-white transition">Privacy Policy</Link>
       </div>
     </div>
   </footer>

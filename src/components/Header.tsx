@@ -48,6 +48,7 @@ export const Header = () => {
     { label: 'Pricing', path: '/pricing' },
     { label: 'Our Team', path: '/our-team' },
     { label: 'Store', path: '/store' },
+    { label: 'FAQ', path: '/faq' },
     { label: 'Contact', path: '/contact' }
   ];
 

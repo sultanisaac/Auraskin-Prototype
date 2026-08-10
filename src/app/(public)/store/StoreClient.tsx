@@ -2,12 +2,16 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { ShoppingBag, Star, Filter } from 'lucide-react';
+import { ShoppingBag, Star, Filter, ArrowLeft } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/Button';
 import { useCartStore } from '@/store/cartStore';
 import type { Product } from '@/app/admin/product/actions';
 
 export default function StoreClient({ initialProducts }: { initialProducts: Product[] }) {
+  const router = useRouter();
+  const navigate = (path: string | -1) => { if (path === -1) router.back(); else router.push(path); };
+
   const [activeCategory, setActiveCategory] = useState("all");
   const { addItem } = useCartStore();
 
@@ -29,6 +33,14 @@ export default function StoreClient({ initialProducts }: { initialProducts: Prod
     <div className="min-h-screen bg-gray-50 pt-24 pb-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
+        {/* Back Button */}
+        <div className="mb-8">
+          <button onClick={() => navigate(-1)} className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-primary transition-colors">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Go Back
+          </button>
+        </div>
+
         {/* Header Section */}
         <div className="flex flex-col items-center justify-center text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-serif font-bold text-primary mb-4">Auraskin Store</h1>
