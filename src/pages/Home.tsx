@@ -423,58 +423,7 @@ const SocialProof = () => {
 
 
 
-const FAQItem = ({ q, a }: { q: string, a: string }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  
-  return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-      <button 
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between p-5 md:p-6 text-left cursor-pointer font-medium text-sm md:text-lg text-gray-900 select-none outline-none focus:ring-2 focus:ring-primary/20"
-      >
-        {q}
-        <ChevronDown className={`w-5 h-5 text-gray-500 transition-transform duration-300 shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
-      </button>
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
-          >
-            <div className="p-5 md:p-6 pt-0 text-[13px] md:text-sm text-gray-600 border-t border-gray-100 leading-relaxed">
-              {a}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-};
 
-const FAQ = () => {
-  const faqs = [
-    { q: "How many sessions are needed?", a: "This varies based on skin condition. While initial results are visible after 1 session, long-term conditions (scars, pigmentation) typically benefit from 3 to 5 sessions." },
-    { q: "How long is recovery?", a: "Most facial treatments have zero downtime. Laser treatments may leave slight redness for 12 to 24 hours, but you can return to work and apply sunscreen/makeup immediately." },
-    { q: "Can men receive treatments?", a: "Absolutely. Around 30% of our patients are men seeking acne scar treatment, skin health restoration, and facial contouring." },
-    { q: "How much does the consultation cost?", a: "Our initial consultation with an aesthetic doctor is completely free. We will analyze your skin type and suggest a tailored treatment plan with zero pressure to buy." },
-    { q: "Are treatments safe?", a: "Yes. All treatments are performed by board certified doctors using FDA approved technology and medical grade skincare products under strict clinical protocols." }
-  ];
-
-  return (
-    <section className="py-16 md:py-24 bg-background border-t border-gray-100">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="font-serif text-2xl md:text-4xl font-bold text-center text-gray-900 mb-8 md:mb-12">Frequently Asked Questions</h2>
-        <div className="space-y-4">
-          {faqs.map((item, i) => (
-            <FAQItem key={i} q={item.q} a={item.a} />
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
 
 
 
@@ -512,7 +461,6 @@ export default function Home() {
       <PromotionsSection />
       <WhyChooseUs />
       <SocialProof />
-      <FAQ />
       <FinalCTA />
     </>
   );

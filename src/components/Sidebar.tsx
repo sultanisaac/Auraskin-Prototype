@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, Users, CalendarDays, Bell } from "lucide-react";
+import { Calendar, Users, CalendarDays, Bell, ShoppingBag, Globe, Package } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -47,7 +47,33 @@ export default function Sidebar() {
           <Bell className="h-5 w-5 mr-3" />
           Notifications
         </Link>
+        <Link href="/admin/orders" className={cn(
+          "flex items-center px-4 py-3 rounded-md font-medium transition-colors",
+          pathname === "/admin/orders" ? "bg-primary/5 text-primary" : "text-text hover:bg-primary/5 hover:text-primary"
+        )}>
+          <Package className="h-5 w-5 mr-3" />
+          Orders
+        </Link>
+        <Link href="/admin/product" className={cn(
+          "flex items-center px-4 py-3 rounded-md font-medium transition-colors",
+          pathname === "/admin/product" ? "bg-primary/5 text-primary" : "text-text hover:bg-primary/5 hover:text-primary"
+        )}>
+          <ShoppingBag className="h-5 w-5 mr-3" />
+          Products
+        </Link>
       </nav>
+      
+      <div className="p-4 border-t border-accent/30 bg-gray-50/50">
+        <a 
+          href="https://auraskin-prototype.vercel.app/" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="flex items-center px-4 py-3 rounded-md font-medium text-text hover:bg-primary/5 hover:text-primary transition-colors border border-accent/20 bg-white shadow-sm w-full justify-center"
+        >
+          <Globe className="h-4 w-4 mr-2 text-primary" />
+          <span className="text-sm">View Website</span>
+        </a>
+      </div>
     </aside>
   );
 }

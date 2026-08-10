@@ -1,6 +1,6 @@
 "use client";
 
-import { MapPin, Clock, Phone, ArrowRight, ArrowLeft } from 'lucide-react';
+import { MapPin, Clock, Phone, ArrowRight, ArrowLeft, Mail } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export default function ContactPage() {
@@ -27,7 +27,7 @@ export default function ContactPage() {
             {[
               { icon: <MapPin className="w-5 h-5 text-primary" />, title: 'Address', content: <p className="text-gray-600 text-xs md:text-sm">SCBD Tower 2, Jl. Jend. Sudirman Kav. 52, 53,<br />Jakarta Selatan 12190, Indonesia</p> },
               { icon: <Clock className="w-5 h-5 text-primary" />, title: 'Clinic Hours', content: <div className="text-xs md:text-sm text-gray-600 space-y-1"><div className="flex justify-between gap-8"><span>Monday to Friday</span><span className="font-medium">09:00 to 20:00</span></div><div className="flex justify-between gap-8"><span>Saturday to Sunday</span><span className="font-medium">09:00 to 18:00</span></div></div> },
-              { icon: <Phone className="w-5 h-5 text-primary" />, title: 'Contact', content: <p className="text-xs md:text-sm text-gray-600">WhatsApp: <a href="https://wa.me/6281288882828" className="text-primary font-medium hover:underline">+62 812 8888 2828</a></p> },
+              { icon: <Phone className="w-5 h-5 text-primary" />, title: 'Contact', content: <div className="text-xs md:text-sm text-gray-600 space-y-1"><p>WhatsApp: <a href="https://wa.me/6281288882828" className="text-primary font-medium hover:underline">+62 812 8888 2828</a></p><p>Email: <a href="mailto:hello@auraskin.co.id" className="text-primary font-medium hover:underline">hello@auraskin.co.id</a></p></div> },
               { icon: <ArrowRight className="w-5 h-5 text-primary" />, title: 'Getting Here', content: <ul className="text-xs md:text-sm text-gray-600 space-y-1"><li>🚇 MRT: Senayan Station (5 min walk)</li><li>🚌 TransJakarta: Halte Bendungan Hilir</li><li>🚗 Valet parking available at SCBD Tower 2</li></ul> },
             ].map(({ icon, title, content }) => (
               <div key={title} className="flex gap-4 items-start bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-gray-100">
