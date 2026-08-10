@@ -115,7 +115,7 @@ export default async function OrdersAdminPage() {
                         })}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={\`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border \${getStatusBadge(order.status)}\`}>
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusBadge(order.status)}`}>
                           {getStatusIcon(order.status)}
                           {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                         </span>
@@ -124,7 +124,7 @@ export default async function OrdersAdminPage() {
                         {formatPrice(order.totalAmount)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <Link href={\`/admin/orders/\${order.order_number}\`} className="flex items-center text-primary hover:text-primary/80 font-medium transition-colors">
+                        <Link href={`/admin/orders/${order.order_number}`} className="flex items-center text-primary hover:text-primary/80 font-medium transition-colors">
                           View Details
                           <ExternalLink className="w-4 h-4 ml-1" />
                         </Link>

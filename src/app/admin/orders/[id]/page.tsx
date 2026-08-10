@@ -59,7 +59,7 @@ export default async function OrderDetailPage({ params }: { params: { id: string
             </div>
             
             <div className="flex items-center gap-3">
-              <span className={\`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium border \${getStatusBadge(order.status)}\`}>
+              <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium border ${getStatusBadge(order.status)}`}>
                 {order.status.toUpperCase()}
               </span>
               
@@ -156,7 +156,7 @@ export default async function OrderDetailPage({ params }: { params: { id: string
               <div className="space-y-4">
                 <div>
                   <p className="font-medium text-gray-900">{order.customer.name}</p>
-                  <a href={\`mailto:\${order.customer.email}\`} className="text-sm text-primary hover:underline block">{order.customer.email}</a>
+                  <a href={`mailto:${order.customer.email}`} className="text-sm text-primary hover:underline block">{order.customer.email}</a>
                   <p className="text-sm text-gray-600">{order.customer.phone}</p>
                 </div>
                 
@@ -179,7 +179,7 @@ export default async function OrderDetailPage({ params }: { params: { id: string
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-500">Status</span>
-                  <span className={\`font-medium \${order.status === 'paid' || order.status === 'shipped' || order.status === 'delivered' ? 'text-green-600' : 'text-yellow-600'}\`}>
+                  <span className={`font-medium ${order.status === 'paid' || order.status === 'shipped' || order.status === 'delivered' ? 'text-green-600' : 'text-yellow-600'}`}>
                     {order.status === 'paid' || order.status === 'shipped' || order.status === 'delivered' ? 'Paid' : 'Unpaid'}
                   </span>
                 </div>

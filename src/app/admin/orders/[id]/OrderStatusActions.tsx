@@ -9,7 +9,7 @@ export function OrderStatusActions({ orderNumber, currentStatus }: { orderNumber
   const [loading, setLoading] = useState(false);
 
   const handleUpdateStatus = async (newStatus: string) => {
-    if (!confirm(\`Are you sure you want to mark this order as \${newStatus.toUpperCase()}?\`)) return;
+    if (!confirm(`Are you sure you want to mark this order as ${newStatus.toUpperCase()}?`)) return;
     
     setLoading(true);
     try {
