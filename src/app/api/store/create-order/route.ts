@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { kv } from '@vercel/kv';
+import { sendOrderCreatedEmail } from '@/lib/email';
 
 export async function POST(req: Request) {
   try {
@@ -81,6 +82,18 @@ export async function POST(req: Request) {
     
     // Also save it to a list of orders for the admin dashboard
     await kv.zadd('orders:list', { score: Date.now(), member: orderNumber });
+
+    // Send the Order Created Email
+    await sendOrderCreatedEmail(customer.email, {
+      customerName: customer.name,
+      orderNumber: orderNumber,
+      invoiceUrl: xenditData.invoice_url,
+      items: items,
+      subtotal: subtotal,
+      shippingCost: shippingCost,
+      courier: shipping?.courier || 'Courier',
+      total: totalAmount
+    });
 
     return NextResponse.json({ 
       success: true, 

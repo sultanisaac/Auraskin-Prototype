@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, Users, CalendarDays, Bell, ShoppingBag, Globe } from "lucide-react";
+import { Calendar, Users, CalendarDays, Bell, ShoppingBag, Globe, Package } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -46,6 +46,13 @@ export default function Sidebar() {
         )}>
           <Bell className="h-5 w-5 mr-3" />
           Notifications
+        </Link>
+        <Link href="/admin/orders" className={cn(
+          "flex items-center px-4 py-3 rounded-md font-medium transition-colors",
+          pathname === "/admin/orders" ? "bg-primary/5 text-primary" : "text-text hover:bg-primary/5 hover:text-primary"
+        )}>
+          <Package className="h-5 w-5 mr-3" />
+          Orders
         </Link>
         <Link href="/admin/product" className={cn(
           "flex items-center px-4 py-3 rounded-md font-medium transition-colors",

@@ -5,28 +5,14 @@ import Header from "@/components/AdminHeader";
 import { Plus, Edit, Trash2, Image as ImageIcon, X, Upload } from 'lucide-react';
 import { Button } from '@/components/Button';
 import Image from 'next/image';
-
-interface Product {
-  id: string;
-  name: string;
-  price: number;
-  category: string;
-  skin_type: string;
-  volume_ml: number;
-  image: string;
-}
-
-// Initial mock data for prototype
-const INITIAL_PRODUCTS: Product[] = [
-  { id: "1", name: "Auraskin Brightening Serum", price: 185000, category: "serum", skin_type: "all", volume_ml: 30, image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?q=80&w=600&auto=format&fit=crop" },
-  { id: "2", name: "Auraskin Hydra Moisturizer", price: 165000, category: "moisturizer", skin_type: "dry", volume_ml: 50, image: "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?q=80&w=600&auto=format&fit=crop" }
-];
+import { getProducts, saveProduct, deleteProduct, Product } from './actions';
 
 export default function AdminProductPage() {
-  const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
+  const [products, setProducts] = useState<Product[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   
   // Form State
   const [formData, setFormData] = useState({
@@ -38,22 +24,17 @@ export default function AdminProductPage() {
     image: ''
   });
 
-  // Load from local storage on mount (simulate DB)
+  // Fetch from KV on mount
   useEffect(() => {
-    const saved = localStorage.getItem('auraskin_admin_products');
-    if (saved) {
-      try {
-        setProducts(JSON.parse(saved));
-      } catch (e) {
-        console.error("Failed to parse products from local storage");
-      }
-    }
+    loadProducts();
   }, []);
 
-  // Save to local storage on change
-  useEffect(() => {
-    localStorage.setItem('auraskin_admin_products', JSON.stringify(products));
-  }, [products]);
+  const loadProducts = async () => {
+    setIsLoading(true);
+    const data = await getProducts();
+    setProducts(data);
+    setIsLoading(false);
+  };
 
   const handleOpenModal = (product?: Product) => {
     if (product) {
@@ -115,7 +96,7 @@ export default function AdminProductPage() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.name || !formData.price || !formData.image) {
@@ -124,7 +105,7 @@ export default function AdminProductPage() {
     }
 
     const newProduct: Product = {
-      id: editingProduct ? editingProduct.id : Date.now().toString(),
+      id: editingProduct ? editingProduct.id : '',
       name: formData.name,
       price: parseInt(formData.price),
       category: formData.category,
@@ -133,18 +114,23 @@ export default function AdminProductPage() {
       image: formData.image
     };
 
-    if (editingProduct) {
-      setProducts(products.map(p => p.id === editingProduct.id ? newProduct : p));
+    const res = await saveProduct(newProduct);
+    if (res.success) {
+      await loadProducts();
+      handleCloseModal();
     } else {
-      setProducts([...products, newProduct]);
+      alert(res.error || 'Failed to save product');
     }
-    
-    handleCloseModal();
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this product?")) {
-      setProducts(products.filter(p => p.id !== id));
+      const res = await deleteProduct(id);
+      if (res.success) {
+        await loadProducts();
+      } else {
+        alert(res.error || 'Failed to delete product');
+      }
     }
   };
 

@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
 import { getConfirmedEmailHtml, getDeclinedEmailHtml, getCancelledEmailHtml, getAdminNewRequestHtml, getClientRequestReceivedHtml } from './emailTemplates';
+import { getOrderCreatedEmailHtml, getPaymentConfirmedEmailHtml, getOrderShippedEmailHtml, getAdminNewOrderEmailHtml } from './ecommerceEmailTemplates';
 import { format, parseISO } from 'date-fns';
 
 // Create a reusable transporter using Gmail SMTP
@@ -116,6 +117,85 @@ export async function sendClientRequestReceivedEmail(toEmail: string, patientNam
     return { success: true };
   } catch (error) {
     console.error('Error sending client request received email:', error);
+    return { success: false, error };
+  }
+}
+
+/**
+ * Sends an email when a new E-Commerce order is created but not yet paid.
+ */
+export async function sendOrderCreatedEmail(toEmail: string, data: any) {
+  try {
+    const info = await transporter.sendMail({
+      from: `"AuraSkin" <${process.env.EMAIL_USER}>`,
+      to: toEmail,
+      subject: `Action Required: Complete your AuraSkin Order #${data.orderNumber}`,
+      html: getOrderCreatedEmailHtml(data),
+    });
+    console.log('Order created email sent:', info.messageId);
+    return { success: true };
+  } catch (error) {
+    console.error('Error sending order created email:', error);
+    return { success: false, error };
+  }
+}
+
+
+/**
+ * Sends an email when a payment is officially confirmed by Xendit.
+ */
+export async function sendPaymentConfirmedEmail(toEmail: string, data: any) {
+  try {
+    const info = await transporter.sendMail({
+      from: `"AuraSkin" <${process.env.EMAIL_USER}>`,
+      to: toEmail,
+      subject: `✅ Payment Confirmed — AuraSkin Order #${data.orderNumber}`,
+      html: getPaymentConfirmedEmailHtml(data),
+    });
+    console.log('Payment confirmed email sent:', info.messageId);
+    return { success: true };
+  } catch (error) {
+    console.error('Error sending payment confirmed email:', error);
+    return { success: false, error };
+  }
+}
+
+
+/**
+ * Sends an email when an order is shipped.
+ */
+export async function sendOrderShippedEmail(toEmail: string, data: any) {
+  try {
+    const info = await transporter.sendMail({
+      from: `"AuraSkin" <${process.env.EMAIL_USER}>`,
+      to: toEmail,
+      subject: `🚚 Your AuraSkin Order is on the way! (#${data.orderNumber})`,
+      html: getOrderShippedEmailHtml(data),
+    });
+    console.log('Order shipped email sent:', info.messageId);
+    return { success: true };
+  } catch (error) {
+    console.error('Error sending order shipped email:', error);
+    return { success: false, error };
+  }
+}
+
+
+/**
+ * Sends a notification email to the admin when a new e-commerce order is paid.
+ */
+export async function sendAdminNewOrderEmail(data: any) {
+  try {
+    const info = await transporter.sendMail({
+      from: `"AuraSkin System" <${process.env.EMAIL_USER}>`,
+      to: 'business@asimetrilab.com',
+      subject: `🚨 NEW PAID ORDER: #${data.orderNumber} - Rp ${new Intl.NumberFormat('id-ID').format(data.total)}`,
+      html: getAdminNewOrderEmailHtml(data),
+    });
+    console.log('Admin new order email sent:', info.messageId);
+    return { success: true };
+  } catch (error) {
+    console.error('Error sending admin new order email:', error);
     return { success: false, error };
   }
 }

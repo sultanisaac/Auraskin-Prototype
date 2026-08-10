@@ -28,11 +28,11 @@ A frictionless, no-login-required online store for Auraskin products (e.g., seru
 | Phase 1 | Foundation & Database Setup | ⬜ Not Started |
 | Phase 2 | Product Catalog & Store UI | ⏳ In Progress |
 | Phase 3 | Cart System | ✅ Completed |
-| Phase 4 | Checkout Flow — Address & Shipping | ⬜ Not Started |
-| Phase 5 | Payment Integration (Xendit) | ⬜ Not Started |
-| Phase 6 | Webhook & Logistics Automation (Biteship) | ⬜ Not Started |
-| Phase 7 | Email Confirmations & Receipts | ⬜ Not Started |
-| Phase 8 | Admin Order Management | ⬜ Not Started |
+| Phase 4 | Checkout Flow — Address & Shipping | ✅ Completed |
+| Phase 5 | Payment Integration (Xendit) | ✅ Completed |
+| Phase 6 | Webhook & Logistics Automation (Biteship) | ✅ Completed |
+| Phase 7 | Email Confirmations & Receipts | ✅ Completed |
+| Phase 8 | Admin Order Management | ✅ Completed |
 | Phase 9 | Polish, Testing & Deployment | ⬜ Not Started |
 
 ---
@@ -258,10 +258,10 @@ POST /api/store/shipping-rates
 **Response:** Array of courier options (JNE, SiCepat, Anteraja, GoSend, etc.) with price and estimated delivery days. The user selects one.
 
 ### 4.4 Deliverables
-- [ ] Multi-step checkout form with validation (`react-hook-form` + `zod`)
-- [ ] `/api/store/shipping-rates` API route calling Biteship
-- [ ] Live shipping rates displayed with price and ETA
-- [ ] Selected rate saved to checkout state
+- [x] Multi-step checkout form with validation (`react-hook-form` + `zod`)
+- [x] `/api/store/shipping-rates` API route calling Biteship
+- [x] Live shipping rates displayed with price and ETA
+- [x] Selected rate saved to checkout state
 
 ---
 
@@ -309,11 +309,11 @@ POST /api/store/create-order
 ```
 
 ### 5.4 Deliverables
-- [ ] `/api/store/create-order` API route complete
-- [ ] Stock validation before order creation
-- [ ] Xendit Invoice created and URL returned
-- [ ] Customer redirected to Xendit payment page
-- [ ] `/store/success` page with order number display
+- [x] `/api/store/create-order` API route complete
+- [x] Stock validation before order creation
+- [x] Xendit Invoice created and URL returned
+- [x] Customer redirected to Xendit payment page
+- [x] `/store/success` page with order number display
 
 ---
 
@@ -355,10 +355,10 @@ POST /api/webhooks/xendit
 ```
 
 ### 6.3 Deliverables
-- [ ] `/api/webhooks/xendit` route with signature verification
-- [ ] Order status updated to `paid` on successful payment
-- [ ] Biteship shipment automatically created
-- [ ] Tracking ID saved to order record
+- [x] `/api/webhooks/xendit` route with signature verification
+- [x] Order status updated to `paid` on successful payment
+- [x] Biteship shipment automatically created
+- [x] Tracking ID saved to order record
 
 ---
 
@@ -393,10 +393,10 @@ Thank you for choosing Auraskin — glow from within. ✨
 ```
 
 ### 7.3 Deliverables
-- [ ] Email templates created in `src/lib/emailTemplates.ts`
-- [ ] Order creation email sent on `create-order`
-- [ ] Receipt email sent on Xendit webhook `PAID`
-- [ ] Admin notification email sent on new order
+- [x] Email templates created in `src/lib/ecommerceEmailTemplates.ts`
+- [x] Order creation email sent on `create-order`
+- [x] Receipt email sent on Xendit webhook `PAID`
+- [x] Admin notification email sent on new order
 
 ---
 
@@ -424,10 +424,10 @@ Thank you for choosing Auraskin — glow from within. ✨
 - Low stock alert badge (< 5 units)
 
 ### 8.4 Deliverables
-- [ ] `/admin/orders` list page
-- [ ] `/admin/orders/[id]` detail page with status controls
-- [ ] `/admin/products` CRUD management page
-- [ ] Manual status update API route
+- [x] `/admin/orders` list page
+- [x] `/admin/orders/[id]` detail page with status controls
+- [x] `/admin/products` CRUD management page (Connected to KV)
+- [x] Manual status update API route (Server Actions)
 
 ---
 
@@ -445,21 +445,21 @@ Thank you for choosing Auraskin — glow from within. ✨
 - [ ] Receipt email is received by customer
 - [ ] Admin receives new order notification
 - [ ] Admin can view the order in `/admin/orders`
-- [ ] Stock is decremented after successful order
-- [ ] Out-of-stock items cannot be added to cart
+- [x] Stock is decremented after successful order
+- [x] Out-of-stock items cannot be added to cart
 
-### 9.2 Production Credentials Swap
-- [ ] Replace all Xendit sandbox keys with production keys
-- [ ] Replace all Biteship test keys with production keys
-- [ ] Update Xendit webhook URL to production domain
-- [ ] Test one live payment end-to-end
+### 9.2 Production Credentials Swap (Skipped for Prototype)
+- [x] Replace all Xendit sandbox keys with production keys *(Skipped)*
+- [x] Replace all Biteship test keys with production keys *(Skipped)*
+- [x] Update Xendit webhook URL to production domain *(Done in Vercel)*
+- [x] Test one live payment end-to-end *(Skipped)*
 
 ### 9.3 SEO & UX
-- [ ] `/store` page has proper metadata (title, description, OG image)
-- [ ] Product pages have unique metadata per product (great for SEO)
-- [ ] Loading skeletons on product grid while fetching
-- [ ] Error states (out of stock, payment failed, API errors) handled gracefully
-- [ ] Mobile responsive — entire checkout flow works on phone
+- [x] `/store` page has proper metadata (title, description, OG image)
+- [x] Product pages have unique metadata per product (great for SEO)
+- [x] Loading skeletons on product grid while fetching
+- [x] Error states (out of stock, payment failed, API errors) handled gracefully
+- [x] Mobile responsive — entire checkout flow works on phone
 
 ---
 
