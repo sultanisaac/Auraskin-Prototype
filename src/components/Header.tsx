@@ -52,6 +52,7 @@ export const Header = () => {
   ];
 
   return (
+    <>
     <header className={`sticky top-0 w-full transition-all duration-300 ${isOpen ? 'z-[100]' : 'z-50'} ${isScrolled ? 'bg-white/95 backdrop-blur-md shadow-md py-3' : 'bg-transparent py-5'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
         <Link href="/" className="flex items-center gap-2 relative z-[60]">
@@ -99,12 +100,14 @@ export const Header = () => {
           <button 
             onClick={() => setIsOpen(!isOpen)} 
             className="p-2 text-primary focus:outline-none active:scale-95 transition-transform"
-          aria-label="Toggle Menu"
-        >
-          {isOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
-        </button>
+            aria-label="Toggle Menu"
+          >
+            {isOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
+          </button>
+        </div>
       </div>
-      </div>
+
+    </header>
 
       {/* Mobile Fullscreen Navigation */}
       <AnimatePresence>
@@ -138,10 +141,9 @@ export const Header = () => {
                 {navItems.map((item) => (
                   <Link key={item.label} 
                     href={item.path} 
-                    className="text-2xl font-serif font-medium text-gray-800 hover:text-primary transition-colors flex items-center justify-between border-b border-gray-50 pb-4"
+                    className="text-2xl font-serif font-medium text-gray-800 hover:text-primary transition-colors block text-center border-b border-gray-50 pb-4"
                   >
                     <span>{item.label}</span>
-                    <ArrowRight className="w-5 h-5 text-gray-300" />
                   </Link>
                 ))}
               </div>
@@ -162,6 +164,6 @@ export const Header = () => {
         )}
       </AnimatePresence>
       <CartDrawer />
-    </header>
+    </>
   );
 };
