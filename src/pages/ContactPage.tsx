@@ -7,12 +7,12 @@ export default function ContactPage() {
   const router = useRouter();
   const navigate = (path: string | -1) => { if (path === -1) router.back(); else router.push(path); };
   return (
-    <section className="py-16 md:py-24 bg-gray-50 min-h-[calc(100vh-200px)] flex items-center">
+    <section className="pt-20 pb-12 md:pb-16 bg-gray-50 min-h-[calc(100vh-200px)] flex items-center">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <button onClick={() => navigate(-1)} className="inline-flex items-center gap-2 text-gray-500 hover:text-primary transition font-medium text-sm mb-8 md:mb-10">
+        <button onClick={() => navigate(-1)} className="inline-flex items-center gap-2 text-gray-500 hover:text-primary transition font-medium text-sm mb-6 md:mb-8">
           <ArrowLeft className="w-4 h-4" /> Back
         </button>
-        <div className="text-center mb-10">
+        <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/30 text-primary font-medium text-xs mb-3">
             <MapPin className="w-3.5 h-3.5" /> Find Us
           </div>

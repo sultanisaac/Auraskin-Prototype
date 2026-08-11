@@ -49,18 +49,18 @@ export default function TreatmentsPage() {
   ];
 
   return (
-    <div className="bg-white min-h-screen py-12 md:py-20">
+    <div className="bg-white min-h-screen py-8 md:py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <button onClick={() => navigate(-1)} className="inline-flex items-center gap-2 text-gray-500 hover:text-primary transition-colors mb-8 md:mb-12">
+          <button onClick={() => navigate(-1)} className="inline-flex items-center gap-2 text-gray-500 hover:text-primary transition-colors mb-6 md:mb-8">
             <ArrowLeft className="w-5 h-5" />
             <span className="font-medium">Back</span>
           </button>
-          <div className="text-center mb-16 md:mb-24">
+          <div className="text-center mb-10 md:mb-16">
             <h1 className="font-serif text-4xl md:text-6xl font-bold text-gray-900 mb-6">Our Signature Treatments</h1>
             <p className="text-base md:text-xl text-gray-600 max-w-3xl mx-auto font-light leading-relaxed">Experience aesthetic excellence designed to honor your natural beauty and elevate your spirit. Each treatment is tailored to your unique skin biology.</p>
           </div>
           
-          <div className="space-y-16 md:space-y-32">
+          <div className="space-y-12 md:space-y-20">
             {treatments.map((t, i) => (
               <div key={i} className={`flex flex-col ${i % 2 === 1 ? 'md:flex-row-reverse' : 'md:flex-row'} items-center gap-8 md:gap-16`}>
                 {/* Image Side */}
@@ -127,7 +127,7 @@ export default function TreatmentsPage() {
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="bg-gray-50 rounded-[2.5rem] p-8 md:p-16 mt-20 md:mt-32 text-center max-w-4xl mx-auto border border-gray-100 shadow-sm relative overflow-hidden"
+            className="bg-gray-50 rounded-[2.5rem] p-8 md:p-12 mt-12 md:mt-16 text-center max-w-4xl mx-auto border border-gray-100 shadow-sm relative overflow-hidden"
           >
             <div className="absolute top-0 right-0 p-8 opacity-10">
               <Sparkles className="w-32 h-32 text-primary" />

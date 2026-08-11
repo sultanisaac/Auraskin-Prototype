@@ -30,11 +30,11 @@ export default function StoreClient({ initialProducts }: { initialProducts: Prod
   const categories = ["all", "serum", "moisturizer", "toner", "cleanser", "bundle"];
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-24 pb-16">
+    <div className="min-h-screen bg-gray-50 pt-20 pb-12 md:pb-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Back Button */}
-        <div className="mb-8">
+        <div className="mb-6 md:mb-8">
           <button onClick={() => navigate(-1)} className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-primary transition-colors">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Go Back
@@ -42,7 +42,7 @@ export default function StoreClient({ initialProducts }: { initialProducts: Prod
         </div>
 
         {/* Header Section */}
-        <div className="flex flex-col items-center justify-center text-center mb-12">
+        <div className="flex flex-col items-center justify-center text-center mb-8 md:mb-10">
           <h1 className="text-4xl md:text-5xl font-serif font-bold text-primary mb-4">Auraskin Store</h1>
           <p className="text-lg text-gray-600 max-w-2xl">
             Discover our premium skincare collection tailored for your skin type. Glow from within with Auraskin.
@@ -50,7 +50,7 @@ export default function StoreClient({ initialProducts }: { initialProducts: Prod
         </div>
 
         {/* Filter Bar */}
-        <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+        <div className="flex flex-col md:flex-row justify-between items-center mb-6 md:mb-8 gap-4">
           <div className="flex items-center gap-2 overflow-x-auto w-full pb-2 md:pb-0 scrollbar-hide">
             <Filter className="w-5 h-5 text-gray-400 mr-2 shrink-0" />
             {categories.map((cat) => (

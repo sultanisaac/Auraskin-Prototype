@@ -24,6 +24,26 @@ export default function CheckoutPage() {
     postalCode: ''
   });
 
+  const SHIPPING_OPTIONS = [
+    { id: 'jne_reg', courier: 'JNE', service: 'REG', name: 'JNE Regular', est: '2-3 days', price: 25000 },
+    { id: 'sicepat_reg', courier: 'SiCepat', service: 'REG', name: 'SiCepat REG', est: '2-3 days', price: 23000 },
+    { id: 'anteraja_reg', courier: 'AnterAja', service: 'Reguler', name: 'AnterAja Reguler', est: '2-3 days', price: 22000 },
+    { id: 'jnt_ez', courier: 'J&T', service: 'EZ', name: 'J&T EZ', est: '2-3 days', price: 24000 },
+    { id: 'ninja_std', courier: 'Ninja Xpress', service: 'Standard', name: 'Ninja Standard', est: '2-3 days', price: 21000 },
+    { id: 'id_express_std', courier: 'ID Express', service: 'Standard', name: 'ID Express Standard', est: '2-3 days', price: 20000 },
+    { id: 'sap_reg', courier: 'SAP Express', service: 'Reguler', name: 'SAP Reguler', est: '2-3 days', price: 23500 },
+    { id: 'lion_reg', courier: 'Lion Parcel', service: 'REGPACK', name: 'Lion Parcel REGPACK', est: '2-3 days', price: 24500 },
+    { id: 'pos_kilat', courier: 'Pos Indonesia', service: 'Kilat Khusus', name: 'Pos Kilat Khusus', est: '2-4 days', price: 21000 },
+    { id: 'tiki_reg', courier: 'TIKI', service: 'REG', name: 'TIKI Reguler', est: '2-3 days', price: 24000 },
+    { id: 'wahana_normal', courier: 'Wahana', service: 'Normal', name: 'Wahana Tarif Normal', est: '3-5 days', price: 15000 },
+    { id: 'paxel_sameday', courier: 'Paxel', service: 'SameDay', name: 'Paxel Same Day', est: 'Same day', price: 30000 },
+    { id: 'gojek_sameday', courier: 'Gojek', service: 'SameDay', name: 'GoSend Same Day', est: 'Same day', price: 35000 },
+    { id: 'grab_sameday', courier: 'Grab', service: 'SameDay', name: 'GrabExpress Same Day', est: 'Same day', price: 34000 },
+    { id: 'lalamove_inst', courier: 'Lalamove', service: 'Instant', name: 'Lalamove Instant', est: 'Instant', price: 45000 },
+  ];
+  
+  const [selectedShipping, setSelectedShipping] = useState(SHIPPING_OPTIONS[0]);
+
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -68,9 +88,9 @@ export default function CheckoutPage() {
           postal_code: formData.postalCode
         },
         shipping: {
-          courier: "JNE",
-          service: "REG",
-          price: 25000 // Dummy flat rate for now
+          courier: selectedShipping.courier,
+          service: selectedShipping.service,
+          price: selectedShipping.price
         }
       };
 
@@ -100,7 +120,7 @@ export default function CheckoutPage() {
 
   if (!mounted) return null;
 
-  const shippingCost = 25000;
+  const shippingCost = selectedShipping.price;
   const finalTotal = getTotalPrice() + (items.length > 0 ? shippingCost : 0);
 
   return (
@@ -180,15 +200,27 @@ export default function CheckoutPage() {
                 <span className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm">3</span>
                 Shipping Method
               </h2>
-              <div className="p-4 border border-primary/30 bg-primary/5 rounded-xl flex justify-between items-center cursor-pointer">
-                <div className="flex items-center gap-3">
-                  <Truck className="w-5 h-5 text-primary" />
-                  <div>
-                    <p className="font-bold text-gray-900">JNE Regular (Flat Rate)</p>
-                    <p className="text-xs text-gray-500">Estimated 2-3 days</p>
+              <div className="space-y-3 max-h-96 overflow-y-auto custom-scrollbar pr-2">
+                {SHIPPING_OPTIONS.map((option) => (
+                  <div 
+                    key={option.id}
+                    onClick={() => setSelectedShipping(option)}
+                    className={`p-4 border rounded-xl flex justify-between items-center cursor-pointer transition-colors ${
+                      selectedShipping.id === option.id 
+                        ? 'border-primary/50 bg-primary/5 ring-1 ring-primary/50' 
+                        : 'border-gray-200 hover:border-primary/30 hover:bg-gray-50'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Truck className={`w-5 h-5 ${selectedShipping.id === option.id ? 'text-primary' : 'text-gray-400'}`} />
+                      <div>
+                        <p className={`font-bold ${selectedShipping.id === option.id ? 'text-gray-900' : 'text-gray-700'}`}>{option.name}</p>
+                        <p className="text-xs text-gray-500">Estimated {option.est}</p>
+                      </div>
+                    </div>
+                    <span className="font-bold text-gray-900">{formatPrice(option.price)}</span>
                   </div>
-                </div>
-                <span className="font-bold text-gray-900">{formatPrice(shippingCost)}</span>
+                ))}
               </div>
             </div>
 
