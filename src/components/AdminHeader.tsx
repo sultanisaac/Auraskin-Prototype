@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Search, Info, Menu, X, Calendar, CalendarDays, Users, ShoppingBag } from "lucide-react";
+import { Bell, Search, Info, Menu, X, Calendar, CalendarDays, Users, ShoppingBag, Package } from "lucide-react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
@@ -60,6 +60,9 @@ function HeaderContent({ title, subtitle, pendingCount = 0 }: HeaderProps) {
                   </Link>
                   <Link href="/admin/notifications" onClick={() => setShowMobileMenu(false)} className={cn("flex items-center px-4 py-3 rounded-md font-medium text-sm", pathname === "/admin/notifications" ? "bg-primary/10 text-primary" : "text-text hover:bg-accent/10")}>
                     <Bell className="h-4 w-4 mr-3" /> Notifications
+                  </Link>
+                  <Link href="/admin/orders" onClick={() => setShowMobileMenu(false)} className={cn("flex items-center px-4 py-3 rounded-md font-medium text-sm", pathname === "/admin/orders" ? "bg-primary/10 text-primary" : "text-text hover:bg-accent/10")}>
+                    <Package className="h-4 w-4 mr-3" /> Orders
                   </Link>
                   <Link href="/admin/product" onClick={() => setShowMobileMenu(false)} className={cn("flex items-center px-4 py-3 rounded-md font-medium text-sm", pathname === "/admin/product" ? "bg-primary/10 text-primary" : "text-text hover:bg-accent/10")}>
                     <ShoppingBag className="h-4 w-4 mr-3" /> Products

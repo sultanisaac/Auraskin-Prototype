@@ -40,12 +40,14 @@ export default function BookingModal({ booking, onClose, onUpdate }: BookingModa
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-text/20 backdrop-blur-sm"
+      onClick={onClose}
     >
       <motion.div 
         initial={{ scale: 0.95, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 300, damping: 25 }}
         className="bg-white/90 backdrop-blur-xl border border-white/50 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
       >
         <div className="relative h-24 bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center px-6">
           <button 
