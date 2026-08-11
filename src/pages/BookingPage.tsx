@@ -181,20 +181,18 @@ export default function BookingPage() {
   }
 
   return (
-    <div className="bg-background min-h-screen py-12 md:py-20">
+    <div className="bg-background min-h-screen pt-20 pb-12 md:pb-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Navigation Back Link */}
-        <div className="mb-8">
+        <div className="mb-6 md:mb-8">
           <button onClick={() => navigate(-1)} className="inline-flex items-center gap-2 text-gray-500 hover:text-primary transition font-medium text-sm">
             <ArrowLeft className="w-4 h-4" /> Back
           </button>
         </div>
 
-
-
         {/* Page Title & Intro */}
-        <div className="max-w-3xl mb-12 md:mb-16">
+        <div className="max-w-3xl mb-8 md:mb-10">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/30 text-primary font-medium text-sm mb-4">
             <Sparkles className="w-4 h-4 text-primary fill-primary" /> 100% Free Consultation
           </div>

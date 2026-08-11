@@ -422,11 +422,14 @@ Thank you for choosing Auraskin — glow from within. ✨
 - Edit price, stock, description, skin type, volume
 - Toggle `is_active` (show/hide from store)
 - Low stock alert badge (< 5 units)
+- **New:** Mobile-optimized card grid with real-time search filtering
+- **New:** Long-press to enter Batch Selection Mode for deleting multiple products
 
 ### 8.4 Deliverables
 - [x] `/admin/orders` list page
 - [x] `/admin/orders/[id]` detail page with status controls
 - [x] `/admin/products` CRUD management page (Connected to KV)
+- [x] `/admin/products` Mobile UI/UX optimization (Grid, Search, Batch Delete)
 - [x] Manual status update API route (Server Actions)
 
 ---

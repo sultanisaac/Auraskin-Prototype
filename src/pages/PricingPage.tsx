@@ -61,18 +61,18 @@ export default function PricingPage() {
   });
 
   return (
-    <div className="bg-background min-h-screen py-12 md:py-20">
+    <div className="bg-background min-h-screen py-8 md:py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Navigation Back Link */}
-        <div className="mb-8">
+        <div className="mb-6 md:mb-8">
           <button onClick={() => navigate(-1)} className="inline-flex items-center gap-2 text-gray-500 hover:text-primary transition font-medium text-sm">
             <ArrowLeft className="w-4 h-4" /> Back
           </button>
         </div>
 
         {/* Page Title */}
-        <div className="max-w-3xl mb-12 md:mb-16">
+        <div className="max-w-3xl mb-10 md:mb-12">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/30 text-primary font-medium text-sm mb-4">
             <ShieldCheck className="w-4 h-4 text-primary fill-primary" /> 100% Honest Pricing
           </div>
@@ -85,7 +85,7 @@ export default function PricingPage() {
         </div>
 
         {/* Category Tabs & Interactive Search */}
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 md:p-8 mb-12">
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 md:p-8 mb-10">
           <div className="flex flex-col md:flex-row gap-6 md:items-center justify-between pb-6 border-b border-gray-100">
             
             {/* Tabs */}
@@ -163,8 +163,8 @@ export default function PricingPage() {
         </div>
 
         {/* Pricing Packages Section */}
-        <div className="mb-20">
-          <div className="text-center mb-10 md:mb-12">
+        <div className="mb-12 md:mb-16">
+          <div className="text-center mb-8 md:mb-10">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 text-secondary font-medium text-sm mb-4">
               <Percent className="w-4 h-4" /> Bundle & Save
             </div>
@@ -246,7 +246,7 @@ export default function PricingPage() {
         </div>
 
         {/* Final CTA Banner */}
-        <div className="mt-16 bg-primary text-white rounded-3xl p-8 md:p-12 text-center shadow-lg relative overflow-hidden">
+        <div className="mt-12 md:mt-16 bg-primary text-white rounded-3xl p-8 md:p-12 text-center shadow-lg relative overflow-hidden">
           <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
           <div className="relative z-10 max-w-2xl mx-auto space-y-6">
             <h2 className="font-serif text-3xl md:text-4xl font-bold">Unsure which treatment fits your skin?</h2>

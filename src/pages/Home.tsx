@@ -145,7 +145,7 @@ const BeforeAfter = () => {
   ];
 
   return (
-    <section id="results" className="py-16 md:py-24 bg-background scroll-mt-20">
+    <section id="results" className="py-10 md:py-16 bg-background scroll-mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h2 className="font-serif text-2xl md:text-4xl font-bold text-gray-900 mb-3">The Beautiful Transformations</h2>
         <p className="text-sm md:text-base text-gray-600 mb-10 md:mb-16 max-w-2xl mx-auto">Witness the artistry of our personalized care through the journeys of our beloved community.</p>
@@ -208,7 +208,7 @@ const GALLERY_ITEMS = [
 ];
 
 const GallerySection = () => (
-  <section id="gallery" className="py-16 md:py-24 bg-white border-t border-gray-100 scroll-mt-20">
+  <section id="gallery" className="py-10 md:py-16 bg-white border-t border-gray-100 scroll-mt-20">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="text-center mb-10">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/30 text-primary font-medium text-xs mb-3">
@@ -260,7 +260,7 @@ const PACKAGES = [
 ];
 
 const PromotionsSection = () => (
-  <section id="promotions" className="py-16 md:py-24 bg-primary/5 scroll-mt-20">
+  <section id="promotions" className="py-10 md:py-16 bg-primary/5 scroll-mt-20">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="text-center mb-10 md:mb-14">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/20 text-secondary font-medium text-xs mb-3">
@@ -326,7 +326,7 @@ const WhyChooseUs = () => {
   ];
 
   return (
-    <section id="about" className="py-16 md:py-24 bg-primary text-white scroll-mt-20">
+    <section id="about" className="py-10 md:py-16 bg-primary text-white scroll-mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12 md:mb-16">
           <h2 className="font-serif text-2xl md:text-4xl font-bold mb-3">Why Choose AuraSkin</h2>
@@ -359,7 +359,7 @@ const SocialProof = () => {
   ];
 
   return (
-    <section id="reviews" className="py-16 md:py-24 bg-white border-b border-gray-100 scroll-mt-20">
+    <section id="reviews" className="py-10 md:py-16 bg-white border-b border-gray-100 scroll-mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-10 md:mb-16">
           <h2 className="font-serif text-2xl md:text-4xl font-bold text-gray-900 mb-3">Loved By Thousands</h2>
@@ -398,7 +398,7 @@ const SocialProof = () => {
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 text-center border-t border-gray-100 pt-10 md:pt-16 mt-16">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 text-center border-t border-gray-100 pt-8 md:pt-12 mt-10">
           <div>
             <div className="text-2xl md:text-4xl font-serif font-bold text-primary mb-1">20,000+</div>
             <div className="text-xs md:text-sm text-gray-500 font-medium">Patients</div>
@@ -428,7 +428,7 @@ const SocialProof = () => {
 
 
 const FinalCTA = () => (
-  <section className="py-16 md:py-24 bg-primary relative overflow-hidden text-center">
+  <section className="py-10 md:py-16 bg-primary relative overflow-hidden text-center">
     <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
     <div className="max-w-4xl mx-auto px-4 relative z-10 text-white space-y-8">
       <h2 className="font-serif text-2xl sm:text-3xl md:text-5xl font-bold leading-tight">Ready To Transform Your Skin?</h2>

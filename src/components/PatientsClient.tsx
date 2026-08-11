@@ -229,6 +229,7 @@ export default function PatientsClient({ bookings }: { bookings: Booking[] }) {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]"
+              onClick={(e) => e.stopPropagation()}
             >
               <div className="p-6 md:p-8 border-b border-accent/20 bg-gray-50/50 flex justify-between items-start shrink-0">
                 <div className="flex items-center gap-4">

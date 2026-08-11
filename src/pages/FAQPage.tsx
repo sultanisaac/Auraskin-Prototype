@@ -54,18 +54,18 @@ export default function FAQPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-background pt-24 pb-16">
+    <div className="min-h-screen bg-background pt-20 pb-12 md:pb-16">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Back Button */}
-        <div className="mb-8">
+        <div className="mb-6 md:mb-8">
           <button onClick={() => navigate(-1)} className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-primary transition-colors">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Go Back
           </button>
         </div>
 
-        <h1 className="font-serif text-3xl md:text-5xl font-bold text-center text-gray-900 mb-6">Frequently Asked Questions</h1>
-        <p className="text-center text-gray-600 mb-12 max-w-xl mx-auto">
+        <h1 className="font-serif text-3xl md:text-5xl font-bold text-center text-gray-900 mb-4 md:mb-6">Frequently Asked Questions</h1>
+        <p className="text-center text-gray-600 mb-8 md:mb-10 max-w-xl mx-auto">
           Find answers to the most common questions about our treatments, consultations, and safety protocols.
         </p>
         <div className="space-y-4">
@@ -80,7 +80,7 @@ export default function FAQPage() {
           ))}
         </div>
 
-        <div className="mt-16 bg-primary/5 rounded-3xl p-8 md:p-12 text-center border border-primary/10">
+        <div className="mt-12 md:mt-16 bg-primary/5 rounded-3xl p-8 md:p-12 text-center border border-primary/10">
           <h2 className="font-serif text-2xl font-bold text-gray-900 mb-4">Still have questions?</h2>
           <p className="text-gray-600 mb-8 max-w-lg mx-auto">
             Our clinical team is always ready to help. Reach out to us directly or book a free consultation to discuss your specific needs.
