@@ -60,7 +60,7 @@ export default function FAQPage() {
         <div className="mb-6 md:mb-8">
           <button onClick={() => navigate(-1)} className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-primary transition-colors">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Go Back
+            Back
           </button>
         </div>
 
