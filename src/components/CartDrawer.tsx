@@ -71,61 +71,72 @@ export function CartDrawer() {
                   <ShoppingBag className="w-16 h-16 text-gray-200" />
                   <p className="text-lg font-medium">Your cart is empty</p>
                   <p className="text-sm">Looks like you haven't added anything to your cart yet.</p>
-                  <Button variant="primary" onClick={closeCart} className="mt-4">
-                    Continue Shopping
-                  </Button>
+                  <Link href="/store" onClick={closeCart} className="mt-4">
+                    <Button variant="primary">
+                      Continue Shopping
+                    </Button>
+                  </Link>
                 </div>
               ) : (
-                items.map((item) => (
-                  <div key={item.id} className="flex gap-4 p-3 bg-gray-50 rounded-2xl border border-gray-100">
-                    {/* Item Image */}
-                    <div className="relative w-20 h-24 rounded-xl overflow-hidden bg-white shrink-0">
-                      <Image 
-                        src={item.image} 
-                        alt={item.name}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-
-                    {/* Item Details */}
-                    <div className="flex flex-col flex-1 justify-between py-1">
-                      <div>
-                        <div className="flex justify-between items-start gap-2 mb-1">
-                          <h3 className="font-bold text-gray-900 text-sm leading-tight line-clamp-2">{item.name}</h3>
-                          <button 
-                            onClick={() => removeItem(item.id)}
-                            className="text-gray-400 hover:text-red-500 transition-colors p-1 -mt-1 -mr-1"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                        <p className="font-bold text-primary text-sm">{formatPrice(item.price)}</p>
+                <div className="space-y-4">
+                  {items.map((item) => (
+                    <div key={item.id} className="flex gap-4 p-3 bg-gray-50 rounded-2xl border border-gray-100">
+                      {/* Item Image */}
+                      <div className="relative w-20 h-24 rounded-xl overflow-hidden bg-white shrink-0">
+                        <Image 
+                          src={item.image} 
+                          alt={item.name}
+                          fill
+                          className="object-cover"
+                        />
                       </div>
 
-                      {/* Quantity Controls */}
-                      <div className="flex items-center gap-3 mt-2">
-                        <div className="flex items-center bg-white rounded-lg border border-gray-200 p-0.5">
-                          <button 
-                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                            className="p-1 hover:bg-gray-100 rounded-md transition-colors text-gray-600"
-                          >
-                            <Minus className="w-4 h-4" />
-                          </button>
-                          <span className="w-8 text-center text-sm font-semibold text-gray-900">
-                            {item.quantity}
-                          </span>
-                          <button 
-                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                            className="p-1 hover:bg-gray-100 rounded-md transition-colors text-gray-600"
-                          >
-                            <Plus className="w-4 h-4" />
-                          </button>
+                      {/* Item Details */}
+                      <div className="flex flex-col flex-1 justify-between py-1">
+                        <div>
+                          <div className="flex justify-between items-start gap-2 mb-1">
+                            <h3 className="font-bold text-gray-900 text-sm leading-tight line-clamp-2">{item.name}</h3>
+                            <button 
+                              onClick={() => removeItem(item.id)}
+                              className="text-gray-400 hover:text-red-500 transition-colors p-1 -mt-1 -mr-1"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                          <p className="font-bold text-primary text-sm">{formatPrice(item.price)}</p>
+                        </div>
+
+                        {/* Quantity Controls */}
+                        <div className="flex items-center gap-3 mt-2">
+                          <div className="flex items-center bg-white rounded-lg border border-gray-200 p-0.5">
+                            <button 
+                              onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                              className="p-1 hover:bg-gray-100 rounded-md transition-colors text-gray-600"
+                            >
+                              <Minus className="w-4 h-4" />
+                            </button>
+                            <span className="w-8 text-center text-sm font-semibold text-gray-900">
+                              {item.quantity}
+                            </span>
+                            <button 
+                              onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                              className="p-1 hover:bg-gray-100 rounded-md transition-colors text-gray-600"
+                            >
+                              <Plus className="w-4 h-4" />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
+                  ))}
+                  <div className="pt-2 pb-4">
+                    <Link href="/store" onClick={closeCart} className="block w-full">
+                      <Button variant="outline" className="w-full border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900 hover:border-gray-300">
+                        Continue Shopping
+                      </Button>
+                    </Link>
                   </div>
-                ))
+                </div>
               )}
             </div>
 
