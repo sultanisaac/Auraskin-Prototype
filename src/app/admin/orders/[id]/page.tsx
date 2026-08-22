@@ -203,6 +203,7 @@ export default async function OrderDetailPage({ params }: { params: { id: string
                     <span className="text-gray-500">Xendit Invoice ID</span>
                     <span className="text-gray-900 font-mono text-xs break-all">{order.xendit_invoice_id}</span>
                   </div>
+                )}
                 <div className="flex justify-between items-center pt-3 border-t border-gray-100">
                   <span className="text-gray-500">Payment Method</span>
                   <span className="text-gray-900 font-medium">
