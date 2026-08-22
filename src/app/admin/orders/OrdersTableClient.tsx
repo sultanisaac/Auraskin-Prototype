@@ -167,7 +167,7 @@ export default function OrdersTableClient({ orders }: { orders: any[] }) {
               <div className="p-6 overflow-y-auto space-y-6">
                 
                 {/* Summary Row */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                   <div className="bg-gray-50 rounded-xl p-4">
                     <p className="text-xs text-gray-500 uppercase font-semibold mb-1">Status</p>
                     <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusBadge(selectedOrder.status)}`}>
@@ -188,6 +188,13 @@ export default function OrdersTableClient({ orders }: { orders: any[] }) {
                   <div className="bg-gray-50 rounded-xl p-4">
                     <p className="text-xs text-gray-500 uppercase font-semibold mb-1">Shipping</p>
                     <p className="text-sm font-medium text-gray-900 uppercase">{selectedOrder.shipping?.courier} {selectedOrder.shipping?.service}</p>
+                  </div>
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <p className="text-xs text-gray-500 uppercase font-semibold mb-1">Payment</p>
+                    <p className="text-sm font-medium text-gray-900">
+                      {selectedOrder.payment_method ? selectedOrder.payment_method.replace(/_/g, ' ').toUpperCase() : '-'}
+                      {selectedOrder.payment_channel ? ` (${selectedOrder.payment_channel.replace(/_/g, ' ').toUpperCase()})` : ''}
+                    </p>
                   </div>
                 </div>
 
@@ -271,7 +278,18 @@ export default function OrdersTableClient({ orders }: { orders: any[] }) {
                 </div>
 
               </div>
-              <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+              <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-between gap-3 items-center">
+                {selectedOrder.status?.toLowerCase() === 'paid' ? (
+                  <button 
+                    onClick={() => {
+                      const printWindow = window.open(`/admin/orders/${selectedOrder.order_number}/receipt`, '_blank');
+                      if (printWindow) printWindow.focus();
+                    }}
+                    className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary/90 transition-colors"
+                  >
+                    Printable Receipt
+                  </button>
+                ) : <div />}
                 <button 
                   onClick={() => setSelectedOrder(null)}
                   className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
