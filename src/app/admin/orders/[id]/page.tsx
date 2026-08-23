@@ -62,7 +62,16 @@ export default async function OrderDetailPage({ params }: { params: { id: string
               <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium border ${getStatusBadge(order.status)}`}>
                 {order.status.toUpperCase()}
               </span>
-              
+              {order.status?.toLowerCase() === 'paid' && (
+                <a 
+                  href={`/admin/orders/${order.order_number}/receipt`} 
+                  target="_blank" 
+                  rel="noreferrer"
+                  className="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
+                >
+                  Print Receipt
+                </a>
+              )}
               <OrderStatusActions orderNumber={order.order_number} currentStatus={order.status} />
             </div>
           </div>
@@ -195,6 +204,18 @@ export default async function OrderDetailPage({ params }: { params: { id: string
                     <span className="text-gray-900 font-mono text-xs break-all">{order.xendit_invoice_id}</span>
                   </div>
                 )}
+                <div className="flex justify-between items-center pt-3 border-t border-gray-100">
+                  <span className="text-gray-500">Payment Method</span>
+                  <span className="text-gray-900 font-medium">
+                    {order.payment_method ? order.payment_method.replace(/_/g, ' ').toUpperCase() : 'N/A'}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-500">Payment Channel</span>
+                  <span className="text-gray-900">
+                    {order.payment_channel ? order.payment_channel.replace(/_/g, ' ').toUpperCase() : 'N/A'}
+                  </span>
+                </div>
               </div>
             </div>
 

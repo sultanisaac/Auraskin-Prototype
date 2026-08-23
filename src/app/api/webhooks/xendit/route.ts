@@ -40,6 +40,8 @@ export async function POST(req: Request) {
     // 3. Update order status to PAID
     order.status = 'paid';
     order.paid_at = new Date().toISOString();
+    order.payment_method = payload.payment_method;
+    order.payment_channel = payload.payment_channel;
 
     // 3.5 Decrement Stock for each item
     try {
