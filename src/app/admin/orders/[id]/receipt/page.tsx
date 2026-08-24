@@ -4,8 +4,9 @@ import PrintButtons from './PrintButtons';
 
 export const revalidate = 0;
 
-export default async function ReceiptPage({ params }: { params: { id: string } }) {
-  const orderNumber = params.id;
+export default async function ReceiptPage({ params }: { params: Promise<{ id: string }> | { id: string } }) {
+  const resolvedParams = await Promise.resolve(params);
+  const orderNumber = resolvedParams.id;
   const orderKey = `order:${orderNumber}`;
   
   const order = await kv.get(orderKey) as any;
@@ -38,13 +39,13 @@ export default async function ReceiptPage({ params }: { params: { id: string } }
         </div>
       </div>
       
-      {order.tracking_id && (
-        <div className="border-4 border-black p-4 mb-8 text-center bg-gray-50">
-          <p className="text-gray-600 font-bold uppercase tracking-widest mb-1">Waybill / Tracking Number</p>
-          <p className="text-4xl font-bold font-mono tracking-wider">{order.tracking_id}</p>
-          <p className="text-gray-600 mt-2 font-medium">{order.shipping?.courier?.toUpperCase()} - {order.shipping?.service?.toUpperCase()}</p>
-        </div>
-      )}
+      <div className="border-4 border-black p-4 mb-8 text-center bg-gray-50">
+        <p className="text-gray-600 font-bold uppercase tracking-widest mb-1">Waybill / Tracking Number</p>
+        <p className="text-4xl font-bold font-mono tracking-wider">{order.tracking_id || order.waybill_id || 'PENDING GENERATION'}</p>
+        <p className="text-gray-600 mt-2 font-medium">
+          {order.shipping?.courier?.toUpperCase() || 'COURIER'} - {order.shipping?.service?.toUpperCase() || 'SERVICE'}
+        </p>
+      </div>
 
       <div className="grid grid-cols-2 gap-8 mb-8">
         <div>

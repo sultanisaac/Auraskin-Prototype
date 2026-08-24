@@ -6,8 +6,9 @@ import { OrderStatusActions } from './OrderStatusActions';
 
 export const revalidate = 0;
 
-export default async function OrderDetailPage({ params }: { params: { id: string } }) {
-  const orderNumber = params.id;
+export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> | { id: string } }) {
+  const resolvedParams = await Promise.resolve(params);
+  const orderNumber = resolvedParams.id;
   const orderKey = `order:${orderNumber}`;
   
   const order = await kv.get(orderKey) as any;

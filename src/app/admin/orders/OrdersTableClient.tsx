@@ -287,7 +287,7 @@ export default function OrdersTableClient({ orders }: { orders: any[] }) {
                     }}
                     className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary/90 transition-colors"
                   >
-                    Printable Receipt
+                    Print Resi (Shipping Label)
                   </button>
                 ) : <div />}
                 <button 
