@@ -63,15 +63,18 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium border ${getStatusBadge(order.status)}`}>
                 {order.status.toUpperCase()}
               </span>
-              {order.status?.toLowerCase() === 'paid' && (
+              {order.status?.toLowerCase() === 'paid' && order.biteship_order_id && (
                 <a 
                   href={`/admin/orders/${order.order_number}/receipt`} 
                   target="_blank" 
                   rel="noreferrer"
                   className="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
                 >
-                  Print Receipt
+                  Print Resi (Shipping Label)
                 </a>
+              )}
+              {order.status?.toLowerCase() === 'paid' && !order.biteship_order_id && (
+                <span className="text-sm text-gray-500 italic">Please request courier on the Orders List</span>
               )}
               <OrderStatusActions orderNumber={order.order_number} currentStatus={order.status} />
             </div>
