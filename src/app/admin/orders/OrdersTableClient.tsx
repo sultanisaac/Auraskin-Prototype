@@ -279,17 +279,40 @@ export default function OrdersTableClient({ orders }: { orders: any[] }) {
 
               </div>
               <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-between gap-3 items-center">
-                {selectedOrder.status?.toLowerCase() === 'paid' ? (
-                  <button 
-                    onClick={() => {
-                      const printWindow = window.open(`/admin/orders/${selectedOrder.order_number}/receipt`, '_blank');
-                      if (printWindow) printWindow.focus();
-                    }}
-                    className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary/90 transition-colors"
-                  >
-                    Printable Receipt
-                  </button>
-                ) : <div />}
+                <div className="flex gap-2">
+                  {selectedOrder.status?.toLowerCase() === 'paid' && !selectedOrder.biteship_order_id && (
+                    <button 
+                      onClick={async (e) => {
+                        e.currentTarget.disabled = true;
+                        e.currentTarget.innerText = 'Requesting...';
+                        const { requestCourier } = await import('./[id]/actions');
+                        const res = await requestCourier(selectedOrder.order_number);
+                        if (res.success) {
+                          alert('Courier requested successfully! Refreshing...');
+                          window.location.reload();
+                        } else {
+                          alert('Error: ' + res.error);
+                          e.currentTarget.disabled = false;
+                          e.currentTarget.innerText = 'Request Courier';
+                        }
+                      }}
+                      className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      Request Courier (Biteship)
+                    </button>
+                  )}
+                  {selectedOrder.status?.toLowerCase() === 'paid' && selectedOrder.biteship_order_id && (
+                    <button 
+                      onClick={() => {
+                        const printWindow = window.open(`/admin/orders/${selectedOrder.order_number}/receipt`, '_blank');
+                        if (printWindow) printWindow.focus();
+                      }}
+                      className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary/90 transition-colors"
+                    >
+                      Print Resi (Shipping Label)
+                    </button>
+                  )}
+                </div>
                 <button 
                   onClick={() => setSelectedOrder(null)}
                   className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"

@@ -58,63 +58,7 @@ export async function POST(req: Request) {
       console.error('Error decrementing stock:', err);
     }
 
-    // 4. Create Biteship Shipment
-    const biteshipKey = process.env.BITESHIP_API_KEY;
-    if (biteshipKey) {
-      try {
-        const biteshipPayload = {
-          shipper_contact_name: "Auraskin Warehouse",
-          shipper_contact_phone: process.env.WAREHOUSE_PHONE || "+628211715945",
-          shipper_contact_email: "hello@auraskin.id",
-          shipper_organization: "Auraskin",
-          origin_contact_name: "Auraskin Warehouse",
-          origin_contact_phone: process.env.WAREHOUSE_PHONE || "+628211715945",
-          origin_address: process.env.WAREHOUSE_ADDRESS || "Bukittinggi",
-          origin_area_id: process.env.WAREHOUSE_AREA_ID,
-          destination_contact_name: order.customer.name,
-          destination_contact_phone: order.customer.phone,
-          destination_contact_email: order.customer.email,
-          destination_address: order.address.line,
-          destination_area_id: "", // Typically need postal code mapping, we'll use postal code
-          destination_postal_code: parseInt(order.address.postal_code) || 12190,
-          courier_company: order.shipping.courier.toLowerCase(),
-          courier_type: order.shipping.service.toLowerCase(),
-          delivery_type: "now", // 'now' or 'later' depending on biteship docs
-          items: order.items.map((item: any) => ({
-            name: item.name,
-            description: item.name,
-            value: item.price,
-            quantity: item.quantity,
-            weight: 200 // default 200g per item if not specified
-          }))
-        };
-
-        const biteshipRes = await fetch('https://api.biteship.com/v1/orders', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${biteshipKey}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(biteshipPayload)
-        });
-
-        const biteshipData = await biteshipRes.json();
-        
-        if (biteshipRes.ok && biteshipData.success) {
-          order.biteship_order_id = biteshipData.id;
-          order.tracking_id = biteshipData.courier?.tracking_id;
-          order.waybill_id = biteshipData.courier?.waybill_id;
-          console.log(`Biteship order created: ${biteshipData.id}`);
-        } else {
-          console.error('Biteship API Error:', biteshipData);
-          order.biteship_error = biteshipData.error || 'Failed to create shipment';
-        }
-      } catch (err) {
-        console.error('Error calling Biteship:', err);
-      }
-    } else {
-      console.warn('BITESHIP_API_KEY not configured, skipping shipment creation');
-    }
+    // (Biteship shipment creation moved to manual trigger in Admin Dashboard)
 
     // 5. Save updated order back to KV
     await kv.set(orderKey, order);
