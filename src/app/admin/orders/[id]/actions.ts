@@ -72,7 +72,8 @@ export async function requestCourier(orderNumber: string) {
       origin_contact_name: "Auraskin Warehouse",
       origin_contact_phone: process.env.WAREHOUSE_PHONE || "+628211715945",
       origin_address: process.env.WAREHOUSE_ADDRESS || "Bukittinggi",
-      origin_area_id: process.env.WAREHOUSE_AREA_ID,
+      origin_area_id: process.env.WAREHOUSE_AREA_ID || "IDNP11IDNC233IDND2944IDZ26115", // default to Bukittinggi if not set
+      origin_postal_code: 26115, // fallback postal code for origin
       destination_contact_name: order.customer.name,
       destination_contact_phone: order.customer.phone,
       destination_contact_email: order.customer.email,
