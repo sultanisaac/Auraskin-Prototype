@@ -91,6 +91,18 @@ export async function POST(req: Request) {
         qr_string: xenditData.qr_string,
         id: xenditData.id
       });
+    } else if (paymentType === 'EWALLET') {
+      // Mock E-Wallet Response for Prototype
+      return NextResponse.json({
+        type: 'EWALLET',
+        redirect_url: 'https://simulator.xendit.co/' // Usually would be GoPay/OVO deep link
+      });
+    } else if (paymentType === 'RETAIL') {
+      // Mock Retail Outlet Response for Prototype
+      return NextResponse.json({
+        type: 'RETAIL',
+        payment_code: `AURA${Math.floor(Math.random() * 10000000)}`
+      });
     }
 
     return NextResponse.json({ error: 'Unsupported payment type' }, { status: 400 });
