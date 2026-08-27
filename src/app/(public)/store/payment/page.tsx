@@ -2,8 +2,9 @@ import { kv } from '@vercel/kv';
 import { notFound } from 'next/navigation';
 import PaymentClient from './PaymentClient';
 
-export default async function PaymentPage({ searchParams }: { searchParams: { order?: string } }) {
-  const orderId = searchParams.order;
+export default async function PaymentPage({ searchParams }: { searchParams: Promise<{ order?: string }> }) {
+  const resolvedParams = await searchParams;
+  const orderId = resolvedParams.order;
   if (!orderId) {
     return notFound();
   }
