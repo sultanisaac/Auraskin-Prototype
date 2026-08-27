@@ -198,21 +198,51 @@ export default function PaymentClient({ orderData }: PaymentClientProps) {
                     <div className="p-6 pt-0 bg-white">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {category.methods.map((method) => (
-                          <div 
-                            key={method.id}
-                            onClick={() => setSelectedMethod(method)}
-                            className={`p-4 border rounded-xl flex items-center gap-4 cursor-pointer transition-colors ${
-                              selectedMethod.id === method.id 
-                                ? 'border-primary bg-primary/5 ring-1 ring-primary/50 shadow-sm' 
-                                : 'border-gray-200 hover:border-primary/30'
-                            }`}
-                          >
-                            <div className={`p-2 rounded-lg ${selectedMethod.id === method.id ? 'bg-primary text-white' : 'bg-gray-100 text-gray-500'}`}>
-                              {method.icon}
+                          <div key={method.id} className={method.id === 'CREDIT_CARD' ? 'sm:col-span-2' : ''}>
+                            <div 
+                              onClick={() => setSelectedMethod(method)}
+                              className={`p-4 border rounded-xl flex items-center gap-4 cursor-pointer transition-colors ${
+                                selectedMethod.id === method.id 
+                                  ? 'border-primary bg-primary/5 ring-1 ring-primary/50 shadow-sm' 
+                                  : 'border-gray-200 hover:border-primary/30'
+                              }`}
+                            >
+                              <div className={`p-2 rounded-lg ${selectedMethod.id === method.id ? 'bg-primary text-white' : 'bg-gray-100 text-gray-500'}`}>
+                                {method.icon}
+                              </div>
+                              <span className={`font-semibold text-sm ${selectedMethod.id === method.id ? 'text-primary' : 'text-gray-700'}`}>
+                                {method.name}
+                              </span>
                             </div>
-                            <span className={`font-semibold text-sm ${selectedMethod.id === method.id ? 'text-primary' : 'text-gray-700'}`}>
-                              {method.name}
-                            </span>
+
+                            {/* Mock Credit Card Form */}
+                            {method.id === 'CREDIT_CARD' && selectedMethod.id === 'CREDIT_CARD' && (
+                              <div className="mt-3 p-5 border border-primary/20 rounded-xl bg-primary/5 space-y-4 animate-in fade-in slide-in-from-top-2">
+                                <div>
+                                  <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">Card Number</label>
+                                  <div className="relative">
+                                    <input type="text" placeholder="0000 0000 0000 0000" maxLength={19} className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm font-mono" />
+                                    <CreditCard className="w-5 h-5 text-gray-400 absolute left-3 top-3" />
+                                  </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div>
+                                    <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">Expiry Date</label>
+                                    <input type="text" placeholder="MM/YY" maxLength={5} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm font-mono" />
+                                  </div>
+                                  <div>
+                                    <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wide">CVV</label>
+                                    <input type="password" placeholder="•••" maxLength={4} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm font-mono" />
+                                  </div>
+                                </div>
+                                <p className="text-xs text-gray-500 flex items-center gap-1.5 mt-2">
+                                  <svg className="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                  </svg>
+                                  Your card details are securely encrypted.
+                                </p>
+                              </div>
+                            )}
                           </div>
                         ))}
                       </div>
@@ -257,10 +287,11 @@ export default function PaymentClient({ orderData }: PaymentClientProps) {
               ) : (
                 <>
                   <CreditCard className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                  Proceed with {selectedMethod.id}
+                  Pay with {selectedMethod.name}
                 </>
               )}
             </Button>
+            <p className="text-xs text-center text-gray-400 mt-4">Payments are secured and processed by Xendit.</p>
           </div>
         </div>
       </div>
