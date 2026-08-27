@@ -108,8 +108,10 @@ export default function CheckoutPage() {
         throw new Error(data.error || 'Failed to create order');
       }
 
-      // Redirect to Xendit
-      if (data.invoice_url) {
+      // Redirect to Custom Payment Page or Xendit
+      if (data.payment_url) {
+        window.location.href = data.payment_url;
+      } else if (data.invoice_url) {
         window.location.href = data.invoice_url;
       }
     } catch (err: any) {
