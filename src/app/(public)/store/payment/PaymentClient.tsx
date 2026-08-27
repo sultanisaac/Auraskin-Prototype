@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CreditCard, Wallet, Smartphone, Building2, Store } from "lucide-react";
+import { CreditCard, Wallet, Smartphone, Building2, Store, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/Button";
 
 interface PaymentClientProps {
@@ -35,11 +35,18 @@ const PAYMENT_CATEGORIES = [
       { id: "ALFAMART", name: "Alfamart", type: "RETAIL", icon: <Store className="w-5 h-5" /> },
       { id: "INDOMARET", name: "Indomaret", type: "RETAIL", icon: <Store className="w-5 h-5" /> },
     ]
+  },
+  {
+    category: "Credit / Debit Card",
+    methods: [
+      { id: "CREDIT_CARD", name: "Credit / Debit Card", type: "CARD", icon: <CreditCard className="w-5 h-5" /> },
+    ]
   }
 ];
 
 export default function PaymentClient({ orderData }: PaymentClientProps) {
   const [selectedMethod, setSelectedMethod] = useState(PAYMENT_CATEGORIES[0].methods[0]);
+  const [openCategory, setOpenCategory] = useState<string>("Virtual Accounts");
   const [isLoading, setIsLoading] = useState(false);
   const [paymentDetails, setPaymentDetails] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
@@ -75,6 +82,10 @@ export default function PaymentClient({ orderData }: PaymentClientProps) {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const toggleCategory = (categoryName: string) => {
+    setOpenCategory(prev => prev === categoryName ? "" : categoryName);
   };
 
   if (paymentDetails) {
@@ -128,6 +139,16 @@ export default function PaymentClient({ orderData }: PaymentClientProps) {
                 <p className="text-xs text-gray-500 mt-4">Show this code to the cashier at {selectedMethod.name}</p>
               </>
             )}
+
+            {paymentDetails.type === 'CARD' && (
+              <>
+                <p className="text-sm font-semibold text-gray-500 mb-4">Redirecting to Secure 3DS Authentication...</p>
+                <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
+                <Button variant="primary" onClick={() => window.location.href = `/store/success?order=${orderData.order_number}`} className="w-full">
+                  Simulate Success
+                </Button>
+              </>
+            )}
           </div>
 
           <p className="text-sm text-gray-500 mb-8">Once you have paid, the order status will update automatically.</p>
@@ -145,14 +166,14 @@ export default function PaymentClient({ orderData }: PaymentClientProps) {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="mb-8 text-center md:text-left">
         <h1 className="text-3xl md:text-4xl font-serif font-bold text-gray-900">Secure Checkout</h1>
         <p className="text-gray-500 mt-2">Order {orderData.order_number}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div className="md:col-span-2 space-y-8">
+        <div className="md:col-span-2 space-y-4">
           
           {error && (
             <div className="bg-red-50 text-red-600 p-4 rounded-xl border border-red-100 text-sm font-medium">
@@ -160,32 +181,46 @@ export default function PaymentClient({ orderData }: PaymentClientProps) {
             </div>
           )}
 
-          <div className="space-y-8">
-            {PAYMENT_CATEGORIES.map((category) => (
-              <div key={category.category} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                <h3 className="text-lg font-bold text-gray-900 mb-4">{category.category}</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {category.methods.map((method) => (
-                    <div 
-                      key={method.id}
-                      onClick={() => setSelectedMethod(method)}
-                      className={`p-4 border rounded-xl flex items-center gap-4 cursor-pointer transition-colors ${
-                        selectedMethod.id === method.id 
-                          ? 'border-primary bg-primary/5 ring-1 ring-primary/50 shadow-sm' 
-                          : 'border-gray-200 hover:border-primary/30'
-                      }`}
-                    >
-                      <div className={`p-2 rounded-lg ${selectedMethod.id === method.id ? 'bg-primary text-white' : 'bg-gray-100 text-gray-500'}`}>
-                        {method.icon}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden divide-y divide-gray-100">
+            {PAYMENT_CATEGORIES.map((category) => {
+              const isOpen = openCategory === category.category;
+              return (
+                <div key={category.category}>
+                  <button 
+                    onClick={() => toggleCategory(category.category)}
+                    className="w-full flex items-center justify-between p-6 hover:bg-gray-50 transition-colors focus:outline-none text-left"
+                  >
+                    <h3 className="text-lg font-bold text-gray-900">{category.category}</h3>
+                    {isOpen ? <ChevronUp className="w-5 h-5 text-gray-400" /> : <ChevronDown className="w-5 h-5 text-gray-400" />}
+                  </button>
+                  
+                  {isOpen && (
+                    <div className="p-6 pt-0 bg-white">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {category.methods.map((method) => (
+                          <div 
+                            key={method.id}
+                            onClick={() => setSelectedMethod(method)}
+                            className={`p-4 border rounded-xl flex items-center gap-4 cursor-pointer transition-colors ${
+                              selectedMethod.id === method.id 
+                                ? 'border-primary bg-primary/5 ring-1 ring-primary/50 shadow-sm' 
+                                : 'border-gray-200 hover:border-primary/30'
+                            }`}
+                          >
+                            <div className={`p-2 rounded-lg ${selectedMethod.id === method.id ? 'bg-primary text-white' : 'bg-gray-100 text-gray-500'}`}>
+                              {method.icon}
+                            </div>
+                            <span className={`font-semibold text-sm ${selectedMethod.id === method.id ? 'text-primary' : 'text-gray-700'}`}>
+                              {method.name}
+                            </span>
+                          </div>
+                        ))}
                       </div>
-                      <span className={`font-semibold text-sm ${selectedMethod.id === method.id ? 'text-primary' : 'text-gray-700'}`}>
-                        {method.name}
-                      </span>
                     </div>
-                  ))}
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 

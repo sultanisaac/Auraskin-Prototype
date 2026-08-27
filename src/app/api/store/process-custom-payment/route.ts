@@ -103,6 +103,12 @@ export async function POST(req: Request) {
         type: 'RETAIL',
         payment_code: `AURA${Math.floor(Math.random() * 10000000)}`
       });
+    } else if (paymentType === 'CARD') {
+      // Mock Credit Card Response for Prototype
+      return NextResponse.json({
+        type: 'CARD',
+        status: 'PENDING_AUTHENTICATION'
+      });
     }
 
     return NextResponse.json({ error: 'Unsupported payment type' }, { status: 400 });
