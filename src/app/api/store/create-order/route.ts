@@ -22,8 +22,44 @@ export async function POST(req: Request) {
     const randomId = Math.random().toString(36).substring(2, 7).toUpperCase();
     const orderNumber = `AURA-${dateString}-${randomId}`;
 
-    // 3. Skip Xendit Invoice for now to test Custom Payment Page
-    // (We will handle payment separately in the new custom page)
+    // 3. Call Xendit to create Invoice
+    const xenditSecretKey = process.env.XENDIT_SECRET_KEY;
+    if (!xenditSecretKey) {
+      console.error('Missing Xendit Secret Key');
+      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+    }
+
+    const authHeader = `Basic ${Buffer.from(xenditSecretKey + ':').toString('base64')}`;
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+
+    const xenditResponse = await fetch('https://api.xendit.co/v2/invoices', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': authHeader
+      },
+      body: JSON.stringify({
+        external_id: orderNumber,
+        amount: totalAmount,
+        payer_email: customer.email,
+        description: `Auraskin Order ${orderNumber}`,
+        success_redirect_url: `${appUrl}/store/success?order=${orderNumber}`,
+        failure_redirect_url: `${appUrl}/store/checkout?error=payment_failed`,
+        currency: "IDR",
+        items: items.map((item: any) => ({
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price
+        }))
+      })
+    });
+
+    const xenditData = await xenditResponse.json();
+
+    if (!xenditResponse.ok) {
+      console.error('Xendit Error:', xenditData);
+      return NextResponse.json({ error: 'Failed to create payment invoice' }, { status: 500 });
+    }
 
     // 4. Save order to KV
     const orderData = {
@@ -36,6 +72,8 @@ export async function POST(req: Request) {
       subtotal,
       shipping_cost: shippingCost,
       total: totalAmount,
+      xendit_invoice_id: xenditData.id,
+      xendit_invoice_url: xenditData.invoice_url,
       created_at: new Date().toISOString()
     };
 
@@ -49,7 +87,7 @@ export async function POST(req: Request) {
     await sendOrderCreatedEmail(customer.email, {
       customerName: customer.name,
       orderNumber: orderNumber,
-      invoiceUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/store/payment?order=${orderNumber}`,
+      invoiceUrl: xenditData.invoice_url,
       items: items,
       subtotal: subtotal,
       shippingCost: shippingCost,
@@ -59,7 +97,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ 
       success: true, 
-      payment_url: `/store/payment?order=${orderNumber}`,
+      invoice_url: xenditData.invoice_url,
       order_number: orderNumber
     });
 

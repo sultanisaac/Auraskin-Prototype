@@ -144,7 +144,18 @@ export default function PaymentClient({ orderData }: PaymentClientProps) {
               <>
                 <p className="text-sm font-semibold text-gray-500 mb-4">Redirecting to Secure 3DS Authentication...</p>
                 <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
-                <Button variant="primary" onClick={() => window.location.href = `/store/success?order=${orderData.order_number}`} className="w-full">
+                <Button 
+                  variant="primary" 
+                  onClick={async () => {
+                    await fetch('/api/store/simulate-payment-success', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ orderNumber: orderData.order_number })
+                    });
+                    window.location.href = `/store/success?order=${orderData.order_number}`;
+                  }} 
+                  className="w-full"
+                >
                   Simulate Success
                 </Button>
               </>
@@ -155,7 +166,14 @@ export default function PaymentClient({ orderData }: PaymentClientProps) {
           
           <Button 
             variant="outline" 
-            onClick={() => window.location.href = `/store/success?order=${orderData.order_number}`}
+            onClick={async () => {
+              await fetch('/api/store/simulate-payment-success', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ orderNumber: orderData.order_number })
+              });
+              window.location.href = `/store/success?order=${orderData.order_number}`;
+            }}
             className="w-full sm:w-auto"
           >
             I have completed the payment
