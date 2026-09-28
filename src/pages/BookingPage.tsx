@@ -42,6 +42,7 @@ export default function BookingPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [step, setStep] = useState<1 | 2>(1); // 1: Details, 2: Date & Time
+  const [showActionButtons, setShowActionButtons] = useState(false);
   const [formData, setFormData] = useState<BookingFormValues | null>(null);
   
   // Date and Time selection state
@@ -67,8 +68,7 @@ export default function BookingPage() {
 
   const onDetailsSubmit = (data: BookingFormValues) => {
     setFormData(data);
-    setStep(2);
-    loadConfirmedBookings();
+    setShowActionButtons(true);
   };
 
   const loadConfirmedBookings = async () => {
@@ -384,13 +384,42 @@ export default function BookingPage() {
                         />
                       </div>
 
-                      <Button
-                        variant="primary"
-                        className="w-full py-4 text-base mt-2 gap-2"
-                        type="submit"
-                      >
-                        <Calendar className="w-5 h-5" /> Choose Date & Time <ArrowRight className="w-4 h-4" />
-                      </Button>
+                      {showActionButtons ? (
+                        <div className="grid grid-cols-2 gap-3 mt-2">
+                          <Button
+                            type="button"
+                            variant="primary"
+                            className="w-full py-4 text-base bg-[#25D366] hover:bg-[#128C7E] border-transparent shadow-md gap-2"
+                            onClick={() => {
+                              const data = formData;
+                              if (!data) return;
+                              const message = `*New Booking Request*\n\n*Name:* ${data.fullName}\n*Email:* ${data.email}\n*Phone:* ${data.phone}\n*Treatments:* ${data.treatments.join(', ')}\n*Notes:* ${data.moreInfo || '-'}`;
+                              window.open(`https://api.whatsapp.com/send/?phone=6281288882828&text=${encodeURIComponent(message)}&type=phone_number&app_absent=0`, '_blank');
+                            }}
+                          >
+                            WhatsApp
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="primary"
+                            className="w-full py-4 text-base gap-2"
+                            onClick={() => {
+                              setStep(2);
+                              loadConfirmedBookings();
+                            }}
+                          >
+                            Email
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button
+                          variant="primary"
+                          className="w-full py-4 text-base mt-2 gap-2"
+                          type="submit"
+                        >
+                          <Calendar className="w-5 h-5" /> Choose Date & Time <ArrowRight className="w-4 h-4" />
+                        </Button>
+                      )}
                     </form>
                   </motion.div>
                 ) : (

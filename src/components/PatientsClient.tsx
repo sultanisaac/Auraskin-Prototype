@@ -1,10 +1,11 @@
 "use client";
 
-import { Booking, deleteBookings } from "@/actions/kv";
-import { useState, useMemo } from "react";
-import { User, Phone, Mail, Activity, Calendar, Clock, X, ChevronRight, Trash2 } from "lucide-react";
+import { Booking, deleteBookings, updatePatientBookings } from "@/actions/kv";
+import { useState, useMemo, useTransition } from "react";
+import { User, Phone, Mail, Activity, Calendar, Clock, X, ChevronRight, Trash2, Edit } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
 
 export interface GroupedPatient {
   id: string;
@@ -18,10 +19,15 @@ export interface GroupedPatient {
 }
 
 export default function PatientsClient({ bookings }: { bookings: Booking[] }) {
+  const router = useRouter();
   const [selectedPatient, setSelectedPatient] = useState<GroupedPatient | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isDeleting, setIsDeleting] = useState(false);
+  
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({ name: "", email: "", phone: "" });
+  const [isPending, startTransition] = useTransition();
 
   const patients = useMemo(() => {
     const uniquePatientsMap = new Map<string, GroupedPatient>();
@@ -108,6 +114,17 @@ export default function PatientsClient({ bookings }: { bookings: Booking[] }) {
       setSelectedPatient(null);
     }
     setIsDeleting(false);
+  };
+
+  const handleEditSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedPatient) return;
+    startTransition(async () => {
+      await updatePatientBookings(selectedPatient.id, editForm);
+      setIsEditing(false);
+      setSelectedPatient(null);
+      router.refresh();
+    });
   };
 
   return (
@@ -244,15 +261,67 @@ export default function PatientsClient({ bookings }: { bookings: Booking[] }) {
                     </div>
                   </div>
                 </div>
-                <button 
-                  onClick={() => setSelectedPatient(null)}
-                  className="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-full transition"
-                >
-                  <X className="w-6 h-6" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={() => {
+                      setEditForm({ name: selectedPatient.name, email: selectedPatient.email, phone: selectedPatient.phone });
+                      setIsEditing(true);
+                    }}
+                    className="p-2 text-gray-400 hover:text-primary hover:bg-primary/10 rounded-full transition"
+                  >
+                    <Edit className="w-5 h-5" />
+                  </button>
+                  <button 
+                    onClick={() => setSelectedPatient(null)}
+                    className="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-full transition"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
               </div>
 
-              <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar">
+              {isEditing ? (
+                <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar flex-1">
+                  <form onSubmit={handleEditSubmit} className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-text/60 uppercase tracking-wider mb-1">Full Name</label>
+                      <input
+                        required
+                        type="text"
+                        value={editForm.name}
+                        onChange={(e) => setEditForm({...editForm, name: e.target.value})}
+                        className="w-full px-3 py-2 bg-background border border-accent/20 rounded-lg text-sm focus:outline-none focus:border-primary"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-text/60 uppercase tracking-wider mb-1">Phone</label>
+                      <input
+                        required
+                        type="tel"
+                        value={editForm.phone}
+                        onChange={(e) => setEditForm({...editForm, phone: e.target.value})}
+                        className="w-full px-3 py-2 bg-background border border-accent/20 rounded-lg text-sm focus:outline-none focus:border-primary"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-text/60 uppercase tracking-wider mb-1">Email</label>
+                      <input
+                        type="email"
+                        value={editForm.email}
+                        onChange={(e) => setEditForm({...editForm, email: e.target.value})}
+                        className="w-full px-3 py-2 bg-background border border-accent/20 rounded-lg text-sm focus:outline-none focus:border-primary"
+                      />
+                    </div>
+                    <div className="flex gap-3 justify-end mt-6">
+                      <button type="button" onClick={() => setIsEditing(false)} className="px-4 py-2 border rounded-lg hover:bg-gray-50">Cancel</button>
+                      <button type="submit" disabled={isPending} className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50">
+                        {isPending ? "Saving..." : "Save Changes"}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              ) : (
+                <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="font-bold text-lg text-gray-900 flex items-center gap-2">
                     <Calendar className="w-5 h-5 text-primary" /> Booking History
@@ -307,6 +376,7 @@ export default function PatientsClient({ bookings }: { bookings: Booking[] }) {
                   ))}
                 </div>
               </div>
+              )}
             </motion.div>
           </div>
         )}

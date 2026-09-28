@@ -6,6 +6,8 @@ import { useTransition, useState } from "react";
 import { format, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import BookingFormModal from "./BookingFormModal";
+import { Edit } from "lucide-react";
 
 interface BookingModalProps {
   booking: Booking | null;
@@ -18,8 +20,19 @@ export default function BookingModal({ booking, onClose, onUpdate }: BookingModa
   const [showReasonInput, setShowReasonInput] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const [actionType, setActionType] = useState<"declined" | "cancelled" | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
 
   if (!booking) return null;
+
+  if (isEditing) {
+    return (
+      <BookingFormModal 
+        initialData={booking} 
+        onClose={() => setIsEditing(false)} 
+        onSuccess={() => { setIsEditing(false); onUpdate(); onClose(); }} 
+      />
+    );
+  }
 
   const handleStatusUpdate = (status: "confirmed" | "declined" | "cancelled") => {
     startTransition(async () => {
@@ -50,12 +63,20 @@ export default function BookingModal({ booking, onClose, onUpdate }: BookingModa
         onClick={(e) => e.stopPropagation()}
       >
         <div className="relative h-24 bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center px-6">
-          <button 
-            onClick={onClose}
-            className="absolute top-4 right-4 p-2 bg-white/50 hover:bg-white rounded-full transition-colors text-text"
-          >
-            <X className="w-4 h-4" />
-          </button>
+          <div className="absolute top-4 right-4 flex gap-2">
+            <button 
+              onClick={() => setIsEditing(true)}
+              className="p-2 bg-white/50 hover:bg-white rounded-full transition-colors text-text"
+            >
+              <Edit className="w-4 h-4" />
+            </button>
+            <button 
+              onClick={onClose}
+              className="p-2 bg-white/50 hover:bg-white rounded-full transition-colors text-text"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
           <div>
             <h3 className="font-serif font-bold text-2xl text-primary">Appointment</h3>
             <div className={cn(
