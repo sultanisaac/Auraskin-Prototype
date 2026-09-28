@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, ShieldCheck, Clock, Award, Star, Loader2, Sparkles, ArrowLeft, ArrowRight, User, CheckCircle2 } from 'lucide-react';
 import { Button } from '../components/Button';
 
-import { submitBooking, getConfirmedBookings, Booking } from '../actions/booking';
+import { submitBooking, getActiveBookings, Booking } from '../actions/booking';
 import { format, addDays, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, isBefore, startOfDay, getDay, setMonth, setYear } from 'date-fns';
 
 const TREATMENT_OPTIONS = [
@@ -68,12 +68,14 @@ export default function BookingPage() {
 
   const onDetailsSubmit = (data: BookingFormValues) => {
     setFormData(data);
-    setShowActionButtons(true);
+    setShowActionButtons(false);
+    setStep(2);
+    loadConfirmedBookings();
   };
 
   const loadConfirmedBookings = async () => {
     setIsLoadingSlots(true);
-    const bookings = await getConfirmedBookings();
+    const bookings = await getActiveBookings();
     setConfirmedBookings(bookings);
     setIsLoadingSlots(false);
   };
@@ -94,12 +96,6 @@ export default function BookingPage() {
     
     if (res.success) {
       setIsSuccess(true);
-      
-      const message = `*New Booking Request*\n\n*Name:* ${formData.fullName}\n*Email:* ${formData.email}\n*Phone:* ${formData.phone}\n*Treatments:* ${formData.treatments.join(', ')}\n*Notes:* ${formData.moreInfo || '-'}\n*Date:* ${format(selectedDate, 'MMMM d, yyyy')}\n*Time:* ${selectedTime}`;
-      const whatsappUrl = `https://api.whatsapp.com/send/?phone=6281288882828&text=${encodeURIComponent(message)}&type=phone_number&app_absent=0`;
-      
-      // Attempt to open WhatsApp automatically
-      window.open(whatsappUrl, '_blank');
     } else {
       alert("Something went wrong. Please try again.");
     }
@@ -158,21 +154,11 @@ export default function BookingPage() {
           <p className="text-gray-600 mb-8 leading-relaxed">
             Thank you for choosing AuraSkin. We have received your booking request for <strong>{format(selectedDate, 'MMMM d, yyyy')}</strong> at <strong>{selectedTime}</strong>.
             <br/><br/>
-            If WhatsApp didn't open automatically, please click below to send us your booking details to finalize your appointment.
+            Our team will review your request and you will receive a confirmation shortly.
           </p>
           <div className="space-y-3">
-            <a 
-              href={`https://api.whatsapp.com/send/?phone=6281288882828&text=${encodeURIComponent(`*New Booking Request*\n\n*Name:* ${formData?.fullName}\n*Email:* ${formData?.email}\n*Phone:* ${formData?.phone}\n*Treatments:* ${formData?.treatments.join(', ')}\n*Notes:* ${formData?.moreInfo || '-'}\n*Date:* ${format(selectedDate, 'MMMM d, yyyy')}\n*Time:* ${selectedTime}`)}&type=phone_number&app_absent=0`}
-              target="_blank" 
-              rel="noreferrer" 
-              className="block w-full"
-            >
-              <Button variant="primary" className="w-full bg-[#25D366] hover:bg-[#128C7E] border-transparent shadow-md">
-                Confirm via WhatsApp
-              </Button>
-            </a>
             <Link href="/" className="block w-full">
-              <Button variant="outline" className="w-full border-gray-200 text-gray-600 hover:bg-gray-50">Return to Homepage</Button>
+              <Button variant="primary" className="w-full">Return to Homepage</Button>
             </Link>
           </div>
         </motion.div>
@@ -384,34 +370,6 @@ export default function BookingPage() {
                         />
                       </div>
 
-                      {showActionButtons ? (
-                        <div className="grid grid-cols-2 gap-3 mt-2">
-                          <Button
-                            type="button"
-                            variant="primary"
-                            className="w-full py-4 text-base bg-[#25D366] hover:bg-[#128C7E] border-transparent shadow-md gap-2"
-                            onClick={() => {
-                              const data = formData;
-                              if (!data) return;
-                              const message = `*New Booking Request*\n\n*Name:* ${data.fullName}\n*Email:* ${data.email}\n*Phone:* ${data.phone}\n*Treatments:* ${data.treatments.join(', ')}\n*Notes:* ${data.moreInfo || '-'}`;
-                              window.open(`https://api.whatsapp.com/send/?phone=6281288882828&text=${encodeURIComponent(message)}&type=phone_number&app_absent=0`, '_blank');
-                            }}
-                          >
-                            WhatsApp
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="primary"
-                            className="w-full py-4 text-base gap-2"
-                            onClick={() => {
-                              setStep(2);
-                              loadConfirmedBookings();
-                            }}
-                          >
-                            Email
-                          </Button>
-                        </div>
-                      ) : (
                         <Button
                           variant="primary"
                           className="w-full py-4 text-base mt-2 gap-2"
@@ -419,7 +377,6 @@ export default function BookingPage() {
                         >
                           <Calendar className="w-5 h-5" /> Choose Date & Time <ArrowRight className="w-4 h-4" />
                         </Button>
-                      )}
                     </form>
                   </motion.div>
                 ) : (
@@ -436,7 +393,10 @@ export default function BookingPage() {
                         <p className="text-sm text-gray-500">Welcome, <span className="font-bold text-gray-800">{formData?.fullName}</span>. Please choose a consultation slot below.</p>
                       </div>
                       <button 
-                        onClick={() => setStep(1)} 
+                        onClick={() => {
+                          setStep(1);
+                          setShowActionButtons(false);
+                        }} 
                         className="text-xs text-gray-400 hover:text-primary transition underline font-medium whitespace-nowrap ml-4"
                       >
                         Back to Details
@@ -563,18 +523,41 @@ export default function BookingPage() {
                     </div>
 
                     <div className="pt-6 border-t border-gray-100">
-                      <Button
-                        variant="primary"
-                        className="w-full py-4 text-base gap-2 shadow-lg shadow-primary/20"
-                        onClick={onFinalSubmit}
-                        disabled={!selectedTime || isSubmitting}
-                      >
-                        {isSubmitting ? (
-                          <><Loader2 className="animate-spin w-5 h-5" /> Processing...</>
-                        ) : (
-                          <>Confirm Booking Request</>
-                        )}
-                      </Button>
+                      {showActionButtons ? (
+                        <div className="grid grid-cols-2 gap-3">
+                          <Button
+                            type="button"
+                            variant="primary"
+                            className="w-full py-4 text-base bg-[#25D366] hover:bg-[#128C7E] border-transparent shadow-md gap-2"
+                            onClick={() => {
+                              const data = formData;
+                              if (!data || !selectedTime) return;
+                              const message = `*New Booking Request*\n\n*Name:* ${data.fullName}\n*Email:* ${data.email}\n*Phone:* ${data.phone}\n*Treatments:* ${data.treatments.join(', ')}\n*Notes:* ${data.moreInfo || '-'}\n*Date:* ${format(selectedDate, 'MMMM d, yyyy')}\n*Time:* ${selectedTime}`;
+                              window.open(`https://api.whatsapp.com/send/?phone=6281288882828&text=${encodeURIComponent(message)}&type=phone_number&app_absent=0`, '_blank');
+                            }}
+                          >
+                            WhatsApp
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="primary"
+                            className="w-full py-4 text-base gap-2 shadow-lg shadow-primary/20"
+                            onClick={onFinalSubmit}
+                            disabled={!selectedTime || isSubmitting}
+                          >
+                            {isSubmitting ? <><Loader2 className="animate-spin w-5 h-5" /> Processing...</> : "Email"}
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button
+                          variant="primary"
+                          className="w-full py-4 text-base gap-2 shadow-lg shadow-primary/20"
+                          onClick={() => setShowActionButtons(true)}
+                          disabled={!selectedTime}
+                        >
+                          Confirm Booking Request
+                        </Button>
+                      )}
                     </div>
 
                   </motion.div>

@@ -64,15 +64,13 @@ export default function Sidebar() {
       </nav>
       
       <div className="p-4 border-t border-accent/30 bg-gray-50/50">
-        <a 
-          href="https://auraskin-prototype.vercel.app/" 
-          target="_blank" 
-          rel="noopener noreferrer"
+        <Link 
+          href="/" 
           className="flex items-center px-4 py-3 rounded-md font-medium text-text hover:bg-primary/5 hover:text-primary transition-colors border border-accent/20 bg-white shadow-sm w-full justify-center"
         >
           <Globe className="h-4 w-4 mr-2 text-primary" />
           <span className="text-sm">View Website</span>
-        </a>
+        </Link>
       </div>
     </aside>
   );
