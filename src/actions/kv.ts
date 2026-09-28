@@ -136,3 +136,67 @@ export async function deleteBookings(ids: string[]) {
     return { success: false, error: "Failed to delete bookings" };
   }
 }
+
+export async function createBooking(data: Partial<Booking>) {
+  try {
+    const bookings = await getBookings();
+    const newBooking: Booking = {
+      id: Math.random().toString(36).substr(2, 9),
+      name: data.name || "",
+      email: data.email || "",
+      treatment: data.treatment || "",
+      date: data.date || new Date().toISOString().split('T')[0],
+      time: data.time || "09:00",
+      phone: data.phone || "",
+      moreInfo: data.moreInfo || "",
+      status: data.status || "confirmed",
+    };
+    await kv.set("bookings", [newBooking, ...bookings]);
+    
+    revalidatePath("/");
+    revalidatePath("/calendar");
+    revalidatePath("/patients");
+    return { success: true, booking: newBooking };
+  } catch (error) {
+    console.error("Error creating booking:", error);
+    return { success: false, error: "Failed to create booking" };
+  }
+}
+
+export async function updateBooking(id: string, data: Partial<Booking>) {
+  try {
+    const bookings = await getBookings();
+    const updatedBookings = bookings.map(b => b.id === id ? { ...b, ...data } : b);
+    await kv.set("bookings", updatedBookings);
+    
+    revalidatePath("/");
+    revalidatePath("/calendar");
+    revalidatePath("/patients");
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating booking:", error);
+    return { success: false, error: "Failed to update booking" };
+  }
+}
+
+export async function updatePatientBookings(patientId: string, newData: { name: string, email: string, phone: string }) {
+  try {
+    const bookings = await getBookings();
+    const updatedBookings = bookings.map(b => {
+      const key = (b.email || b.phone).toLowerCase().trim();
+      if (key === patientId) {
+        return { ...b, name: newData.name, email: newData.email, phone: newData.phone };
+      }
+      return b;
+    });
+    await kv.set("bookings", updatedBookings);
+    
+    revalidatePath("/");
+    revalidatePath("/calendar");
+    revalidatePath("/patients");
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating patient bookings:", error);
+    return { success: false, error: "Failed to update patient" };
+  }
+}

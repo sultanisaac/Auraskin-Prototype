@@ -99,12 +99,13 @@ export async function submitBooking(formData: any) {
   }
 }
 
-export async function getConfirmedBookings() {
+export async function getActiveBookings() {
   try {
     const existing = (await kvGet('bookings')) || [];
-    return existing.filter((b: Booking) => b.status === 'confirmed');
+    return existing.filter((b: Booking) => b.status === 'confirmed' || b.status === 'pending');
   } catch (error) {
-    console.error("Error fetching confirmed bookings:", error);
+    console.error("Error fetching active bookings:", error);
     return [];
   }
 }
+

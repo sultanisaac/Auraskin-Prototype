@@ -8,6 +8,7 @@ import BookingModal from "./BookingModal";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { AnimatePresence } from "framer-motion";
+import BookingFormModal from "./BookingFormModal";
 
 interface CalendarProps {
   initialBookings: Booking[];
@@ -15,8 +16,10 @@ interface CalendarProps {
 
 export default function Calendar({ initialBookings }: CalendarProps) {
   const router = useRouter();
-  const [currentDate, setCurrentDate] = useState(new Date("2026-07-10")); // Reference date matching mock data
+  const [currentDate, setCurrentDate] = useState(new Date()); // Reference date matching mock data
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [initialAddData, setInitialAddData] = useState<{date: string, time?: string} | null>(null);
 
   const [viewMode, setViewMode] = useState<"daily" | "weekly" | "monthly">("weekly");
   const [filterMode, setFilterMode] = useState<"all" | "pending" | "confirmed" | "declined">("all");
@@ -133,6 +136,16 @@ export default function Calendar({ initialBookings }: CalendarProps) {
               {filterMode} Only
             </span>
           )}
+          
+          <button 
+            onClick={() => {
+              setInitialAddData(null);
+              setShowAddModal(true);
+            }}
+            className="hidden md:flex ml-4 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+          >
+            + Add Appointment
+          </button>
         </div>
         
         <div className="flex flex-wrap items-center gap-2 md:gap-4">
@@ -355,11 +368,21 @@ export default function Calendar({ initialBookings }: CalendarProps) {
                     const cellBookings = getBookingsForDateTime(day, time);
                     
                     return (
-                      <div key={j} className="border-r border-accent/20 relative min-h-[80px] p-1.5 transition-colors group-hover:bg-accent/10">
+                      <div 
+                        key={j} 
+                        className="border-r border-accent/20 relative min-h-[80px] p-1.5 transition-colors group-hover:bg-accent/10 cursor-pointer"
+                        onClick={() => {
+                          setInitialAddData({ date: format(day, "yyyy-MM-dd"), time: time.length === 4 ? `0${time}` : time });
+                          setShowAddModal(true);
+                        }}
+                      >
                         {cellBookings.map((booking) => (
                           <button
                             key={booking.id}
-                            onClick={() => setSelectedBooking(booking)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedBooking(booking);
+                            }}
                             className={cn(
                               "w-full text-left p-2.5 rounded-md mb-1.5 transition-all hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-md",
                               booking.status === "pending" ? "bg-amber-50 border border-amber-200" :
@@ -404,10 +427,17 @@ export default function Calendar({ initialBookings }: CalendarProps) {
                 const isCurrentMonth = day.getMonth() === currentDate.getMonth();
                 
                 return (
-                  <div key={i} className={cn(
-                    "border-r border-b border-accent/20 p-2 min-h-[120px] transition-colors hover:bg-accent/5",
-                    !isCurrentMonth && "bg-background/50 opacity-60"
-                  )}>
+                  <div 
+                    key={i} 
+                    className={cn(
+                      "border-r border-b border-accent/20 p-2 min-h-[120px] transition-colors hover:bg-accent/5 cursor-pointer",
+                      !isCurrentMonth && "bg-background/50 opacity-60"
+                    )}
+                    onClick={() => {
+                      setInitialAddData({ date: format(day, "yyyy-MM-dd"), time: "10:00" });
+                      setShowAddModal(true);
+                    }}
+                  >
                     <div className="flex justify-between items-start mb-2">
                       <span className={cn(
                         "w-7 h-7 flex items-center justify-center rounded-full text-sm font-medium",
@@ -427,7 +457,10 @@ export default function Calendar({ initialBookings }: CalendarProps) {
                       {dayBookings.map(booking => (
                         <button
                           key={booking.id}
-                          onClick={() => setSelectedBooking(booking)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedBooking(booking);
+                          }}
                           className={cn(
                             "w-full text-left px-2 py-1 rounded text-[10px] font-medium truncate transition-all hover:scale-[1.02]",
                             booking.status === "pending" ? "bg-amber-100 text-amber-800" :
@@ -453,6 +486,19 @@ export default function Calendar({ initialBookings }: CalendarProps) {
             booking={selectedBooking} 
             onClose={() => setSelectedBooking(null)} 
             onUpdate={() => {
+              router.refresh();
+            }}
+          />
+        )}
+        
+        {showAddModal && (
+          <BookingFormModal 
+            initialData={initialAddData ? { date: initialAddData.date, time: initialAddData.time } : undefined}
+            onClose={() => {
+              setShowAddModal(false);
+              setInitialAddData(null);
+            }}
+            onSuccess={() => {
               router.refresh();
             }}
           />
