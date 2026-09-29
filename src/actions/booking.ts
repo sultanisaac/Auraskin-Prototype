@@ -74,29 +74,24 @@ export async function submitBooking(formData: any) {
     
     // Trigger email notifications
     try {
-      const { sendAdminNewRequestEmail, sendClientRequestReceivedEmail } = await import('../lib/email');
-      
-      const [adminResult, clientResult] = await Promise.all([
-        sendAdminNewRequestEmail(
-          newBooking.name, 
-          newBooking.email, 
-          newBooking.phone, 
-          newBooking.treatment, 
-          newBooking.date, 
-          newBooking.time
-        ),
-        sendClientRequestReceivedEmail(
-          newBooking.email, 
-          newBooking.name, 
-          newBooking.treatment, 
-          newBooking.date, 
-          newBooking.time
-        )
-      ]);
-
-      if (!adminResult.success || !clientResult.success) {
-        console.error('Email sending failed', { adminResult, clientResult });
-      }
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL 
+        ? process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, '') 
+        : process.env.VERCEL_URL 
+          ? `https://${process.env.VERCEL_URL}` 
+          : 'http://localhost:3000';
+          
+      await fetch(`${baseUrl}/api/notify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          patientName: newBooking.name,
+          patientEmail: newBooking.email,
+          patientPhone: newBooking.phone,
+          treatment: newBooking.treatment,
+          date: newBooking.date,
+          time: newBooking.time
+        })
+      });
     } catch (notifyError) {
       console.error("Failed to trigger notifications:", notifyError);
       // We don't fail the booking if emails fail
