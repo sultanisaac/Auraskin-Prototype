@@ -72,21 +72,31 @@ export async function submitBooking(formData: any) {
     existing.push(newBooking);
     await kvSet('bookings', existing);
     
-    // Trigger email notifications via the Admin API
+    // Trigger email notifications
     try {
-      const adminApiUrl = process.env.ADMIN_API_URL || 'http://localhost:3000/api';
-      await fetch(`${adminApiUrl}/notify`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          patientName: newBooking.name,
-          patientEmail: newBooking.email,
-          patientPhone: newBooking.phone,
-          treatment: newBooking.treatment,
-          date: newBooking.date,
-          time: newBooking.time
-        })
-      });
+      const { sendAdminNewRequestEmail, sendClientRequestReceivedEmail } = await import('../lib/email');
+      
+      const [adminResult, clientResult] = await Promise.all([
+        sendAdminNewRequestEmail(
+          newBooking.name, 
+          newBooking.email, 
+          newBooking.phone, 
+          newBooking.treatment, 
+          newBooking.date, 
+          newBooking.time
+        ),
+        sendClientRequestReceivedEmail(
+          newBooking.email, 
+          newBooking.name, 
+          newBooking.treatment, 
+          newBooking.date, 
+          newBooking.time
+        )
+      ]);
+
+      if (!adminResult.success || !clientResult.success) {
+        console.error('Email sending failed', { adminResult, clientResult });
+      }
     } catch (notifyError) {
       console.error("Failed to trigger notifications:", notifyError);
       // We don't fail the booking if emails fail
