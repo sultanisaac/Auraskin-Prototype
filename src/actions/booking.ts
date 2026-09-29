@@ -72,10 +72,15 @@ export async function submitBooking(formData: any) {
     existing.push(newBooking);
     await kvSet('bookings', existing);
     
-    // Trigger email notifications via the Admin API
+    // Trigger email notifications
     try {
-      const adminApiUrl = process.env.ADMIN_API_URL || 'http://localhost:3000/api';
-      await fetch(`${adminApiUrl}/notify`, {
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL 
+        ? process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, '') 
+        : process.env.VERCEL_URL 
+          ? `https://${process.env.VERCEL_URL}` 
+          : 'http://localhost:3000';
+          
+      await fetch(`${baseUrl}/api/notify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
