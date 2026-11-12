@@ -1,11 +1,18 @@
 "use client";
 
-import { Bell, Search, Info, Menu, X, Calendar, CalendarDays, Users, ShoppingBag, Package, Volume2, VolumeX, CreditCard, Sparkles, Settings } from "lucide-react";
+import { Bell, Search, Info, Menu, X, Calendar, CalendarDays, Users, ShoppingBag, Package, Volume2, VolumeX, CreditCard, Sparkles, Settings, Square } from "lucide-react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { playNotificationSound, isSoundMuted, setSoundMuted } from "@/lib/notificationSound";
+import { 
+  playNotificationSound, 
+  stopNotificationSound, 
+  subscribeAudioPlayback, 
+  isNotificationAudioPlaying,
+  isSoundMuted, 
+  setSoundMuted 
+} from "@/lib/notificationSound";
 import BookingModal from "./BookingModal";
 import OrderDetailModal from "./OrderDetailModal";
 import { Booking } from "@/actions/kv";
@@ -43,6 +50,7 @@ function HeaderContent({ title, subtitle, pendingCount = 0 }: HeaderProps) {
   const [activeTab, setActiveTab] = useState<"all" | "reservations" | "orders">("all");
   const [soundMuted, setSoundMutedState] = useState<boolean>(false);
   const [isTestPlaying, setIsTestPlaying] = useState<boolean>(false);
+  const [isAudioPlaying, setIsAudioPlaying] = useState<boolean>(false);
 
   // In-place modals
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
@@ -50,6 +58,14 @@ function HeaderContent({ title, subtitle, pendingCount = 0 }: HeaderProps) {
 
   const seenIdsRef = useRef<Set<string>>(new Set());
   const isInitialFetchRef = useRef<boolean>(true);
+
+  // Subscribe to audio playback state changes
+  useEffect(() => {
+    const unsub = subscribeAudioPlayback((playing) => {
+      setIsAudioPlaying(playing);
+    });
+    return () => unsub();
+  }, []);
 
   // Initialize sound mute and cleared notifications from localStorage
   useEffect(() => {
@@ -66,10 +82,17 @@ function HeaderContent({ title, subtitle, pendingCount = 0 }: HeaderProps) {
     const nextState = !soundMuted;
     setSoundMutedState(nextState);
     setSoundMuted(nextState);
+    if (nextState) {
+      stopNotificationSound();
+    }
   };
 
   const handleTestSound = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (isAudioPlaying) {
+      stopNotificationSound();
+      return;
+    }
     setIsTestPlaying(true);
     playNotificationSound();
     setTimeout(() => setIsTestPlaying(false), 800);
@@ -211,10 +234,32 @@ function HeaderContent({ title, subtitle, pendingCount = 0 }: HeaderProps) {
           </div>
         </div>
       
-        <div className="flex items-center gap-3 md:gap-6">
+        <div className="flex items-center gap-2.5 sm:gap-4 md:gap-6">
+          {/* Active Ringtone Indicator & Instant Silence Button */}
+          {isAudioPlaying && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                stopNotificationSound();
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-600 hover:bg-red-700 text-white text-xs font-semibold shadow-md animate-pulse transition-all cursor-pointer ring-2 ring-red-300"
+              title="Stop ringing audio"
+            >
+              <Square className="w-3 h-3 fill-white" />
+              <span>Stop Sound</span>
+            </button>
+          )}
+
           <div className="relative" ref={dropdownRef}>
             <button 
-              onClick={() => setShowNotifications(!showNotifications)}
+              onClick={() => {
+                const nextState = !showNotifications;
+                setShowNotifications(nextState);
+                if (nextState) {
+                  // Admin is opening notifications: automatically silence ringing ringtone!
+                  stopNotificationSound();
+                }
+              }}
               className="relative p-2 rounded-full hover:bg-accent/20 transition-colors text-text"
               aria-label="Open notifications"
             >
@@ -241,6 +286,19 @@ function HeaderContent({ title, subtitle, pendingCount = 0 }: HeaderProps) {
 
                   {/* Sound controls */}
                   <div className="flex items-center gap-1.5">
+                    {isAudioPlaying && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          stopNotificationSound();
+                        }}
+                        className="px-2.5 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white flex items-center gap-1 text-xs font-semibold shadow-xs transition-colors"
+                        title="Stop audio right now"
+                      >
+                        <Square className="w-3 h-3 fill-white" />
+                        <span>Stop Audio</span>
+                      </button>
+                    )}
                     <button
                       onClick={handleTestSound}
                       title="Test Notification Chime"
@@ -315,6 +373,7 @@ function HeaderContent({ title, subtitle, pendingCount = 0 }: HeaderProps) {
                           onClick={() => {
                             setSelectedBooking(b);
                             setShowNotifications(false);
+                            stopNotificationSound();
                           }}
                           className="p-3.5 hover:bg-primary/5 transition-colors group cursor-pointer"
                         >
@@ -347,6 +406,7 @@ function HeaderContent({ title, subtitle, pendingCount = 0 }: HeaderProps) {
                           onClick={() => {
                             setSelectedOrder(o);
                             setShowNotifications(false);
+                            stopNotificationSound();
                           }}
                           className="p-3.5 hover:bg-emerald-50/50 transition-colors group cursor-pointer"
                         >

@@ -266,40 +266,164 @@ function playPresetDing(ctx: AudioContext): void {
 }
 
 /* =========================================================================
+   Active Playback Management & Subscriptions
+   ========================================================================= */
+
+let activeAudioElement: HTMLAudioElement | null = null;
+let activeAudioTimeout: ReturnType<typeof setTimeout> | null = null;
+let currentPlayingSoundId: string | null = null;
+const audioListeners = new Set<(isPlaying: boolean, soundId?: string | null) => void>();
+
+function notifyAudioState(isPlaying: boolean, soundId?: string | null): void {
+  currentPlayingSoundId = isPlaying ? (soundId || currentPlayingSoundId || "audio") : null;
+  audioListeners.forEach((listener) => {
+    try {
+      listener(isPlaying, currentPlayingSoundId);
+    } catch (e) {
+      console.warn("Error in audio listener:", e);
+    }
+  });
+
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(
+      new CustomEvent("auraskin_audio_playback_changed", {
+        detail: { isPlaying, soundId: currentPlayingSoundId },
+      })
+    );
+  }
+}
+
+/**
+ * Checks whether an audio ringtone or preview is currently playing.
+ */
+export function isNotificationAudioPlaying(): boolean {
+  if (activeAudioElement && !activeAudioElement.paused && !activeAudioElement.ended) {
+    return true;
+  }
+  return currentPlayingSoundId !== null;
+}
+
+/**
+ * Returns the ID of the currently playing sound (e.g. "custom", "chime", or null).
+ */
+export function getCurrentPlayingSoundId(): string | null {
+  return currentPlayingSoundId;
+}
+
+/**
+ * Subscribes to audio playback changes (started or stopped).
+ * Returns an unsubscribe callback.
+ */
+export function subscribeAudioPlayback(
+  listener: (isPlaying: boolean, soundId?: string | null) => void
+): () => void {
+  audioListeners.add(listener);
+  // Send immediate state to newly mounted listener
+  listener(isNotificationAudioPlaying(), currentPlayingSoundId);
+  return () => {
+    audioListeners.delete(listener);
+  };
+}
+
+/**
+ * Immediately stops any currently playing notification audio, ringtone, or preview.
+ */
+export function stopNotificationSound(): void {
+  if (activeAudioTimeout) {
+    clearTimeout(activeAudioTimeout);
+    activeAudioTimeout = null;
+  }
+  if (activeAudioElement) {
+    try {
+      activeAudioElement.pause();
+      activeAudioElement.currentTime = 0;
+    } catch (e) {}
+    activeAudioElement = null;
+  }
+  notifyAudioState(false, null);
+}
+
+/* =========================================================================
    Playback Router (Presets & Custom)
    ========================================================================= */
 
-function playCustomAudio(dataUrl: string): void {
+function playCustomAudio(dataUrl: string, soundId: string = "custom", autoStopSec?: number): void {
+  stopNotificationSound();
+
   try {
     const audio = new Audio(dataUrl);
     audio.volume = 0.85;
+    activeAudioElement = audio;
+
+    audio.onplay = () => {
+      notifyAudioState(true, soundId);
+    };
+
+    audio.onpause = () => {
+      notifyAudioState(false, null);
+    };
+
+    audio.onended = () => {
+      if (activeAudioElement === audio) {
+        activeAudioElement = null;
+      }
+      notifyAudioState(false, null);
+    };
+
+    audio.onerror = () => {
+      if (activeAudioElement === audio) {
+        activeAudioElement = null;
+      }
+      notifyAudioState(false, null);
+    };
+
+    // Auto-stop safety timer (e.g. 30 seconds for background notification ringtone)
+    if (autoStopSec && autoStopSec > 0) {
+      activeAudioTimeout = setTimeout(() => {
+        stopNotificationSound();
+      }, autoStopSec * 1000);
+    }
+
     const playPromise = audio.play();
     if (playPromise !== undefined) {
       playPromise.catch((err) => {
         console.warn("Could not play custom audio element, fallback to preset chime:", err);
+        notifyAudioState(false, null);
         const ctx = getAudioContext();
         if (ctx) playPresetChime(ctx);
       });
     }
   } catch (err) {
     console.warn("Custom audio playback failed:", err);
+    notifyAudioState(false, null);
   }
 }
 
 /**
- * Preview any sound by ID (or test custom dataUrl directly)
+ * Preview any sound by ID (or test custom dataUrl directly).
+ * If the sound is already playing, calling previewSound with the same ID will stop it.
  */
 export function previewSound(soundId: string, customDataUrl?: string): void {
+  // If this sound is currently playing, clicking it stops it (toggle behavior)
+  if (isNotificationAudioPlaying() && currentPlayingSoundId === soundId) {
+    stopNotificationSound();
+    return;
+  }
+
+  stopNotificationSound();
+
   if (soundId === "custom") {
     const url = customDataUrl || getCustomSound()?.dataUrl;
     if (url) {
-      playCustomAudio(url);
+      playCustomAudio(url, "custom");
       return;
     }
   }
 
   const ctx = getAudioContext();
   if (!ctx) return;
+
+  notifyAudioState(true, soundId);
 
   switch (soundId) {
     case "crystal":
@@ -319,26 +443,37 @@ export function previewSound(soundId: string, customDataUrl?: string): void {
       playPresetChime(ctx);
       break;
   }
+
+  // Preset synthesizers are brief (~1s), reset state automatically
+  activeAudioTimeout = setTimeout(() => {
+    notifyAudioState(false, null);
+  }, 1200);
 }
 
 /**
  * Plays the currently active notification sound (preset or custom audio).
+ * For custom ringtones, includes a 30-second safety timeout.
  * Respects global mute.
  */
 export function playNotificationSound(): void {
   if (isSoundMuted()) return;
 
+  stopNotificationSound();
+
   const activeId = getActiveSoundId();
   if (activeId === "custom") {
     const custom = getCustomSound();
     if (custom?.dataUrl) {
-      playCustomAudio(custom.dataUrl);
+      // 30 seconds safety timeout so background alerts don't loop/play indefinitely if away
+      playCustomAudio(custom.dataUrl, "custom", 30);
       return;
     }
   }
 
   const ctx = getAudioContext();
   if (!ctx) return;
+
+  notifyAudioState(true, activeId);
 
   switch (activeId) {
     case "crystal":
@@ -358,4 +493,8 @@ export function playNotificationSound(): void {
       playPresetChime(ctx);
       break;
   }
+
+  activeAudioTimeout = setTimeout(() => {
+    notifyAudioState(false, null);
+  }, 1200);
 }

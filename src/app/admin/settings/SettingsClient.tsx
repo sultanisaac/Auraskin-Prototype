@@ -9,6 +9,7 @@ import {
   VolumeX, 
   Upload, 
   Play, 
+  Square,
   Check, 
   Trash2, 
   RotateCcw, 
@@ -29,11 +30,15 @@ import {
   isSoundMuted, 
   setSoundMuted, 
   previewSound, 
+  stopNotificationSound,
+  subscribeAudioPlayback,
+  isNotificationAudioPlaying,
   getCustomSound, 
   saveCustomSound, 
   deleteCustomSound,
   CustomSoundInfo
 } from "@/lib/notificationSound";
+import { cn } from "@/lib/utils";
 import { 
   getAdminPinStatus, 
   updateAdminPin, 
@@ -76,6 +81,16 @@ export default function SettingsClient() {
 
     // Load PIN status
     loadPinStatus();
+
+    // Subscribe to audio playback changes
+    const unsub = subscribeAudioPlayback((playing, soundId) => {
+      setPlayingSoundId(playing ? (soundId || "audio") : null);
+    });
+
+    return () => {
+      unsub();
+      stopNotificationSound();
+    };
   }, []);
 
   const loadPinStatus = async () => {
@@ -95,6 +110,13 @@ export default function SettingsClient() {
     const next = !soundMuted;
     setSoundMutedState(next);
     setSoundMuted(next);
+    if (next) {
+      stopNotificationSound();
+    }
+  };
+
+  const handleStopAudio = () => {
+    stopNotificationSound();
   };
 
   const handleSelectSound = (id: string) => {
@@ -104,11 +126,11 @@ export default function SettingsClient() {
   };
 
   const handlePlayPreview = (id: string, customUrl?: string) => {
-    setPlayingSoundId(id);
-    previewSound(id, customUrl);
-    setTimeout(() => {
-      setPlayingSoundId((curr) => (curr === id ? null : curr));
-    }, 1200);
+    if (playingSoundId === id) {
+      stopNotificationSound();
+    } else {
+      previewSound(id, customUrl);
+    }
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -131,7 +153,7 @@ export default function SettingsClient() {
       setCustomSound(newCustom);
       setActiveSound("custom");
       setActiveSoundId("custom");
-      handlePlayPreview("custom", dataUrl);
+      previewSound("custom", dataUrl);
     };
     reader.onerror = () => {
       setUploadError("Failed to read audio file. Please try another format (MP3, WAV).");
@@ -140,6 +162,7 @@ export default function SettingsClient() {
   };
 
   const handleDeleteCustomSound = () => {
+    stopNotificationSound();
     deleteCustomSound();
     setCustomSound(null);
     setActiveSound("chime");
@@ -368,6 +391,17 @@ export default function SettingsClient() {
           </div>
 
           <div className="flex items-center gap-2">
+            {playingSoundId && (
+              <button
+                type="button"
+                onClick={handleStopAudio}
+                className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-xs animate-pulse ring-2 ring-red-300 cursor-pointer"
+                title="Stop active audio preview"
+              >
+                <Square className="w-3.5 h-3.5 fill-white" />
+                <span>Stop Sound</span>
+              </button>
+            )}
             <button
               onClick={handleToggleMute}
               className={`px-3.5 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-colors ${
@@ -439,14 +473,24 @@ export default function SettingsClient() {
                           e.stopPropagation();
                           handlePlayPreview(preset.id);
                         }}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                        className={cn(
+                          "px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer",
                           isPlaying
-                            ? "bg-primary text-white scale-105"
+                            ? "bg-red-600 text-white scale-105 shadow-xs animate-pulse ring-2 ring-red-300"
                             : "bg-gray-100 hover:bg-gray-200 text-gray-700"
-                        }`}
+                        )}
                       >
-                        <Play className={`w-3.5 h-3.5 ${isPlaying ? "fill-white animate-pulse" : ""}`} />
-                        <span>{isPlaying ? "Playing..." : "Preview"}</span>
+                        {isPlaying ? (
+                          <>
+                            <Square className="w-3.5 h-3.5 fill-white" />
+                            <span>Stop</span>
+                          </>
+                        ) : (
+                          <>
+                            <Play className="w-3.5 h-3.5" />
+                            <span>Preview</span>
+                          </>
+                        )}
                       </button>
 
                       <span className={`text-[11px] font-semibold ${isSelected ? "text-primary" : "text-gray-400"}`}>
@@ -496,17 +540,43 @@ export default function SettingsClient() {
                     <p className="text-[11px] text-gray-500">
                       Uploaded from your device • Ready for instant notification playback
                     </p>
+                    {playingSoundId === "custom" && (
+                      <span className="text-[11px] text-red-600 font-semibold flex items-center gap-1.5 mt-0.5 animate-pulse">
+                        <span className="w-2 h-2 rounded-full bg-red-600 inline-block" />
+                        Audio is playing now
+                      </span>
+                    )}
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 flex-wrap">
                   <button
                     type="button"
-                    onClick={() => handlePlayPreview("custom", customSound.dataUrl)}
-                    className="px-3.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                    onClick={() => {
+                      if (playingSoundId === "custom") {
+                        handleStopAudio();
+                      } else {
+                        handlePlayPreview("custom", customSound.dataUrl);
+                      }
+                    }}
+                    className={cn(
+                      "px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer",
+                      playingSoundId === "custom"
+                        ? "bg-red-600 hover:bg-red-700 text-white shadow-xs animate-pulse ring-2 ring-red-300"
+                        : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+                    )}
                   >
-                    <Play className="w-3.5 h-3.5" />
-                    <span>Preview</span>
+                    {playingSoundId === "custom" ? (
+                      <>
+                        <Square className="w-3.5 h-3.5 fill-white" />
+                        <span>Stop Playing</span>
+                      </>
+                    ) : (
+                      <>
+                        <Play className="w-3.5 h-3.5" />
+                        <span>Preview</span>
+                      </>
+                    )}
                   </button>
 
                   {activeSound !== "custom" && (
