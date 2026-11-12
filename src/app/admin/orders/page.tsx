@@ -5,19 +5,27 @@ import Header from "@/components/AdminHeader";
 export const revalidate = 0; // Disable cache for admin dashboard
 
 export default async function OrdersAdminPage() {
-  // Fetch all order IDs from the ZSET (sorted by score/time)
-  const orderIds = await kv.zrange('orders:list', 0, -1, { rev: true });
-  
   const orders = [];
   
-  if (orderIds && orderIds.length > 0) {
-    // Fetch details for each order ID
-    for (const id of orderIds) {
-      const order = await kv.get(`order:${id}`);
-      if (order) {
-        orders.push(order as any);
+  try {
+    // Fetch all order IDs from the ZSET (sorted by score/time)
+    const orderIds = await kv.zrange('orders:list', 0, -1, { rev: true });
+    
+    if (orderIds && orderIds.length > 0) {
+      // Fetch details for each order ID
+      for (const id of orderIds) {
+        try {
+          const order = await kv.get(`order:${id}`);
+          if (order) {
+            orders.push(order as any);
+          }
+        } catch (itemErr) {
+          console.error(`Error fetching order ${id}:`, itemErr);
+        }
       }
     }
+  } catch (error) {
+    console.error("Error fetching orders from KV:", error);
   }
 
   return (

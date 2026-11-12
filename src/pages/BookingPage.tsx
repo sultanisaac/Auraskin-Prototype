@@ -7,8 +7,10 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, ShieldCheck, Clock, Award, Star, Loader2, Sparkles, ArrowLeft, ArrowRight, User, CheckCircle2 } from 'lucide-react';
+import { Calendar, ShieldCheck, Clock, Award, Star, Loader2, Sparkles, ArrowLeft, ArrowRight, User, CheckCircle2, MessageCircle, CalendarPlus, ExternalLink } from 'lucide-react';
 import { Button } from '../components/Button';
+import { getGoogleCalendarUrl } from '../lib/calendarSync';
+import { getClinicWhatsAppUrl } from '../lib/whatsapp';
 
 import { submitBooking, getActiveBookings, Booking } from '../actions/booking';
 import { format, addDays, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, isBefore, startOfDay, getDay, setMonth, setYear } from 'date-fns';
@@ -41,6 +43,7 @@ export default function BookingPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [createdBooking, setCreatedBooking] = useState<any | null>(null);
   const [step, setStep] = useState<1 | 2>(1); // 1: Details, 2: Date & Time
   const [showActionButtons, setShowActionButtons] = useState(false);
   const [formData, setFormData] = useState<BookingFormValues | null>(null);
@@ -95,6 +98,7 @@ export default function BookingPage() {
     setIsSubmitting(false);
     
     if (res.success) {
+      setCreatedBooking(res.booking);
       setIsSuccess(true);
     } else {
       alert("Something went wrong. Please try again.");
@@ -156,9 +160,47 @@ export default function BookingPage() {
             <br/><br/>
             Our team will review your request and you will receive a confirmation shortly.
           </p>
-          <div className="space-y-3">
-            <Link href="/" className="block w-full">
-              <Button variant="primary" className="w-full">Return to Homepage</Button>
+          <div className="space-y-3 pt-2">
+            {createdBooking?.id && (
+              <Link 
+                href={`/appointment/${createdBooking.id}`} 
+                className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-primary text-white rounded-2xl font-semibold text-sm hover:bg-primary/90 shadow-md transition-all"
+              >
+                <span>View Live Appointment Status</span>
+                <ExternalLink className="w-4 h-4" />
+              </Link>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <a
+                href={getGoogleCalendarUrl({
+                  title: `AuraSkin: ${formData?.treatments?.join(", ") || "Consultation"}`,
+                  treatment: formData?.treatments?.join(", ") || "Consultation",
+                  patientName: formData?.fullName || "Patient",
+                  date: format(selectedDate, "yyyy-MM-dd"),
+                  time: selectedTime,
+                })}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full flex items-center justify-center gap-2 py-2.5 px-3 bg-white border border-gray-200 text-gray-700 rounded-xl font-medium text-xs hover:bg-gray-50 transition-colors shadow-2xs"
+              >
+                <CalendarPlus className="w-4 h-4 text-primary" />
+                <span>Add to Calendar</span>
+              </a>
+
+              <a
+                href={getClinicWhatsAppUrl(createdBooking?.id, formData?.fullName)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full flex items-center justify-center gap-2 py-2.5 px-3 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl font-medium text-xs hover:bg-emerald-100 transition-colors shadow-2xs"
+              >
+                <MessageCircle className="w-4 h-4 text-emerald-600" />
+                <span>Chat on WhatsApp</span>
+              </a>
+            </div>
+
+            <Link href="/" className="block w-full pt-1">
+              <Button variant="outline" className="w-full">Return to Homepage</Button>
             </Link>
           </div>
         </motion.div>

@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Package, Search, Clock, CheckCircle, Truck, PackageCheck, XCircle, X } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { createPortal } from 'react-dom';
+import OrderDetailModal from '@/components/OrderDetailModal';
 
 export default function OrdersTableClient({ orders }: { orders: any[] }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -54,26 +53,23 @@ export default function OrdersTableClient({ orders }: { orders: any[] }) {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+      {/* Filter & Search Bar */}
+      <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-accent/20">
         <div>
-          <h1 className="text-2xl font-serif font-bold text-gray-900 flex items-center gap-3">
-            <Package className="w-6 h-6 text-primary" />
-            Order Management
-          </h1>
-          <p className="text-sm text-gray-500 mt-1">
-            View and manage customer e-commerce orders.
+          <h2 className="text-lg font-bold text-primary">Orders Overview</h2>
+          <p className="text-sm text-text/60">
+            Total {orders.length} order(s) recorded.
           </p>
         </div>
         
-        <div className="relative w-full md:w-auto">
+        <div className="relative w-full md:w-64">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input 
             type="text"
             placeholder="Search order or customer..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 w-full md:w-64"
+            className="pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 w-full"
           />
         </div>
       </div>
@@ -136,195 +132,13 @@ export default function OrdersTableClient({ orders }: { orders: any[] }) {
         </div>
       </div>
 
-      {/* Modal Overlay */}
-      {mounted && createPortal(
-        <AnimatePresence>
-        {selectedOrder && (
-          <div 
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm"
-            onClick={() => setSelectedOrder(null)}
-          >
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex justify-between items-center p-6 border-b border-gray-100">
-                <div>
-                  <h3 className="font-serif text-xl font-bold text-gray-900">Order Details</h3>
-                  <p className="text-sm text-gray-500 mt-1">Order #{selectedOrder.order_number}</p>
-                </div>
-                <button 
-                  onClick={() => setSelectedOrder(null)}
-                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              <div className="p-6 overflow-y-auto space-y-6">
-                
-                {/* Summary Row */}
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                  <div className="bg-gray-50 rounded-xl p-4">
-                    <p className="text-xs text-gray-500 uppercase font-semibold mb-1">Status</p>
-                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusBadge(selectedOrder.status)}`}>
-                      {getStatusIcon(selectedOrder.status)}
-                      {selectedOrder.status ? (selectedOrder.status.charAt(0).toUpperCase() + selectedOrder.status.slice(1)) : 'Unknown'}
-                    </span>
-                  </div>
-                  <div className="bg-gray-50 rounded-xl p-4">
-                    <p className="text-xs text-gray-500 uppercase font-semibold mb-1">Date</p>
-                    <p className="text-sm font-medium text-gray-900">
-                      {selectedOrder.created_at ? new Date(selectedOrder.created_at).toLocaleDateString('en-ID', { month: 'short', day: 'numeric', year: 'numeric' }) : '-'}
-                    </p>
-                  </div>
-                  <div className="bg-gray-50 rounded-xl p-4">
-                    <p className="text-xs text-gray-500 uppercase font-semibold mb-1">Total</p>
-                    <p className="text-sm font-medium text-gray-900">{formatPrice(selectedOrder.total || selectedOrder.totalAmount)}</p>
-                  </div>
-                  <div className="bg-gray-50 rounded-xl p-4">
-                    <p className="text-xs text-gray-500 uppercase font-semibold mb-1">Shipping</p>
-                    <p className="text-sm font-medium text-gray-900 uppercase">{selectedOrder.shipping?.courier} {selectedOrder.shipping?.service}</p>
-                  </div>
-                  <div className="bg-gray-50 rounded-xl p-4">
-                    <p className="text-xs text-gray-500 uppercase font-semibold mb-1">Payment</p>
-                    <p className="text-sm font-medium text-gray-900">
-                      {selectedOrder.payment_method ? selectedOrder.payment_method.replace(/_/g, ' ').toUpperCase() : '-'}
-                      {selectedOrder.payment_channel ? ` (${selectedOrder.payment_channel.replace(/_/g, ' ').toUpperCase()})` : ''}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Customer Info */}
-                <div>
-                  <h4 className="text-sm font-bold text-gray-900 mb-3 border-b border-gray-100 pb-2">Customer Information</h4>
-                  <div className="grid md:grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-gray-500 mb-1">Contact</p>
-                      <p className="font-medium text-gray-900">{selectedOrder.customer?.name}</p>
-                      <p className="text-gray-600">{selectedOrder.customer?.email}</p>
-                      <p className="text-gray-600">{selectedOrder.customer?.phone}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-500 mb-1">Shipping Address</p>
-                      <p className="text-gray-900">{selectedOrder.address?.line}</p>
-                      <p className="text-gray-600">{selectedOrder.address?.city}, {selectedOrder.address?.postal_code}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Logistics Info (if available) */}
-                {selectedOrder.biteship_order_id && (
-                  <div>
-                    <h4 className="text-sm font-bold text-gray-900 mb-3 border-b border-gray-100 pb-2">Logistics (Biteship)</h4>
-                    <div className="grid md:grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <p className="text-gray-500 mb-1">Biteship Order ID</p>
-                        <p className="font-medium text-gray-900">{selectedOrder.biteship_order_id}</p>
-                      </div>
-                      <div>
-                        <p className="text-gray-500 mb-1">Tracking ID / Waybill</p>
-                        <p className="font-medium text-gray-900">{selectedOrder.tracking_id || selectedOrder.waybill_id || 'Pending Pickup'}</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Payment Info */}
-                <div>
-                  <h4 className="text-sm font-bold text-gray-900 mb-3 border-b border-gray-100 pb-2">Payment Details</h4>
-                  <div className="grid md:grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-gray-500 mb-1">Subtotal</p>
-                      <p className="font-medium text-gray-900">{formatPrice((selectedOrder.total || selectedOrder.totalAmount) - (selectedOrder.shipping_cost || 0))}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-500 mb-1">Shipping Cost</p>
-                      <p className="font-medium text-gray-900">{formatPrice(selectedOrder.shipping_cost || 0)}</p>
-                    </div>
-                    {selectedOrder.checkout_url && (
-                      <div className="col-span-1 md:col-span-2 overflow-hidden w-full">
-                        <p className="text-gray-500 mb-1">Payment Link</p>
-                        <a href={selectedOrder.checkout_url} target="_blank" rel="noreferrer" className="text-primary hover:underline truncate block w-full">
-                          {selectedOrder.checkout_url}
-                        </a>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Items */}
-                <div>
-                  <h4 className="text-sm font-bold text-gray-900 mb-3 border-b border-gray-100 pb-2">Order Items</h4>
-                  <div className="space-y-3">
-                    {selectedOrder.items?.map((item: any, i: number) => (
-                      <div key={i} className="flex justify-between items-center text-sm">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                            <Package className="w-5 h-5 text-gray-400" />
-                          </div>
-                          <div>
-                            <p className="font-medium text-gray-900">{item.name}</p>
-                            <p className="text-gray-500">Qty: {item.quantity}</p>
-                          </div>
-                        </div>
-                        <p className="font-medium text-gray-900">{formatPrice(item.price * item.quantity)}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-              </div>
-              <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-between gap-3 items-center">
-                <div className="flex gap-2">
-                  {selectedOrder.status?.toLowerCase() === 'paid' && !selectedOrder.biteship_order_id && (
-                    <button 
-                      onClick={async (e) => {
-                        e.currentTarget.disabled = true;
-                        e.currentTarget.innerText = 'Requesting...';
-                        const { requestCourier } = await import('./[id]/actions');
-                        const res = await requestCourier(selectedOrder.order_number);
-                        if (res.success) {
-                          alert('Courier requested successfully! Refreshing...');
-                          window.location.reload();
-                        } else {
-                          alert('Error: ' + res.error);
-                          e.currentTarget.disabled = false;
-                          e.currentTarget.innerText = 'Request Courier';
-                        }
-                      }}
-                      className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                      Request Courier (Biteship)
-                    </button>
-                  )}
-                  {selectedOrder.status?.toLowerCase() === 'paid' && selectedOrder.biteship_order_id && (
-                    <button 
-                      onClick={() => {
-                        const printWindow = window.open(`/admin/orders/${selectedOrder.order_number}/receipt`, '_blank');
-                        if (printWindow) printWindow.focus();
-                      }}
-                      className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary/90 transition-colors"
-                    >
-                      Print Resi (Shipping Label)
-                    </button>
-                  )}
-                </div>
-                <button 
-                  onClick={() => setSelectedOrder(null)}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  Close
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>,
-      document.body
+      {/* Reusable Compact Order Detail Modal */}
+      {selectedOrder && (
+        <OrderDetailModal
+          order={selectedOrder}
+          onClose={() => setSelectedOrder(null)}
+          onUpdate={() => window.location.reload()}
+        />
       )}
     </div>
   );

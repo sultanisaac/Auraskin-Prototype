@@ -6,7 +6,7 @@ import { useState, useMemo } from "react";
 import BookingModal from "./BookingModal";
 import { AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { Trash2, Filter, ChevronUp, ChevronDown, ArrowUpDown } from "lucide-react";
+import { Trash2, Filter, ChevronUp, ChevronDown, ArrowUpDown, Search } from "lucide-react";
 
 export default function AppointmentsTable({ bookings }: { bookings: Booking[] }) {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
@@ -17,14 +17,22 @@ export default function AppointmentsTable({ bookings }: { bookings: Booking[] })
 
   // Filter States
   const [filterStatus, setFilterStatus] = useState<string>("all");
-  const [filterPatient, setFilterPatient] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const [filterTreatment, setFilterTreatment] = useState<string>("all");
 
   const filteredBookings = useMemo(() => {
     let result = bookings.filter(b => {
       if (filterStatus !== "all" && b.status !== filterStatus) return false;
       if (filterTreatment !== "all" && !b.treatment.includes(filterTreatment)) return false;
-      if (filterPatient && !b.name.toLowerCase().includes(filterPatient.toLowerCase())) return false;
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase().trim();
+        const matchesId = b.id?.toLowerCase().includes(q);
+        const matchesName = b.name?.toLowerCase().includes(q);
+        const matchesTreatment = b.treatment?.toLowerCase().includes(q);
+        const matchesPhone = b.phone?.includes(q);
+        const matchesEmail = b.email?.toLowerCase().includes(q);
+        if (!matchesId && !matchesName && !matchesTreatment && !matchesPhone && !matchesEmail) return false;
+      }
       return true;
     });
 
@@ -35,7 +43,7 @@ export default function AppointmentsTable({ bookings }: { bookings: Booking[] })
     });
 
     return result;
-  }, [bookings, filterStatus, filterPatient, filterTreatment, sortDirection]);
+  }, [bookings, filterStatus, searchQuery, filterTreatment, sortDirection]);
 
   const toggleSort = () => {
     setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
@@ -72,14 +80,14 @@ export default function AppointmentsTable({ bookings }: { bookings: Booking[] })
     <>
       <div className="mb-4 flex flex-col md:flex-row justify-between items-start md:items-end gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-          <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-lg border border-accent/20 shadow-sm w-full md:w-auto">
-            <Filter className="w-4 h-4 text-text/50" />
+          <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-lg border border-accent/20 shadow-sm w-full md:w-64">
+            <Search className="w-4 h-4 text-text/50 shrink-0" />
             <input 
               type="text" 
-              placeholder="Search patient..." 
-              value={filterPatient}
-              onChange={(e) => setFilterPatient(e.target.value)}
-              className="text-sm outline-none bg-transparent w-full md:w-32"
+              placeholder="Search ID, name, treatment..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="text-sm outline-none bg-transparent w-full placeholder:text-gray-400"
             />
           </div>
           
@@ -134,6 +142,7 @@ export default function AppointmentsTable({ bookings }: { bookings: Booking[] })
                   className="w-4 h-4 rounded border-accent/30 text-primary focus:ring-primary cursor-pointer"
                 />
               </th>
+              <th className="py-4 px-6 font-semibold text-sm">ID</th>
               <th className="py-4 px-6 font-semibold text-sm">Patient</th>
               <th className="py-4 px-6 font-semibold text-sm">Treatment</th>
               <th 
@@ -167,6 +176,9 @@ export default function AppointmentsTable({ bookings }: { bookings: Booking[] })
                       readOnly
                       className="w-4 h-4 rounded border-accent/30 text-primary focus:ring-primary cursor-pointer"
                     />
+                  </td>
+                  <td className="py-4 px-6 font-mono text-xs font-bold text-primary">
+                    #{booking.id.slice(0, 8).toUpperCase()}
                   </td>
                   <td className="py-4 px-6 font-medium text-text">{booking.name}</td>
                   <td className="py-4 px-6 text-text/80 text-sm">{booking.treatment}</td>

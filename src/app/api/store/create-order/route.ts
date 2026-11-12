@@ -30,7 +30,7 @@ export async function POST(req: Request) {
     }
 
     const authHeader = `Basic ${Buffer.from(xenditSecretKey + ':').toString('base64')}`;
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const appUrl = (process.env.NEXT_PUBLIC_APP_URL || 'https://auraskin-prototype.vercel.app').replace(/\/$/, '');
 
     const xenditResponse = await fetch('https://api.xendit.co/v2/invoices', {
       method: 'POST',

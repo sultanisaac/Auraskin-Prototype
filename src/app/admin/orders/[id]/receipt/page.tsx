@@ -9,7 +9,12 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
   const orderNumber = resolvedParams.id;
   const orderKey = `order:${orderNumber}`;
   
-  const order = await kv.get(orderKey) as any;
+  let order: any = null;
+  try {
+    order = await kv.get(orderKey) as any;
+  } catch (error) {
+    console.error(`Error fetching receipt for order ${orderNumber}:`, error);
+  }
   
   if (!order) {
     notFound();

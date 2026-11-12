@@ -14,7 +14,7 @@ export async function OPTIONS() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { patientName, patientEmail, patientPhone, treatment, date, time } = body;
+    const { bookingId, patientName, patientEmail, patientPhone, treatment, date, time } = body;
 
     // Basic validation
     if (!patientName || !patientEmail || !treatment || !date || !time) {
@@ -26,8 +26,8 @@ export async function POST(request: Request) {
 
     // Send emails in parallel
     const [adminResult, clientResult] = await Promise.all([
-      sendAdminNewRequestEmail(patientName, patientEmail, patientPhone || '-', treatment, date, time),
-      sendClientRequestReceivedEmail(patientEmail, patientName, treatment, date, time)
+      sendAdminNewRequestEmail(patientName, patientEmail, patientPhone || '-', treatment, date, time, bookingId),
+      sendClientRequestReceivedEmail(patientEmail, patientName, treatment, date, time, bookingId)
     ]);
 
     if (!adminResult.success || !clientResult.success) {

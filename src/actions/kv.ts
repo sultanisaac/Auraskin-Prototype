@@ -16,6 +16,30 @@ export type Booking = {
   cancelReason?: string;
 };
 
+const MOCK_BOOKINGS: Booking[] = [
+  {
+    id: "123",
+    name: "Sarah Jenkins",
+    email: "sarah@example.com",
+    treatment: "Anti-Aging Facial",
+    date: "2026-07-10",
+    time: "14:00",
+    phone: "+62 812-1234",
+    moreInfo: "Looking for a specialized treatment.",
+    status: "pending",
+  },
+  {
+    id: "124",
+    name: "Emily Clark",
+    email: "emily.clark@example.com",
+    treatment: "Acne Clear Laser",
+    date: "2026-07-12",
+    time: "10:30",
+    phone: "+62 811-9876",
+    status: "confirmed",
+  }
+];
+
 export async function getBookings(): Promise<Booking[]> {
   try {
     let bookings = await kv.get<any>("bookings");
@@ -31,35 +55,13 @@ export async function getBookings(): Promise<Booking[]> {
 
     // Return mock data if empty for prototype purposes
     if (!bookings || !Array.isArray(bookings) || bookings.length === 0) {
-      return [
-        {
-          id: "123",
-          name: "Sarah Jenkins",
-          email: "sarah@example.com",
-          treatment: "Anti-Aging Facial",
-          date: "2026-07-10",
-          time: "14:00",
-          phone: "+62 812-1234",
-          moreInfo: "Looking for a specialized treatment.",
-          status: "pending",
-        },
-        {
-          id: "124",
-          name: "Emily Clark",
-          email: "emily.clark@example.com",
-          treatment: "Acne Clear Laser",
-          date: "2026-07-12",
-          time: "10:30",
-          phone: "+62 811-9876",
-          status: "confirmed",
-        }
-      ];
+      return MOCK_BOOKINGS;
     }
     return bookings;
   } catch (error) {
     console.error("Error fetching bookings:", error);
-    // Return empty array or mock if KV is not configured
-    return [];
+    // Return mock if KV is not configured or fails
+    return MOCK_BOOKINGS;
   }
 }
 
@@ -90,7 +92,8 @@ export async function updateBookingStatus(id: string, status: "confirmed" | "dec
           bookingToUpdate.name, 
           bookingToUpdate.treatment, 
           bookingToUpdate.date, 
-          bookingToUpdate.time
+          bookingToUpdate.time,
+          bookingToUpdate.id
         ).catch(console.error);
       } else if (status === "declined") {
         sendDeclinedEmail(
@@ -98,7 +101,8 @@ export async function updateBookingStatus(id: string, status: "confirmed" | "dec
           bookingToUpdate.name, 
           bookingToUpdate.treatment, 
           bookingToUpdate.date, 
-          reason
+          reason,
+          bookingToUpdate.id
         ).catch(console.error);
       } else if (status === "cancelled") {
         sendCancelledEmail(
@@ -107,7 +111,8 @@ export async function updateBookingStatus(id: string, status: "confirmed" | "dec
           bookingToUpdate.treatment, 
           bookingToUpdate.date, 
           bookingToUpdate.time, 
-          reason
+          reason,
+          bookingToUpdate.id
         ).catch(console.error);
       }
     }

@@ -1,13 +1,15 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Lock } from 'lucide-react';
+import { Lock, Loader2 } from 'lucide-react';
+import { verifyAdminPin } from '@/app/admin/settings/actions';
 
 export default function PinProtection({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
   const [mounted, setMounted] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -17,15 +19,35 @@ export default function PinProtection({ children }: { children: React.ReactNode 
     }
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (pin === '271302') {
-      setIsAuthenticated(true);
-      sessionStorage.setItem('admin_auth', 'true');
-      setError('');
-    } else {
-      setError('Incorrect PIN code');
-      setPin('');
+    if (!pin.trim()) return;
+
+    setIsVerifying(true);
+    setError('');
+
+    try {
+      const isValid = await verifyAdminPin(pin);
+      if (isValid) {
+        setIsAuthenticated(true);
+        sessionStorage.setItem('admin_auth', 'true');
+        setError('');
+      } else {
+        setError('Incorrect PIN code');
+        setPin('');
+      }
+    } catch (err) {
+      // Fallback verification for offline or network issues
+      if (pin.trim() === '271302') {
+        setIsAuthenticated(true);
+        sessionStorage.setItem('admin_auth', 'true');
+        setError('');
+      } else {
+        setError('Incorrect PIN code');
+        setPin('');
+      }
+    } finally {
+      setIsVerifying(false);
     }
   };
 
@@ -48,10 +70,11 @@ export default function PinProtection({ children }: { children: React.ReactNode 
           <div className="mb-6">
             <input
               type="password"
-              maxLength={6}
+              maxLength={8}
               value={pin}
+              disabled={isVerifying}
               onChange={(e) => setPin(e.target.value)}
-              className="w-full text-center text-3xl tracking-[0.5em] font-mono p-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+              className="w-full text-center text-3xl tracking-[0.4em] font-mono p-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all disabled:opacity-50"
               placeholder="••••••"
               autoFocus
             />
@@ -60,9 +83,17 @@ export default function PinProtection({ children }: { children: React.ReactNode 
           
           <button
             type="submit"
-            className="w-full bg-primary text-white font-bold py-4 rounded-xl shadow-lg hover:bg-primary/90 active:scale-95 transition-all"
+            disabled={isVerifying || pin.length < 4}
+            className="w-full bg-primary text-white font-bold py-4 rounded-xl shadow-lg hover:bg-primary/90 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
           >
-            Unlock Dashboard
+            {isVerifying ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                <span>Verifying PIN...</span>
+              </>
+            ) : (
+              <span>Unlock Dashboard</span>
+            )}
           </button>
         </form>
       </div>

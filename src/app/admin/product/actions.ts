@@ -15,21 +15,25 @@ export interface Product {
   is_active?: boolean;
 }
 
+const INITIAL_PRODUCTS: Product[] = [
+  { id: "1", name: "Auraskin Brightening Serum", price: 185000, category: "serum", skin_type: "all", volume_ml: 30, image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?q=80&w=600&auto=format&fit=crop", stock: 100, is_active: true },
+  { id: "2", name: "Auraskin Hydra Moisturizer", price: 165000, category: "moisturizer", skin_type: "dry", volume_ml: 50, image: "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?q=80&w=600&auto=format&fit=crop", stock: 100, is_active: true },
+  { id: "3", name: "Auraskin Pore Toner", price: 145000, category: "toner", skin_type: "oily", volume_ml: 100, image: "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?q=80&w=600&auto=format&fit=crop", stock: 100, is_active: true },
+  { id: "4", name: "Auraskin Glow Bundle", price: 420000, category: "bundle", skin_type: "combination", volume_ml: 180, image: "https://images.unsplash.com/photo-1615397323214-72b22036c0a0?q=80&w=600&auto=format&fit=crop", stock: 100, is_active: true }
+];
+
 // Ensure basic products exist in KV for demo if empty
 async function seedInitialProductsIfNeeded() {
-  const existingCount = await kv.scard('products:set');
-  if (existingCount === 0) {
-    const INITIAL_PRODUCTS: Product[] = [
-      { id: "1", name: "Auraskin Brightening Serum", price: 185000, category: "serum", skin_type: "all", volume_ml: 30, image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?q=80&w=600&auto=format&fit=crop", stock: 100, is_active: true },
-      { id: "2", name: "Auraskin Hydra Moisturizer", price: 165000, category: "moisturizer", skin_type: "dry", volume_ml: 50, image: "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?q=80&w=600&auto=format&fit=crop", stock: 100, is_active: true },
-      { id: "3", name: "Auraskin Pore Toner", price: 145000, category: "toner", skin_type: "oily", volume_ml: 100, image: "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?q=80&w=600&auto=format&fit=crop", stock: 100, is_active: true },
-      { id: "4", name: "Auraskin Glow Bundle", price: 420000, category: "bundle", skin_type: "combination", volume_ml: 180, image: "https://images.unsplash.com/photo-1615397323214-72b22036c0a0?q=80&w=600&auto=format&fit=crop", stock: 100, is_active: true }
-    ];
-
-    for (const p of INITIAL_PRODUCTS) {
-      await kv.sadd('products:set', p.id);
-      await kv.set(`product:${p.id}`, p);
+  try {
+    const existingCount = await kv.scard('products:set');
+    if (existingCount === 0) {
+      for (const p of INITIAL_PRODUCTS) {
+        await kv.sadd('products:set', p.id);
+        await kv.set(`product:${p.id}`, p);
+      }
     }
+  } catch (error) {
+    console.error('Error seeding initial products to KV:', error);
   }
 }
 
@@ -42,18 +46,26 @@ export async function getProducts() {
     
     if (productIds && productIds.length > 0) {
       for (const id of productIds) {
-        const product = await kv.get(`product:${id}`);
-        if (product) {
-          products.push(product as Product);
+        try {
+          const product = await kv.get(`product:${id}`);
+          if (product) {
+            products.push(product as Product);
+          }
+        } catch (itemErr) {
+          console.error(`Error fetching product ${id}:`, itemErr);
         }
       }
+    }
+    
+    if (products.length === 0) {
+      return INITIAL_PRODUCTS;
     }
     
     // Sort by name for consistency
     return products.sort((a, b) => a.name.localeCompare(b.name));
   } catch (error) {
     console.error('Error fetching products:', error);
-    return [];
+    return INITIAL_PRODUCTS;
   }
 }
 

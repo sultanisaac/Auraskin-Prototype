@@ -6,9 +6,10 @@ import { useState, useMemo } from "react";
 import BookingModal from "./BookingModal";
 import { AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { Trash2, CheckCircle2, Clock, XCircle, AlertCircle, Calendar, Search } from "lucide-react";
+import Link from "next/link";
+import { Trash2, CheckCircle2, Clock, XCircle, AlertCircle, Calendar, Search, ShoppingBag, ExternalLink } from "lucide-react";
 
-export default function NotificationsClient({ bookings }: { bookings: Booking[] }) {
+export default function NotificationsClient({ bookings, paidOrders = [] }: { bookings: Booking[], paidOrders?: any[] }) {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isDeleting, setIsDeleting] = useState(false);
@@ -17,6 +18,14 @@ export default function NotificationsClient({ bookings }: { bookings: Booking[] 
   // Filter States
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState<string>("");
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+    }).format(price || 0);
+  };
 
   const sortedBookings = useMemo(() => {
     // Sort by newest created first. If createdAt is missing, fallback to date parsing.
@@ -28,12 +37,26 @@ export default function NotificationsClient({ bookings }: { bookings: Booking[] 
   }, [bookings]);
 
   const filteredBookings = useMemo(() => {
+    if (filterStatus === "paid-orders") return [];
     return sortedBookings.filter(b => {
       if (filterStatus !== "all" && b.status !== filterStatus) return false;
-      if (searchTerm && !b.name.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+      if (searchTerm && !b.name.toLowerCase().includes(searchTerm.toLowerCase()) && !b.treatment.toLowerCase().includes(searchTerm.toLowerCase())) return false;
       return true;
     });
   }, [sortedBookings, filterStatus, searchTerm]);
+
+  const filteredPaidOrders = useMemo(() => {
+    if (filterStatus !== "all" && filterStatus !== "paid-orders") return [];
+    return paidOrders.filter(o => {
+      if (!searchTerm) return true;
+      const term = searchTerm.toLowerCase();
+      return (
+        o.order_number?.toLowerCase().includes(term) ||
+        o.customer?.name?.toLowerCase().includes(term) ||
+        o.customer?.email?.toLowerCase().includes(term)
+      );
+    });
+  }, [paidOrders, filterStatus, searchTerm]);
 
   const toggleSelectAll = () => {
     if (selectedIds.size === filteredBookings.length && filteredBookings.length > 0) {
@@ -70,7 +93,7 @@ export default function NotificationsClient({ bookings }: { bookings: Booking[] 
             <Search className="w-4 h-4 text-gray-400 shrink-0" />
             <input 
               type="text" 
-              placeholder="Search by patient name..." 
+              placeholder="Search notifications or orders..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="text-sm outline-none bg-transparent w-full placeholder:text-gray-400"
@@ -79,11 +102,12 @@ export default function NotificationsClient({ bookings }: { bookings: Booking[] 
           <select 
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="bg-white px-4 py-2.5 rounded-xl border border-accent/20 shadow-sm text-sm outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer w-full sm:w-48 transition"
+            className="bg-white px-4 py-2.5 rounded-xl border border-accent/20 shadow-sm text-sm outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer w-full sm:w-56 transition"
           >
             <option value="all">All Notifications</option>
-            <option value="pending">Pending Requests</option>
-            <option value="confirmed">Confirmed</option>
+            <option value="pending">Pending Reservations</option>
+            <option value="paid-orders">Paid Store Orders ({paidOrders.length})</option>
+            <option value="confirmed">Confirmed Appointments</option>
             <option value="declined">Declined</option>
             <option value="cancelled">Cancelled</option>
           </select>
@@ -189,7 +213,54 @@ export default function NotificationsClient({ bookings }: { bookings: Booking[] 
           );
         })}
 
-        {filteredBookings.length === 0 && (
+        {/* Paid Product Orders */}
+        {filteredPaidOrders.map((order) => (
+          <Link
+            key={`paid-order-${order.order_number}`}
+            href={`/admin/orders/${order.order_number}`}
+            className="flex flex-col sm:flex-row gap-4 p-4 md:p-5 rounded-2xl border bg-white border-gray-100 shadow-sm hover:border-emerald-300 hover:shadow-md transition-all group block"
+          >
+            <div className="flex items-start gap-4 flex-1">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-emerald-50 border border-emerald-100 text-emerald-600">
+                <ShoppingBag className="w-5 h-5" />
+              </div>
+
+              <div className="flex-1">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-1">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-bold text-gray-900 group-hover:text-primary transition-colors">
+                      Product Order Paid: #{order.order_number}
+                    </h3>
+                    <ExternalLink className="w-3.5 h-3.5 text-gray-400 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+                  </div>
+                  <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200 uppercase tracking-wider shrink-0">
+                    Order Paid
+                  </span>
+                </div>
+
+                <p className="text-sm text-gray-600 leading-relaxed mb-3">
+                  Customer <span className="font-semibold text-gray-900">{order.customer?.name || "Customer"}</span> has paid{" "}
+                  <span className="font-bold text-emerald-700">{formatPrice(order.total || order.totalAmount)}</span> for{" "}
+                  <span className="font-medium text-gray-900">{order.items?.length || 1} item(s)</span>. Ready for courier shipping request.
+                </p>
+
+                <div className="flex flex-wrap gap-2 text-xs font-medium text-gray-500">
+                  <span className="flex items-center gap-1.5 bg-gray-50 border border-gray-100 px-2.5 py-1 rounded-lg">
+                    <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                    {order.paid_at || order.created_at ? new Date(order.paid_at || order.created_at).toLocaleDateString('en-ID', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Recently'}
+                  </span>
+                  {order.shipping?.courier && (
+                    <span className="flex items-center gap-1.5 bg-gray-50 border border-gray-100 px-2.5 py-1 rounded-lg uppercase">
+                      Courier: {order.shipping.courier} {order.shipping.service || ''}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </Link>
+        ))}
+
+        {filteredBookings.length === 0 && filteredPaidOrders.length === 0 && (
           <div className="py-16 text-center text-gray-400">
             <AlertCircle className="w-12 h-12 mx-auto mb-4 opacity-20" />
             <p className="text-lg text-gray-500">No notifications found.</p>

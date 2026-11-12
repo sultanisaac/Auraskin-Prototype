@@ -14,6 +14,7 @@ export default async function AppointmentsPage({
   if (params?.search) {
     const query = params.search.toLowerCase();
     bookings = bookings.filter(b => 
+      b.id.toLowerCase().includes(query) ||
       b.name.toLowerCase().includes(query) || 
       b.treatment.toLowerCase().includes(query) ||
       (b.email && b.email.toLowerCase().includes(query)) ||

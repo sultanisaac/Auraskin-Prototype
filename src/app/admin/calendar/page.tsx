@@ -1,6 +1,7 @@
 import Header from "@/components/AdminHeader";
 import Calendar from "@/components/Calendar";
 import { getBookings } from "@/actions/kv";
+import { Suspense } from "react";
 
 export default async function CalendarPage() {
   const bookings = await getBookings();
@@ -11,7 +12,9 @@ export default async function CalendarPage() {
       <Header title="Calendar" subtitle="Visual overview of clinic schedule" pendingCount={pendingCount} />
 
       <div className="flex-1 p-4 md:p-8 overflow-hidden flex flex-col">
-        <Calendar initialBookings={bookings} />
+        <Suspense fallback={<div className="flex-1 flex items-center justify-center text-text/50">Loading calendar...</div>}>
+          <Calendar initialBookings={bookings} />
+        </Suspense>
       </div>
     </main>
   );

@@ -1,4 +1,4 @@
-export function getConfirmedEmailHtml(patientName: string, treatment: string, date: string, time: string) {
+export function getConfirmedEmailHtml(patientName: string, treatment: string, date: string, time: string, bookingId?: string) {
   return `<!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
@@ -115,6 +115,21 @@ export function getConfirmedEmailHtml(patientName: string, treatment: string, da
                                     </tr>
                                 </table>
 
+                                ${bookingId ? `
+                                <table border="0" cellpadding="0" cellspacing="0" class="button-wrapper" style="margin: 25px auto 25px auto; text-align: center;">
+                                    <tr>
+                                        <td align="center" bgcolor="#0F4C5C" style="border-radius: 8px;">
+                                            <a href="https://auraskin-prototype.vercel.app/appointment/${bookingId}" target="_blank" class="body-font button" style="display: inline-block; padding: 14px 28px; font-size: 15px; font-weight: 600; color: #FFFFFF; text-decoration: none; border-radius: 8px; letter-spacing: 0.5px;">
+                                                View Live Appointment Status & Directions →
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </table>
+                                <p class="body-font" style="margin: 0 0 25px 0; font-size: 13px; line-height: 20px; color: #6B7280; text-align: center;">
+                                    Or track online: <a href="https://auraskin-prototype.vercel.app/appointment/${bookingId}" style="color: #0F4C5C; text-decoration: underline;">https://auraskin-prototype.vercel.app/appointment/${bookingId}</a>
+                                </p>
+                                ` : ''}
+
                                 <p class="body-font" style="margin: 30px 0; font-size: 15px; line-height: 24px; color: #4B5563;">
                                     If you need to make any changes to your schedule, please kindly reply to this email at least <strong>24 hours in advance</strong>.
                                 </p>
@@ -153,7 +168,7 @@ export function getConfirmedEmailHtml(patientName: string, treatment: string, da
 </html>`;
 }
 
-export function getDeclinedEmailHtml(patientName: string, treatment: string, date: string, adminNote: string = "") {
+export function getDeclinedEmailHtml(patientName: string, treatment: string, date: string, adminNote: string = "", bookingId?: string) {
   return `<!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
@@ -274,15 +289,21 @@ export function getDeclinedEmailHtml(patientName: string, treatment: string, dat
                                     We would love to find another time that works beautifully for your schedule. Please feel free to reply directly to this email, or visit our website to request an alternative time slot.
                                 </p>
                                 
-                                <table border="0" cellpadding="0" cellspacing="0" class="button-wrapper" style="margin-bottom: 35px;">
+                                <table border="0" cellpadding="0" cellspacing="0" class="button-wrapper" style="margin-bottom: 20px;">
                                     <tr>
                                         <td align="center" bgcolor="#0F4C5C" style="border-radius: 6px;">
-                                            <a href="https://auraskin-prototype.vercel.app/" target="_blank" class="body-font button" style="display: inline-block; padding: 14px 28px; font-size: 15px; font-weight: 600; color: #FFFFFF; text-decoration: none; border: 1px solid #0F4C5C; border-radius: 6px;">
-                                                Reschedule Appointment
+                                            <a href="${bookingId ? `https://auraskin-prototype.vercel.app/appointment/${bookingId}` : 'https://auraskin-prototype.vercel.app/book-consultation'}" target="_blank" class="body-font button" style="display: inline-block; padding: 14px 28px; font-size: 15px; font-weight: 600; color: #FFFFFF; text-decoration: none; border: 1px solid #0F4C5C; border-radius: 6px;">
+                                                View Status & Reschedule Appointment →
                                             </a>
                                         </td>
                                     </tr>
                                 </table>
+
+                                ${bookingId ? `
+                                <p class="body-font" style="margin: 0 0 30px 0; font-size: 13px; line-height: 20px; color: #6B7280; text-align: center;">
+                                    Or track online: <a href="https://auraskin-prototype.vercel.app/appointment/${bookingId}" style="color: #0F4C5C; text-decoration: underline;">https://auraskin-prototype.vercel.app/appointment/${bookingId}</a>
+                                </p>
+                                ` : ''}
 
                                 <p class="body-font" style="margin: 0; font-size: 16px; line-height: 24px; color: #1F2937;">
                                     Warmly,<br>
@@ -317,7 +338,7 @@ export function getDeclinedEmailHtml(patientName: string, treatment: string, dat
 </html>`;
 }
 
-export function getCancelledEmailHtml(patientName: string, treatment: string, date: string, time: string, adminNote: string = "") {
+export function getCancelledEmailHtml(patientName: string, treatment: string, date: string, time: string, adminNote: string = "", bookingId?: string) {
   return `<!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
@@ -434,15 +455,21 @@ export function getCancelledEmailHtml(patientName: string, treatment: string, da
                                     If you would like to reschedule for a future date, we would be more than happy to assist you.
                                 </p>
                                 
-                                <table border="0" cellpadding="0" cellspacing="0" class="button-wrapper" style="margin-bottom: 35px;">
+                                <table border="0" cellpadding="0" cellspacing="0" class="button-wrapper" style="margin-bottom: 20px;">
                                     <tr>
                                         <td align="center" bgcolor="#0F4C5C" style="border-radius: 6px;">
-                                            <a href="https://auraskin-prototype.vercel.app/" target="_blank" class="body-font button" style="display: inline-block; padding: 14px 28px; font-size: 15px; font-weight: 600; color: #FFFFFF; text-decoration: none; border: 1px solid #0F4C5C; border-radius: 6px;">
-                                                Reschedule Appointment
+                                            <a href="${bookingId ? `https://auraskin-prototype.vercel.app/appointment/${bookingId}` : 'https://auraskin-prototype.vercel.app/book-consultation'}" target="_blank" class="body-font button" style="display: inline-block; padding: 14px 28px; font-size: 15px; font-weight: 600; color: #FFFFFF; text-decoration: none; border: 1px solid #0F4C5C; border-radius: 6px;">
+                                                View Status & Reschedule Appointment →
                                             </a>
                                         </td>
                                     </tr>
                                 </table>
+
+                                ${bookingId ? `
+                                <p class="body-font" style="margin: 0 0 30px 0; font-size: 13px; line-height: 20px; color: #6B7280; text-align: center;">
+                                    Or track online: <a href="https://auraskin-prototype.vercel.app/appointment/${bookingId}" style="color: #0F4C5C; text-decoration: underline;">https://auraskin-prototype.vercel.app/appointment/${bookingId}</a>
+                                </p>
+                                ` : ''}
 
                                 <p class="body-font" style="margin: 0; font-size: 16px; line-height: 24px; color: #1F2937;">
                                     Warmly,<br>
@@ -477,7 +504,7 @@ export function getCancelledEmailHtml(patientName: string, treatment: string, da
 </html>`;
 }
 
-export function getAdminNewRequestHtml(patientName: string, patientEmail: string, patientPhone: string, treatment: string, date: string, time: string) {
+export function getAdminNewRequestHtml(patientName: string, patientEmail: string, patientPhone: string, treatment: string, date: string, time: string, bookingId?: string) {
   return `<!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
@@ -662,15 +689,21 @@ export function getAdminNewRequestHtml(patientName: string, patientEmail: string
                                 </p>
                                 
                                 <!-- CTA BUTTON -->
-                                <table border="0" cellpadding="0" cellspacing="0" class="button-wrapper" style="margin-bottom: 35px;">
+                                <table border="0" cellpadding="0" cellspacing="0" class="button-wrapper" style="margin-bottom: 20px;">
                                     <tr>
                                         <td align="center" bgcolor="#0F4C5C" style="border-radius: 6px;">
-                                            <a href="https://admin-auraskin-prototype.vercel.app/" target="_blank" class="body-font button" style="display: inline-block; padding: 14px 28px; font-size: 15px; font-weight: 600; color: #FFFFFF; text-decoration: none; border: 1px solid #0F4C5C; border-radius: 6px;">
-                                                Admin Dashboard
+                                            <a href="https://auraskin-prototype.vercel.app/admin" target="_blank" class="body-font button" style="display: inline-block; padding: 14px 28px; font-size: 15px; font-weight: 600; color: #FFFFFF; text-decoration: none; border: 1px solid #0F4C5C; border-radius: 6px;">
+                                                Open Admin Dashboard →
                                             </a>
                                         </td>
                                     </tr>
                                 </table>
+
+                                ${bookingId ? `
+                                <p class="body-font" style="margin: 0 0 30px 0; font-size: 13px; line-height: 20px; color: #6B7280; text-align: center;">
+                                    Direct Patient Tracking Page: <a href="https://auraskin-prototype.vercel.app/appointment/${bookingId}" style="color: #0F4C5C; text-decoration: underline;">https://auraskin-prototype.vercel.app/appointment/${bookingId}</a>
+                                </p>
+                                ` : ''}
 
                                 <p class="body-font" style="margin: 0; font-size: 16px; line-height: 24px; color: #1F2937;">
                                     Best,<br>
@@ -707,7 +740,7 @@ export function getAdminNewRequestHtml(patientName: string, patientEmail: string
 </html>`;
 }
 
-export function getClientRequestReceivedHtml(patientName: string, treatment: string, date: string, time: string) {
+export function getClientRequestReceivedHtml(patientName: string, treatment: string, date: string, time: string, bookingId?: string) {
   return `<!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
@@ -868,15 +901,21 @@ export function getClientRequestReceivedHtml(patientName: string, treatment: str
                                 </p>
                                 
                                 <!-- CTA BUTTON -->
-                                <table border="0" cellpadding="0" cellspacing="0" class="button-wrapper" style="margin-bottom: 35px;">
+                                <table border="0" cellpadding="0" cellspacing="0" class="button-wrapper" style="margin-bottom: 20px;">
                                     <tr>
                                         <td align="center" bgcolor="#0F4C5C" style="border-radius: 6px;">
-                                            <a href="https://auraskin-prototype.vercel.app/" target="_blank" class="body-font button" style="display: inline-block; padding: 14px 28px; font-size: 15px; font-weight: 600; color: #FFFFFF; text-decoration: none; border: 1px solid #0F4C5C; border-radius: 6px;">
-                                                Visit AuraSkin
+                                            <a href="${bookingId ? `https://auraskin-prototype.vercel.app/appointment/${bookingId}` : 'https://auraskin-prototype.vercel.app/'}" target="_blank" class="body-font button" style="display: inline-block; padding: 14px 28px; font-size: 15px; font-weight: 600; color: #FFFFFF; text-decoration: none; border: 1px solid #0F4C5C; border-radius: 6px;">
+                                                View Live Appointment Status →
                                             </a>
                                         </td>
                                     </tr>
                                 </table>
+
+                                ${bookingId ? `
+                                <p class="body-font" style="margin: 0 0 30px 0; font-size: 13px; line-height: 20px; color: #6B7280; text-align: center;">
+                                    Or track online: <a href="https://auraskin-prototype.vercel.app/appointment/${bookingId}" style="color: #0F4C5C; text-decoration: underline;">https://auraskin-prototype.vercel.app/appointment/${bookingId}</a>
+                                </p>
+                                ` : ''}
 
                                 <p class="body-font" style="margin: 0; font-size: 16px; line-height: 24px; color: #1F2937;">
                                     Warmly,<br>

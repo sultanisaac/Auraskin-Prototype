@@ -78,12 +78,13 @@ export async function submitBooking(formData: any) {
         ? process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, '') 
         : process.env.VERCEL_URL 
           ? `https://${process.env.VERCEL_URL}` 
-          : 'http://localhost:3000';
+          : 'https://auraskin-prototype.vercel.app';
           
       await fetch(`${baseUrl}/api/notify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          bookingId: newBooking.id,
           patientName: newBooking.name,
           patientEmail: newBooking.email,
           patientPhone: newBooking.phone,

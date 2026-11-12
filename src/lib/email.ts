@@ -24,14 +24,14 @@ function formatDisplayDate(dateStr: string) {
 /**
  * Sends an appointment confirmation email to the patient.
  */
-export async function sendConfirmationEmail(toEmail: string, patientName: string, treatment: string, date: string, time: string) {
+export async function sendConfirmationEmail(toEmail: string, patientName: string, treatment: string, date: string, time: string, bookingId?: string) {
   try {
     const formattedDate = formatDisplayDate(date);
     const info = await transporter.sendMail({
       from: `"AuraSkin" <${process.env.EMAIL_USER}>`,
       to: toEmail,
       subject: 'Your AuraSkin Appointment is Confirmed! ✨',
-      html: getConfirmedEmailHtml(patientName, treatment, formattedDate, time),
+      html: getConfirmedEmailHtml(patientName, treatment, formattedDate, time, bookingId),
     });
     console.log('Confirmation email sent:', info.messageId);
     return { success: true };
@@ -44,14 +44,14 @@ export async function sendConfirmationEmail(toEmail: string, patientName: string
 /**
  * Sends an appointment declined email to the patient (when a new request is rejected).
  */
-export async function sendDeclinedEmail(toEmail: string, patientName: string, treatment: string, date: string, adminNote?: string) {
+export async function sendDeclinedEmail(toEmail: string, patientName: string, treatment: string, date: string, adminNote?: string, bookingId?: string) {
   try {
     const formattedDate = formatDisplayDate(date);
     const info = await transporter.sendMail({
       from: `"AuraSkin" <${process.env.EMAIL_USER}>`,
       to: toEmail,
       subject: 'Action Required: Regarding your AuraSkin Appointment Request',
-      html: getDeclinedEmailHtml(patientName, treatment, formattedDate, adminNote),
+      html: getDeclinedEmailHtml(patientName, treatment, formattedDate, adminNote, bookingId),
     });
     console.log('Declined email sent:', info.messageId);
     return { success: true };
@@ -64,14 +64,14 @@ export async function sendDeclinedEmail(toEmail: string, patientName: string, tr
 /**
  * Sends an appointment cancelled email to the patient (when an existing appointment is cancelled).
  */
-export async function sendCancelledEmail(toEmail: string, patientName: string, treatment: string, date: string, time: string, adminNote?: string) {
+export async function sendCancelledEmail(toEmail: string, patientName: string, treatment: string, date: string, time: string, adminNote?: string, bookingId?: string) {
   try {
     const formattedDate = formatDisplayDate(date);
     const info = await transporter.sendMail({
       from: `"AuraSkin" <${process.env.EMAIL_USER}>`,
       to: toEmail,
       subject: 'Update: Your AuraSkin Appointment has been Cancelled',
-      html: getCancelledEmailHtml(patientName, treatment, formattedDate, time, adminNote),
+      html: getCancelledEmailHtml(patientName, treatment, formattedDate, time, adminNote, bookingId),
     });
     console.log('Cancelled email sent:', info.messageId);
     return { success: true };
@@ -84,14 +84,14 @@ export async function sendCancelledEmail(toEmail: string, patientName: string, t
 /**
  * Sends an internal notification email to the admin when a new request is made.
  */
-export async function sendAdminNewRequestEmail(patientName: string, patientEmail: string, patientPhone: string, treatment: string, date: string, time: string) {
+export async function sendAdminNewRequestEmail(patientName: string, patientEmail: string, patientPhone: string, treatment: string, date: string, time: string, bookingId?: string) {
   try {
     const formattedDate = formatDisplayDate(date);
     const info = await transporter.sendMail({
       from: `"AuraSkin System" <${process.env.EMAIL_USER}>`,
       to: 'business@asimetrilab.com', // Internal business email
       subject: `Action Required: New AuraSkin Booking Request from ${patientName}`,
-      html: getAdminNewRequestHtml(patientName, patientEmail, patientPhone, treatment, formattedDate, time),
+      html: getAdminNewRequestHtml(patientName, patientEmail, patientPhone, treatment, formattedDate, time, bookingId),
     });
     console.log('Admin new request email sent:', info.messageId);
     return { success: true };
@@ -104,14 +104,14 @@ export async function sendAdminNewRequestEmail(patientName: string, patientEmail
 /**
  * Sends an acknowledgment email to the patient when they make a new request.
  */
-export async function sendClientRequestReceivedEmail(toEmail: string, patientName: string, treatment: string, date: string, time: string) {
+export async function sendClientRequestReceivedEmail(toEmail: string, patientName: string, treatment: string, date: string, time: string, bookingId?: string) {
   try {
     const formattedDate = formatDisplayDate(date);
     const info = await transporter.sendMail({
       from: `"AuraSkin" <${process.env.EMAIL_USER}>`,
       to: toEmail,
       subject: "We've Received Your Appointment Request ✨",
-      html: getClientRequestReceivedHtml(patientName, treatment, formattedDate, time),
+      html: getClientRequestReceivedHtml(patientName, treatment, formattedDate, time, bookingId),
     });
     console.log('Client request received email sent:', info.messageId);
     return { success: true };

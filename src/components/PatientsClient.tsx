@@ -1,11 +1,13 @@
 "use client";
 
 import { Booking, deleteBookings, updatePatientBookings } from "@/actions/kv";
-import { useState, useMemo, useTransition } from "react";
-import { User, Phone, Mail, Activity, Calendar, Clock, X, ChevronRight, Trash2, Edit } from "lucide-react";
+import { useState, useMemo, useTransition, useEffect } from "react";
+import { User, Phone, Mail, Activity, Calendar, Clock, X, ChevronRight, Trash2, Edit, MessageCircle } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
+import BookingModal from "./BookingModal";
+import { formatWhatsAppNumber, getWhatsAppBookingUrl } from "@/lib/whatsapp";
 
 export interface GroupedPatient {
   id: string;
@@ -21,6 +23,7 @@ export interface GroupedPatient {
 export default function PatientsClient({ bookings }: { bookings: Booking[] }) {
   const router = useRouter();
   const [selectedPatient, setSelectedPatient] = useState<GroupedPatient | null>(null);
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isDeleting, setIsDeleting] = useState(false);
@@ -65,6 +68,16 @@ export default function PatientsClient({ bookings }: { bookings: Booking[] }) {
       p.phone.includes(searchTerm)
     );
   }, [bookings, searchTerm]);
+
+  // Keep selectedPatient synced with latest booking data
+  useEffect(() => {
+    if (selectedPatient) {
+      const refreshed = patients.find(p => p.id === selectedPatient.id);
+      if (refreshed) {
+        setSelectedPatient(refreshed);
+      }
+    }
+  }, [patients]);
 
   const toggleSelection = (id: string) => {
     const newSet = new Set(selectedIds);
@@ -258,6 +271,22 @@ export default function PatientsClient({ bookings }: { bookings: Booking[] }) {
                     <div className="flex flex-wrap items-center gap-3 mt-2 text-sm text-gray-600">
                       <span className="flex items-center gap-1.5"><Phone className="w-3.5 h-3.5" />{selectedPatient.phone}</span>
                       {selectedPatient.email && <span className="flex items-center gap-1.5"><Mail className="w-3.5 h-3.5" />{selectedPatient.email}</span>}
+                      {selectedPatient.phone && (
+                        <a
+                          href={
+                            selectedPatient.history && selectedPatient.history[0]
+                              ? getWhatsAppBookingUrl(selectedPatient.history[0])
+                              : `https://wa.me/${formatWhatsAppNumber(selectedPatient.phone)}`
+                          }
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-colors shadow-2xs"
+                          title="Chat on WhatsApp (includes live tracking link)"
+                        >
+                          <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>WhatsApp</span>
+                        </a>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -333,7 +362,11 @@ export default function PatientsClient({ bookings }: { bookings: Booking[] }) {
 
                 <div className="space-y-4">
                   {selectedPatient.history.map((booking, idx) => (
-                    <div key={booking.id} className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+                    <div 
+                      key={booking.id} 
+                      onClick={() => setSelectedBooking(booking)}
+                      className="bg-white border border-gray-100 hover:border-primary/40 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all relative overflow-hidden cursor-pointer group"
+                    >
                       {idx === 0 && (
                         <div className="absolute top-0 right-0 bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-bl-lg">
                           Most Recent
@@ -342,7 +375,10 @@ export default function PatientsClient({ bookings }: { bookings: Booking[] }) {
                       
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
-                          <p className="font-bold text-gray-900 text-lg mb-1">{booking.treatment}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="font-bold text-gray-900 text-lg mb-1 group-hover:text-primary transition-colors">{booking.treatment}</p>
+                            <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+                          </div>
                           <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500">
                             <span className="flex items-center gap-1.5">
                               <Calendar className="w-4 h-4 text-gray-400" />
@@ -363,6 +399,9 @@ export default function PatientsClient({ bookings }: { bookings: Booking[] }) {
                           }`}>
                             {booking.status}
                           </span>
+                          <span className="text-[11px] font-medium text-primary hidden sm:inline-block opacity-0 group-hover:opacity-100 transition-opacity">
+                            Click to manage →
+                          </span>
                         </div>
                       </div>
 
@@ -379,6 +418,20 @@ export default function PatientsClient({ bookings }: { bookings: Booking[] }) {
               )}
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      {/* Booking Details Modal on top of Patient modal */}
+      <AnimatePresence>
+        {selectedBooking && (
+          <BookingModal 
+            booking={selectedBooking} 
+            onClose={() => setSelectedBooking(null)} 
+            onUpdate={() => {
+              router.refresh();
+              setSelectedBooking(null);
+            }} 
+          />
         )}
       </AnimatePresence>
     </>

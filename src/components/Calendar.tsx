@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight, Filter } from "lucide-react";
 import { Booking } from "@/actions/kv";
 import BookingModal from "./BookingModal";
 import { cn } from "@/lib/utils";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence } from "framer-motion";
 import BookingFormModal from "./BookingFormModal";
 
@@ -16,6 +16,7 @@ interface CalendarProps {
 
 export default function Calendar({ initialBookings }: CalendarProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [currentDate, setCurrentDate] = useState(new Date()); // Reference date matching mock data
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -25,6 +26,22 @@ export default function Calendar({ initialBookings }: CalendarProps) {
   const [filterMode, setFilterMode] = useState<"all" | "pending" | "confirmed" | "declined">("all");
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const filterDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Sync date with query parameter ?date=YYYY-MM-DD
+  useEffect(() => {
+    const dateParam = searchParams?.get("date");
+    if (dateParam) {
+      try {
+        const parsedDate = parseISO(dateParam);
+        if (!isNaN(parsedDate.getTime())) {
+          setCurrentDate(parsedDate);
+          setViewMode("daily");
+        }
+      } catch (e) {
+        console.error("Invalid date param:", e);
+      }
+    }
+  }, [searchParams]);
 
   // Set initial view mode based on screen size and listen for resizes
   useEffect(() => {
