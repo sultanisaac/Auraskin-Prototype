@@ -172,3 +172,4 @@ export const TREATMENTS_DATA: TreatmentItem[] = [
 ];
 
 export const TREATMENT_CATEGORIES = ["All", "General", "Facial", "Laser", "Skin Booster"] as const;
+

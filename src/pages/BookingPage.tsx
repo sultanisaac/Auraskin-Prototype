@@ -493,8 +493,8 @@ export default function BookingPage() {
                   ))}
                 </div>
 
-                {/* Treatments Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Treatments Grid - Streamlined Treatment Tiles */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-3.5">
                   {filteredTreatments.map((t) => {
                     const isSelected = selectedTreatmentIds.includes(t.id);
 
@@ -502,61 +502,49 @@ export default function BookingPage() {
                       <div
                         key={t.id}
                         onClick={() => toggleTreatment(t.id)}
-                        className={`p-4 rounded-2xl border-2 transition-all cursor-pointer relative flex flex-col justify-between ${
+                        className={`p-3.5 sm:p-4 rounded-2xl border-2 transition-all cursor-pointer relative flex flex-col justify-between ${
                           isSelected
                             ? "border-primary bg-primary/5 shadow-xs ring-1 ring-primary/30"
                             : "border-gray-200/80 hover:border-gray-300 hover:bg-gray-50/50 bg-white"
                         }`}
                       >
-                        <div>
-                          {/* Card Top: Badges & Selection Indicator */}
-                          <div className="flex items-start justify-between gap-2 mb-2">
-                            <span className="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md">
-                              {t.category}
-                            </span>
-                            <div
-                              className={`w-5 h-5 rounded-md border flex items-center justify-center transition-colors ${
-                                isSelected
-                                  ? "bg-primary border-primary text-white"
-                                  : "border-gray-300 bg-white"
-                              }`}
-                            >
-                              {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
-                            </div>
-                          </div>
-
-                          <h3 className="font-serif font-bold text-base text-gray-900 leading-snug">
-                            {t.name}
-                          </h3>
-
-                          <div className="flex items-center gap-2 mt-1 mb-2">
-                            <span className="text-xs font-bold text-primary font-mono">
-                              {t.price}
-                            </span>
-                            {t.originalPrice && (
-                              <span className="text-[11px] text-gray-400 line-through">
-                                {t.originalPrice}
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md">
+                                {t.category}
                               </span>
-                            )}
-                            <span className="text-gray-300">•</span>
-                            <span className="text-[11px] text-gray-500 font-medium">
-                              ⏱ {t.duration}
-                            </span>
+                              <span className="text-[11px] text-gray-400 font-medium flex items-center gap-1">
+                                <Clock className="w-3 h-3 text-gray-400" />
+                                {t.duration}
+                              </span>
+                            </div>
+
+                            <h3 className="font-serif font-bold text-sm sm:text-base text-gray-900 leading-snug">
+                              {t.name}
+                            </h3>
+
+                            <div className="flex items-center gap-2 mt-1.5">
+                              <span className="text-sm font-bold text-primary font-mono">
+                                {t.price}
+                              </span>
+                              {t.originalPrice && (
+                                <span className="text-xs text-gray-400 line-through">
+                                  {t.originalPrice}
+                                </span>
+                              )}
+                            </div>
                           </div>
 
-                          <p className="text-xs text-gray-500 leading-relaxed mb-3">
-                            {t.overview}
-                          </p>
-                        </div>
-
-                        {/* Benefits Bullets */}
-                        <div className="pt-2 border-t border-gray-100 space-y-1">
-                          {t.benefits.slice(0, 2).map((b, idx) => (
-                            <div key={idx} className="flex items-center gap-1.5 text-[11px] text-gray-600">
-                              <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
-                              <span className="truncate">{b}</span>
-                            </div>
-                          ))}
+                          <div
+                            className={`w-5 h-5 rounded-md border flex items-center justify-center transition-colors shrink-0 mt-0.5 ${
+                              isSelected
+                                ? "bg-primary border-primary text-white"
+                                : "border-gray-300 bg-white"
+                            }`}
+                          >
+                            {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                          </div>
                         </div>
                       </div>
                     );
