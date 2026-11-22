@@ -56,12 +56,30 @@ async function kvSet(key: string, value: any) {
 export async function submitBooking(formData: any) {
   try {
     const existing = (await kvGet('bookings')) || [];
+
+    // Double-booking prevention check
+    const isConflict = existing.some(
+      (b: Booking) =>
+        b.date === formData.date &&
+        b.time === formData.time &&
+        (b.status === 'confirmed' || b.status === 'pending')
+    );
+    if (isConflict) {
+      return { 
+        success: false, 
+        error: "This time slot has already been booked by another patient. Please choose another date or time." 
+      };
+    }
     
+    const treatmentsString = Array.isArray(formData.treatments)
+      ? formData.treatments.join(', ')
+      : formData.treatments || 'General Consultation';
+
     const newBooking: Booking = {
       id: crypto.randomUUID(),
       name: formData.fullName,
       email: formData.email,
-      treatment: formData.treatments.join(', '),
+      treatment: treatmentsString,
       date: formData.date,
       time: formData.time,
       phone: formData.phone,

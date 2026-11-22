@@ -1,118 +1,169 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, ShieldCheck, Clock, Award, Star, Loader2, Sparkles, ArrowLeft, ArrowRight, User, CheckCircle2, MessageCircle, CalendarPlus, ExternalLink } from 'lucide-react';
-import { Button } from '../components/Button';
-import { getGoogleCalendarUrl } from '../lib/calendarSync';
-import { getClinicWhatsAppUrl } from '../lib/whatsapp';
-
-import { submitBooking, getActiveBookings, Booking } from '../actions/booking';
-import { format, addDays, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, isBefore, startOfDay, getDay, setMonth, setYear } from 'date-fns';
-
-const TREATMENT_OPTIONS = [
-  'Acne Treatment',
-  'Brightening Program',
-  'Anti Aging',
-  'Laser Rejuvenation',
-  'Skin Booster',
-  'General Consultation'
-];
-
-const bookingSchema = z.object({
-  fullName: z.string().min(2, 'Name is required'),
-  email: z.string().email('Valid email is required'),
-  phone: z.string().min(8, 'Valid phone number is required'),
-  treatments: z.array(z.string()).min(1, 'Please select at least one treatment'),
-  moreInfo: z.string().optional()
-});
-
-type BookingFormValues = z.infer<typeof bookingSchema>;
+import { useState, useEffect, useMemo } from "react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Calendar,
+  Clock,
+  Sparkles,
+  ArrowLeft,
+  ArrowRight,
+  User,
+  Mail,
+  Phone,
+  CheckCircle2,
+  Check,
+  ExternalLink,
+  CalendarPlus,
+  MessageCircle,
+  ShieldCheck,
+  AlertCircle,
+  Trash2,
+  Loader2,
+  Info,
+  X,
+  FileText,
+  Star
+} from "lucide-react";
+import { Button } from "../components/Button";
+import { getGoogleCalendarUrl } from "../lib/calendarSync";
+import { getClinicWhatsAppUrl } from "../lib/whatsapp";
+import { submitBooking, getActiveBookings, Booking } from "../actions/booking";
+import {
+  TREATMENTS_DATA,
+  TreatmentItem,
+  TREATMENT_CATEGORIES
+} from "../data/treatmentsData";
+import {
+  format,
+  addDays,
+  startOfMonth,
+  endOfMonth,
+  startOfWeek,
+  endOfWeek,
+  eachDayOfInterval,
+  isSameMonth,
+  isSameDay,
+  addMonths,
+  subMonths,
+  isBefore,
+  startOfDay,
+  getDay,
+  setMonth,
+  setYear
+} from "date-fns";
 
 export default function BookingPage() {
-  const searchParams = useSearchParams();
-  const doctorParam = searchParams?.get('doctor') || '';
-  const treatmentParam = searchParams?.get('treatment') || '';
   const router = useRouter();
-  const navigate = (path: string | -1) => { if (path === -1) router.back(); else router.push(path); };
+  const searchParams = useSearchParams();
+  const doctorParam = searchParams?.get("doctor") || "";
+  const treatmentParam = searchParams?.get("treatment") || "";
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [createdBooking, setCreatedBooking] = useState<any | null>(null);
-  const [step, setStep] = useState<1 | 2>(1); // 1: Details, 2: Date & Time
-  const [showActionButtons, setShowActionButtons] = useState(false);
-  const [formData, setFormData] = useState<BookingFormValues | null>(null);
-  
-  // Date and Time selection state
-  const [selectedDate, setSelectedDate] = useState<Date>(addDays(new Date(), 1));
-  const [selectedTime, setSelectedTime] = useState<string>('');
-  const [confirmedBookings, setConfirmedBookings] = useState<Booking[]>([]);
-  const [isLoadingSlots, setIsLoadingSlots] = useState(false);
+  // Step state: 1 = Treatments, 2 = Date & Time, 3 = Personal Info, 4 = Review & Confirm
+  const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4>(1);
 
-  const defaultTreatments: string[] = [];
-  if (treatmentParam && TREATMENT_OPTIONS.includes(treatmentParam)) {
-    defaultTreatments.push(treatmentParam);
-  } else if (doctorParam) {
-    defaultTreatments.push('General Consultation');
-  }
-
-  const { register, handleSubmit, formState: { errors } } = useForm<BookingFormValues>({
-    resolver: zodResolver(bookingSchema),
-    defaultValues: {
-      treatments: defaultTreatments,
-      moreInfo: doctorParam ? `Preferred doctor: ${doctorParam}` : ''
+  // Step 1: Treatments State
+  const [selectedCategory, setSelectedCategory] = useState<string>("All");
+  const [selectedTreatmentIds, setSelectedTreatmentIds] = useState<string[]>(() => {
+    if (treatmentParam) {
+      const match = TREATMENTS_DATA.find(
+        (t) => t.name.toLowerCase() === treatmentParam.toLowerCase() || t.id === treatmentParam
+      );
+      if (match) return [match.id];
     }
+    // Default to doctor consultation
+    return ["doctor-consultation"];
   });
+  const [additionalNotes, setAdditionalNotes] = useState<string>(
+    doctorParam ? `Preferred specialist: ${doctorParam}` : ""
+  );
 
-  const onDetailsSubmit = (data: BookingFormValues) => {
-    setFormData(data);
-    setShowActionButtons(false);
-    setStep(2);
-    loadConfirmedBookings();
-  };
+  // Step 2: Date & Time State
+  const [selectedDate, setSelectedDate] = useState<Date>(addDays(new Date(), 1));
+  const [selectedTime, setSelectedTime] = useState<string>("10:00");
+  const [confirmedBookings, setConfirmedBookings] = useState<Booking[]>([]);
+  const [isLoadingSlots, setIsLoadingSlots] = useState<boolean>(false);
+  const [currentMonth, setCurrentMonth] = useState<Date>(startOfMonth(new Date()));
 
-  const loadConfirmedBookings = async () => {
-    setIsLoadingSlots(true);
-    const bookings = await getActiveBookings();
-    setConfirmedBookings(bookings);
-    setIsLoadingSlots(false);
-  };
+  // Step 3: Personal Information State
+  const [fullName, setFullName] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [phone, setPhone] = useState<string>("");
+  const [contactErrors, setContactErrors] = useState<{ [key: string]: string }>({});
 
-  const onFinalSubmit = async () => {
-    if (!formData || !selectedTime) return;
-    setIsSubmitting(true);
-    
-    const formattedDate = format(selectedDate, 'yyyy-MM-dd');
-    
-    const res = await submitBooking({
-      ...formData,
-      date: formattedDate,
-      time: selectedTime
-    });
+  // Submission & Success State
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [submitError, setSubmitError] = useState<string>("");
+  const [isSuccess, setIsSuccess] = useState<boolean>(false);
+  const [createdBooking, setCreatedBooking] = useState<Booking | null>(null);
 
-    setIsSubmitting(false);
-    
-    if (res.success) {
-      setCreatedBooking(res.booking);
-      setIsSuccess(true);
-    } else {
-      alert("Something went wrong. Please try again.");
+  // Mobile sidebar drawer state
+  const [showMobileSummary, setShowMobileSummary] = useState<boolean>(false);
+
+  // Load existing bookings on mount to enforce double-booking prevention
+  useEffect(() => {
+    async function fetchExistingBookings() {
+      setIsLoadingSlots(true);
+      try {
+        const bookings = await getActiveBookings();
+        setConfirmedBookings(bookings || []);
+      } catch (err) {
+        console.warn("Could not fetch existing bookings:", err);
+      } finally {
+        setIsLoadingSlots(false);
+      }
     }
+    fetchExistingBookings();
+  }, []);
+
+  // Compute selected treatments array
+  const selectedTreatments = useMemo(() => {
+    return TREATMENTS_DATA.filter((t) => selectedTreatmentIds.includes(t.id));
+  }, [selectedTreatmentIds]);
+
+  // Compute totals
+  const totalPrice = useMemo(() => {
+    return selectedTreatments.reduce((acc, curr) => acc + curr.numericPrice, 0);
+  }, [selectedTreatments]);
+
+  const totalMinutes = useMemo(() => {
+    return selectedTreatments.reduce((acc, curr) => acc + curr.numericMinutes, 0);
+  }, [selectedTreatments]);
+
+  // Format currency in IDR
+  const formatIDR = (num: number) => {
+    if (num === 0) return "FREE";
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0
+    }).format(num);
   };
 
-  const [currentMonth, setCurrentMonth] = useState(startOfMonth(new Date()));
-  const today = startOfDay(new Date());
+  // Toggle treatment selection
+  const toggleTreatment = (id: string) => {
+    setSelectedTreatmentIds((prev) => {
+      if (prev.includes(id)) {
+        if (prev.length === 1) {
+          // Keep at least one or let them toggle
+          return [];
+        }
+        return prev.filter((item) => item !== id);
+      } else {
+        return [...prev, id];
+      }
+    });
+  };
 
+  // Calendar dates calculation
+  const today = startOfDay(new Date());
   const daysInMonth = eachDayOfInterval({
     start: startOfWeek(startOfMonth(currentMonth)),
     end: endOfWeek(endOfMonth(currentMonth))
   });
-  
+
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
   const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
 
@@ -124,83 +175,180 @@ export default function BookingPage() {
     setCurrentMonth(setYear(currentMonth, parseInt(e.target.value)));
   };
 
-  // Determine available time slots based on selected date
+  // Available Time Slots (9 AM to 7 PM)
   const getAvailableTimeSlots = (date: Date) => {
-    const dayOfWeek = getDay(date); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+    const dayOfWeek = getDay(date); // 0 = Sun, 6 = Sat
     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-    const endHour = isWeekend ? 18 : 20; // 18:00 for weekends, 20:00 for weekdays
+    const endHour = isWeekend ? 17 : 19; // 17:00 on weekends, 19:00 on weekdays
 
-    const slots = [];
-    for (let hour = 9; hour <= endHour; hour++) {
-      slots.push(`${hour.toString().padStart(2, '0')}:00`);
+    const slots: string[] = [];
+    for (let hour = 10; hour <= endHour; hour++) {
+      slots.push(`${hour.toString().padStart(2, "0")}:00`);
     }
     return slots;
   };
-  
-  // Check if a time slot is already confirmed
+
+  // Check if a specific slot is already taken on the selected date
   const isTimeSlotTaken = (time: string) => {
-    const formattedDate = format(selectedDate, 'yyyy-MM-dd');
-    return confirmedBookings.some(b => b.date === formattedDate && b.time === time);
+    const formattedDate = format(selectedDate, "yyyy-MM-dd");
+    return confirmedBookings.some((b) => b.date === formattedDate && b.time === time);
   };
 
-  if (isSuccess) {
+  // Recommendations for slots
+  const getSlotRecommendation = (time: string) => {
+    if (time === "10:00") return "🌅 Morning Glow (Calm & Quiet)";
+    if (time === "14:00") return "✨ Popular (Doctor Peak)";
+    if (time === "16:00") return "🍵 Afternoon Tea Slot";
+    return null;
+  };
+
+  // Validate contact info in Step 3
+  const validateContactInfo = () => {
+    const errs: { [key: string]: string } = {};
+    if (!fullName.trim() || fullName.trim().length < 2) {
+      errs.fullName = "Please enter your full name.";
+    }
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errs.email = "Please enter a valid email address.";
+    }
+    const cleanPhone = phone.replace(/[\s\-\+]/g, "");
+    if (!cleanPhone || cleanPhone.length < 9) {
+      errs.phone = "Please enter a valid WhatsApp or phone number.";
+    }
+    setContactErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
+  // Submit Final Booking
+  const handleFinalSubmit = async () => {
+    setSubmitError("");
+    if (selectedTreatments.length === 0) {
+      setCurrentStep(1);
+      return;
+    }
+    if (!selectedTime) {
+      setCurrentStep(2);
+      return;
+    }
+    if (!validateContactInfo()) {
+      setCurrentStep(3);
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const formattedDate = format(selectedDate, "yyyy-MM-dd");
+      const treatmentsList = selectedTreatments.map((t) => t.name);
+
+      const res = await submitBooking({
+        fullName,
+        email,
+        phone,
+        treatments: treatmentsList,
+        date: formattedDate,
+        time: selectedTime,
+        moreInfo: additionalNotes
+      });
+
+      if (res.success && res.booking) {
+        setCreatedBooking(res.booking);
+        setIsSuccess(true);
+      } else {
+        const errorMsg = typeof res.error === "string" ? res.error : "Unable to confirm booking. Please try another slot.";
+        setSubmitError(errorMsg);
+      }
+    } catch (err: any) {
+      setSubmitError(err?.message || "A network error occurred. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Filtered treatments in Step 1
+  const filteredTreatments = useMemo(() => {
+    if (selectedCategory === "All") return TREATMENTS_DATA;
+    return TREATMENTS_DATA.filter((t) => t.category === selectedCategory);
+  }, [selectedCategory]);
+
+  /* =========================================================================
+     SUCCESS VIEW
+     ========================================================================= */
+  if (isSuccess && createdBooking) {
     return (
-      <div className="bg-background min-h-screen flex items-center justify-center p-4">
-        <motion.div 
+      <div className="bg-background min-h-screen py-16 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
+        <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="bg-white rounded-3xl shadow-xl p-8 md:p-12 max-w-lg w-full text-center border border-gray-100"
+          className="bg-white rounded-3xl shadow-xl p-8 md:p-12 max-w-xl w-full text-center border border-gray-100"
         >
-          <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
+          <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-5 shadow-sm">
             <CheckCircle2 className="w-10 h-10" />
           </div>
-          <h2 className="font-serif text-3xl font-bold text-gray-900 mb-4">Request Sent!</h2>
-          <p className="text-gray-600 mb-8 leading-relaxed">
-            Thank you for choosing AuraSkin. We have received your booking request for <strong>{format(selectedDate, 'MMMM d, yyyy')}</strong> at <strong>{selectedTime}</strong>.
-            <br/><br/>
-            Our team will review your request and you will receive a confirmation shortly.
+
+          <span className="text-[11px] font-mono font-bold tracking-widest text-primary uppercase bg-primary/10 px-3 py-1 rounded-full inline-block mb-3">
+            Booking ID: #{createdBooking.id.slice(0, 8).toUpperCase()}
+          </span>
+
+          <h2 className="font-serif text-3xl md:text-4xl font-bold text-gray-900 mb-3">
+            Reservation Request Sent!
+          </h2>
+
+          <p className="text-gray-600 text-sm md:text-base leading-relaxed mb-6">
+            Thank you, <span className="font-bold text-gray-900">{createdBooking.name}</span>. Your consultation for{" "}
+            <span className="font-semibold text-primary">{createdBooking.treatment}</span> on{" "}
+            <strong>{format(selectedDate, "EEEE, MMMM d, yyyy")}</strong> at <strong>{selectedTime} WIB</strong> has been recorded.
           </p>
+
+          <div className="bg-gray-50 rounded-2xl p-4 text-left mb-6 border border-gray-100 space-y-2 text-xs sm:text-sm text-gray-600">
+            <div className="flex items-center gap-2 font-semibold text-gray-900">
+              <Sparkles className="w-4 h-4 text-primary" />
+              <span>What Happens Next:</span>
+            </div>
+            <p>1. Our medical team will verify your schedule and send an automated confirmation pass to <strong>{createdBooking.email}</strong>.</p>
+            <p>2. You can track review status anytime using the live tracking link below.</p>
+          </div>
+
           <div className="space-y-3 pt-2">
-            {createdBooking?.id && (
-              <Link 
-                href={`/appointment/${createdBooking.id}`} 
-                className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-primary text-white rounded-2xl font-semibold text-sm hover:bg-primary/90 shadow-md transition-all"
-              >
-                <span>View Live Appointment Status</span>
-                <ExternalLink className="w-4 h-4" />
-              </Link>
-            )}
+            <Link
+              href={`/appointment/${createdBooking.id}`}
+              className="w-full flex items-center justify-center gap-2 py-3.5 px-4 bg-primary text-white rounded-2xl font-semibold text-sm hover:bg-primary/90 shadow-md transition-all cursor-pointer"
+            >
+              <span>View Live Appointment Status</span>
+              <ExternalLink className="w-4 h-4" />
+            </Link>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               <a
                 href={getGoogleCalendarUrl({
-                  title: `AuraSkin: ${formData?.treatments?.join(", ") || "Consultation"}`,
-                  treatment: formData?.treatments?.join(", ") || "Consultation",
-                  patientName: formData?.fullName || "Patient",
-                  date: format(selectedDate, "yyyy-MM-dd"),
-                  time: selectedTime,
+                  title: `AuraSkin: ${createdBooking.treatment}`,
+                  treatment: createdBooking.treatment,
+                  patientName: createdBooking.name,
+                  date: createdBooking.date,
+                  time: createdBooking.time
                 })}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full flex items-center justify-center gap-2 py-2.5 px-3 bg-white border border-gray-200 text-gray-700 rounded-xl font-medium text-xs hover:bg-gray-50 transition-colors shadow-2xs"
               >
                 <CalendarPlus className="w-4 h-4 text-primary" />
-                <span>Add to Calendar</span>
+                <span>Add to Google Calendar</span>
               </a>
 
               <a
-                href={getClinicWhatsAppUrl(createdBooking?.id, formData?.fullName)}
+                href={getClinicWhatsAppUrl(createdBooking.id, createdBooking.name)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full flex items-center justify-center gap-2 py-2.5 px-3 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl font-medium text-xs hover:bg-emerald-100 transition-colors shadow-2xs"
               >
                 <MessageCircle className="w-4 h-4 text-emerald-600" />
-                <span>Chat on WhatsApp</span>
+                <span>Chat Clinic on WhatsApp</span>
               </a>
             </div>
 
-            <Link href="/" className="block w-full pt-1">
-              <Button variant="outline" className="w-full">Return to Homepage</Button>
+            <Link href="/" className="block w-full pt-2">
+              <Button variant="outline" className="w-full">
+                Return to Homepage
+              </Button>
             </Link>
           </div>
         </motion.div>
@@ -208,404 +356,899 @@ export default function BookingPage() {
     );
   }
 
+  /* =========================================================================
+     MAIN 4-STEP BOOKING FLOW
+     ========================================================================= */
   return (
-    <div className="bg-background min-h-screen pt-20 pb-12 md:pb-16">
+    <div className="bg-background min-h-screen pt-20 pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Navigation Back Link */}
-        <div className="mb-6 md:mb-8">
-          <button onClick={() => navigate(-1)} className="inline-flex items-center gap-2 text-gray-500 hover:text-primary transition font-medium text-sm">
-            <ArrowLeft className="w-4 h-4" /> Back
+        {/* Top Header & Back Button */}
+        <div className="mb-6 flex items-center justify-between">
+          <button
+            onClick={() => {
+              if (currentStep > 1) {
+                setCurrentStep((prev) => (prev - 1) as 1 | 2 | 3 | 4);
+              } else {
+                router.back();
+              }
+            }}
+            className="inline-flex items-center gap-2 text-gray-500 hover:text-primary transition font-medium text-xs sm:text-sm cursor-pointer"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>{currentStep > 1 ? "Previous Step" : "Back"}</span>
           </button>
+
+          <span className="text-xs text-gray-400 font-medium hidden sm:inline">
+            Step {currentStep} of 4 • AuraSkin Aesthetic Booking
+          </span>
         </div>
 
-        {/* Page Title & Intro */}
-        <div className="max-w-3xl mb-8 md:mb-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/30 text-primary font-medium text-sm mb-4">
-            <Sparkles className="w-4 h-4 text-primary fill-primary" /> 100% Free Consultation
+        {/* Page Title */}
+        <div className="max-w-3xl mb-8">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/30 text-primary font-medium text-xs sm:text-sm mb-3">
+            <Sparkles className="w-3.5 h-3.5 fill-primary text-primary" />
+            <span>Doctor-Led Consultations • Zero Sales Pressure</span>
           </div>
-          <h1 className="font-serif text-4xl sm:text-5xl font-bold text-gray-900 leading-tight mb-4">
-            Start Your Journey to <span className="text-primary">Healthy, Radiant Skin</span>
+          <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight">
+            Book Your Consultation
           </h1>
-          <p className="text-lg text-gray-600">
-            Book a complimentary 15 minute consultation with our medical specialists in SCBD, Jakarta. Receive a clinical skin assessment and customized roadmap with zero sales pressure.
+          <p className="text-sm sm:text-base text-gray-600 mt-2">
+            Select your desired treatments, choose your preferred consultation slot, and receive a customized clinical roadmap.
           </p>
         </div>
 
-        {/* Two-Column Booking Hub */}
-        <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-          
-          {/* Left Column: Trust elements & expectations - Pushed below on mobile */}
-          <div className="lg:col-span-5 space-y-8 order-2 lg:order-1">
-            
-            {/* Consultation Blueprint */}
-            <div className="bg-white rounded-3xl p-6 md:p-8 border border-gray-100 shadow-sm">
-              <h2 className="font-serif text-xl md:text-2xl font-bold text-gray-900 mb-6">What to Expect</h2>
-              <div className="space-y-6">
-                {[
-                  {
-                    step: "01",
-                    title: "Advanced Skin Analysis",
-                    desc: "Meet your dedicated aesthetic doctor for a close-up analysis. We examine hydration, sebum levels, pigmentation, and pores."
-                  },
-                  {
-                    step: "02",
-                    title: "Personalized Roadmap",
-                    desc: "Receive a tailored treatment timeline and product adjustments based purely on your skin's biological needs."
-                  },
-                  {
-                    step: "03",
-                    title: "Zero Sales Pressure",
-                    desc: "You can book treatments immediately, take the advice home, or think it over. We stand for transparency and clinical honesty."
-                  }
-                ].map((item, idx) => (
-                  <div key={idx} className="flex gap-4 items-start">
-                    <span className="font-serif font-bold text-xl text-secondary bg-secondary/10 px-2.5 py-1 rounded-xl shrink-0">
-                      {item.step}
-                    </span>
-                    <div>
-                      <h3 className="font-bold text-gray-900 text-base md:text-lg mb-1">{item.title}</h3>
-                      <p className="text-xs md:text-sm text-gray-500 leading-relaxed">{item.desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
- 
-            {/* Clinic Standards */}
-            <div className="space-y-4">
-              <h3 className="font-serif text-lg md:text-xl font-bold text-gray-900 px-2">AuraSkin Clinical Standards</h3>
-              <div className="grid sm:grid-cols-2 gap-4">
-                {[
-                  { icon: <ShieldCheck className="text-secondary" />, title: "FDA Approved Lasers" },
-                  { icon: <Award className="text-secondary" />, title: "Certified Specialist MDs" },
-                  { icon: <Clock className="text-secondary" />, title: "SCBD CBD Location" },
-                  { icon: <Star className="text-secondary" />, title: "4.9/5 Rating (1.5k+ Reviews)" }
-                ].map((std, idx) => (
-                  <div key={idx} className="flex gap-3 items-center bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
-                    <div className="bg-primary/5 p-2 rounded-lg">{std.icon}</div>
-                    <span className="text-xs md:text-sm font-semibold text-gray-700">{std.title}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
- 
-            {/* High-quality Patient Testimonial */}
-            <div className="bg-primary text-white rounded-3xl p-6 md:p-8 relative overflow-hidden">
-              <div className="absolute top-0 right-0 opacity-10 font-serif text-9xl transform translate-x-4 -translate-y-4 font-bold select-none">“</div>
-              <p className="font-medium text-base md:text-lg leading-relaxed relative z-10 mb-6 italic">
-                "The doctor took 15 minutes to look at my skin barrier and told me exactly why my previous routine wasn't working. No upsells, just pure clinical science. My skin has never looked better."
-              </p>
-              <div className="flex items-center gap-4 relative z-10">
-                <img 
-                  src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=120&h=120&fit=crop&q=80" 
-                  alt="Reviewer" 
-                  className="w-10 h-10 md:w-12 md:h-12 object-cover rounded-full border-2 border-white/20"
-                />
-                <div>
-                  <h4 className="font-bold text-sm md:text-base">Valerie K.</h4>
-                  <p className="text-[10px] md:text-xs text-gray-300">SCBD Patient since 2024</p>
-                </div>
-              </div>
-            </div>
- 
-          </div>
- 
-          {/* Right Column: Dynamic Form */}
-          <div className="lg:col-span-7 order-1 lg:order-2">
-            <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-5 sm:p-8 md:p-12 overflow-hidden">
-              <AnimatePresence mode="wait">
-                {step === 1 ? (
-                  <motion.div
-                    key="booking-form"
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    className="space-y-6"
+        {/* Step Progress Stepper Bar */}
+        <div className="bg-white rounded-2xl p-3 sm:p-4 border border-gray-100 shadow-2xs mb-8">
+          <div className="grid grid-cols-4 gap-2 text-center">
+            {[
+              { num: 1, label: "Treatments", desc: "Choose Services" },
+              { num: 2, label: "Schedule", desc: "Date & Time" },
+              { num: 3, label: "Your Details", desc: "Contact Info" },
+              { num: 4, label: "Review", desc: "Confirm Booking" }
+            ].map((s) => {
+              const isActive = currentStep === s.num;
+              const isPast = currentStep > s.num;
+
+              return (
+                <button
+                  key={s.num}
+                  onClick={() => {
+                    // Allow navigating to previous steps freely
+                    if (s.num < currentStep) {
+                      setCurrentStep(s.num as 1 | 2 | 3 | 4);
+                    }
+                  }}
+                  disabled={s.num > currentStep}
+                  className={`py-2 px-1 sm:px-3 rounded-xl transition-all text-left flex flex-col sm:flex-row items-center gap-2 ${
+                    isActive
+                      ? "bg-primary text-white shadow-xs font-semibold"
+                      : isPast
+                      ? "bg-primary/10 text-primary hover:bg-primary/20 cursor-pointer"
+                      : "text-gray-400 cursor-not-allowed opacity-60"
+                  }`}
+                >
+                  <span
+                    className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
+                      isActive
+                        ? "bg-white text-primary"
+                        : isPast
+                        ? "bg-primary text-white"
+                        : "bg-gray-100 text-gray-500"
+                    }`}
                   >
-                    <div>
-                      <h2 className="font-serif text-3xl font-bold text-primary mb-2">Provide Your Details</h2>
-                      <p className="text-sm text-gray-500">First, we need some contact information to sync with your patient profile.</p>
-                    </div>
+                    {isPast ? <Check className="w-3.5 h-3.5" /> : s.num}
+                  </span>
+                  <div className="hidden sm:block min-w-0">
+                    <p className="text-xs font-bold truncate leading-none">{s.label}</p>
+                    <p className={`text-[10px] truncate mt-0.5 ${isActive ? "text-white/80" : "text-gray-400"}`}>
+                      {s.desc}
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
-                    {doctorParam && (
-                      <div className="flex items-center gap-3 bg-secondary/10 border border-secondary/20 p-4 rounded-2xl">
-                        <div className="bg-white p-2.5 rounded-xl text-secondary shadow-sm">
-                          <User className="w-5 h-5" />
-                        </div>
+        {/* 2-Column Layout: Main Step Content (8 cols) + Sticky Live Summary (4 cols) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          
+          {/* LEFT 8 COLUMNS: Active Step Form */}
+          <div className="lg:col-span-8 space-y-6">
+            
+            {/* STEP 1: TREATMENTS SELECTION */}
+            {currentStep === 1 && (
+              <motion.div
+                key="step-1"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-xs space-y-6"
+              >
+                <div>
+                  <h2 className="font-serif text-2xl font-bold text-gray-900">
+                    1. Select Your Treatments
+                  </h2>
+                  <p className="text-xs sm:text-sm text-gray-500 mt-1">
+                    You can select more than one treatment. All doctor consultations include digital barrier mapping.
+                  </p>
+                </div>
+
+                {/* Category Pills */}
+                <div className="flex flex-wrap gap-2 pb-2">
+                  {TREATMENT_CATEGORIES.map((cat) => (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => setSelectedCategory(cat)}
+                      className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                        selectedCategory === cat
+                          ? "bg-primary text-white shadow-xs"
+                          : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+                      }`}
+                    >
+                      {cat} {cat !== "All" && cat !== "General" ? "Treatments" : ""}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Treatments Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {filteredTreatments.map((t) => {
+                    const isSelected = selectedTreatmentIds.includes(t.id);
+
+                    return (
+                      <div
+                        key={t.id}
+                        onClick={() => toggleTreatment(t.id)}
+                        className={`p-4 rounded-2xl border-2 transition-all cursor-pointer relative flex flex-col justify-between ${
+                          isSelected
+                            ? "border-primary bg-primary/5 shadow-xs ring-1 ring-primary/30"
+                            : "border-gray-200/80 hover:border-gray-300 hover:bg-gray-50/50 bg-white"
+                        }`}
+                      >
                         <div>
-                          <p className="text-xs text-secondary font-bold uppercase tracking-wider">Preferred Specialist</p>
-                          <p className="text-sm font-bold text-gray-800">{doctorParam}</p>
-                        </div>
-                      </div>
-                    )}
-
-                    <form onSubmit={handleSubmit(onDetailsSubmit)} className="space-y-5">
-                      <div className="grid md:grid-cols-2 gap-5">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1.5">Full Name</label>
-                          <input
-                            {...register('fullName')}
-                            type="text"
-                            className={`w-full px-4 py-3 rounded-xl border ${
-                              errors.fullName ? 'border-red-400 bg-red-50' : 'border-gray-200'
-                            } focus:ring-2 focus:ring-primary focus:border-primary outline-none transition text-sm`}
-                            placeholder="Jane Doe"
-                          />
-                          {errors.fullName && <p className="text-red-500 text-xs mt-1">{errors.fullName.message}</p>}
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1.5">Email Address</label>
-                          <input
-                            {...register('email')}
-                            type="email"
-                            className={`w-full px-4 py-3 rounded-xl border ${
-                              errors.email ? 'border-red-400 bg-red-50' : 'border-gray-200'
-                            } focus:ring-2 focus:ring-primary focus:border-primary outline-none transition text-sm`}
-                            placeholder="jane@example.com"
-                          />
-                          {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1.5">WhatsApp / Phone Number</label>
-                        <input
-                          {...register('phone')}
-                          type="tel"
-                          className={`w-full px-4 py-3 rounded-xl border ${
-                            errors.phone ? 'border-red-400 bg-red-50' : 'border-gray-200'
-                          } focus:ring-2 focus:ring-primary focus:border-primary outline-none transition text-sm`}
-                          placeholder="+62 812..."
-                        />
-                        {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>}
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Treatment Interest (Choose 1 or more)</label>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          {TREATMENT_OPTIONS.map((option) => (
-                            <label
-                              key={option}
-                              className="flex items-center gap-3 p-3.5 rounded-2xl border border-gray-200 hover:border-primary hover:bg-primary/5 cursor-pointer transition-all duration-200"
+                          {/* Card Top: Badges & Selection Indicator */}
+                          <div className="flex items-start justify-between gap-2 mb-2">
+                            <span className="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md">
+                              {t.category}
+                            </span>
+                            <div
+                              className={`w-5 h-5 rounded-md border flex items-center justify-center transition-colors ${
+                                isSelected
+                                  ? "bg-primary border-primary text-white"
+                                  : "border-gray-300 bg-white"
+                              }`}
                             >
-                              <input
-                                type="checkbox"
-                                value={option}
-                                {...register('treatments')}
-                                className="rounded text-primary focus:ring-primary focus:ring-offset-0 w-4.5 h-4.5 border-gray-300 transition cursor-pointer"
-                              />
-                              <span className="text-sm font-medium text-gray-700 select-none">{option}</span>
-                            </label>
+                              {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                            </div>
+                          </div>
+
+                          <h3 className="font-serif font-bold text-base text-gray-900 leading-snug">
+                            {t.name}
+                          </h3>
+
+                          <div className="flex items-center gap-2 mt-1 mb-2">
+                            <span className="text-xs font-bold text-primary font-mono">
+                              {t.price}
+                            </span>
+                            {t.originalPrice && (
+                              <span className="text-[11px] text-gray-400 line-through">
+                                {t.originalPrice}
+                              </span>
+                            )}
+                            <span className="text-gray-300">•</span>
+                            <span className="text-[11px] text-gray-500 font-medium">
+                              ⏱ {t.duration}
+                            </span>
+                          </div>
+
+                          <p className="text-xs text-gray-500 leading-relaxed mb-3">
+                            {t.overview}
+                          </p>
+                        </div>
+
+                        {/* Benefits Bullets */}
+                        <div className="pt-2 border-t border-gray-100 space-y-1">
+                          {t.benefits.slice(0, 2).map((b, idx) => (
+                            <div key={idx} className="flex items-center gap-1.5 text-[11px] text-gray-600">
+                              <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
+                              <span className="truncate">{b}</span>
+                            </div>
                           ))}
                         </div>
-                        {errors.treatments && <p className="text-red-500 text-xs mt-1">{errors.treatments.message}</p>}
                       </div>
+                    );
+                  })}
+                </div>
 
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Additional Notes (Optional)</label>
-                        <textarea
-                          {...register('moreInfo')}
-                          rows={3}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition text-sm"
-                          placeholder="Tell us about your skin concerns, allergies, or questions..."
-                        />
-                      </div>
+                {/* Additional Notes Box */}
+                <div className="pt-4 border-t border-gray-100">
+                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
+                    Skin Concerns or Doctor Preferences (Optional)
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={additionalNotes}
+                    onChange={(e) => setAdditionalNotes(e.target.value)}
+                    placeholder="E.g., sensitive skin, prone to hormonal breakouts, or preferred specialist..."
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                  />
+                </div>
 
-                        <Button
-                          variant="primary"
-                          className="w-full py-4 text-base mt-2 gap-2"
-                          type="submit"
-                        >
-                          <Calendar className="w-5 h-5" /> Choose Date & Time <ArrowRight className="w-4 h-4" />
-                        </Button>
-                    </form>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="booking-calendar"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 20 }}
-                    className="space-y-6"
+                {/* Next Button */}
+                <div className="pt-2 flex justify-end">
+                  <button
+                    type="button"
+                    disabled={selectedTreatmentIds.length === 0}
+                    onClick={() => setCurrentStep(2)}
+                    className="px-6 py-3 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-primary/90 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 shadow-xs cursor-pointer"
                   >
-                    <div className="flex justify-between items-center border-b border-gray-100 pb-5">
-                      <div>
-                        <h2 className="font-serif text-2xl font-bold text-primary">Pick Your Slot</h2>
-                        <p className="text-sm text-gray-500">Welcome, <span className="font-bold text-gray-800">{formData?.fullName}</span>. Please choose a consultation slot below.</p>
-                      </div>
-                      <button 
-                        onClick={() => {
-                          setStep(1);
-                          setShowActionButtons(false);
-                        }} 
-                        className="text-xs text-gray-400 hover:text-primary transition underline font-medium whitespace-nowrap ml-4"
+                    <span>
+                      Continue to Schedule ({selectedTreatmentIds.length} selected)
+                    </span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {/* STEP 2: DATE & TIME SELECTION */}
+            {currentStep === 2 && (
+              <motion.div
+                key="step-2"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-xs space-y-6"
+              >
+                <div>
+                  <h2 className="font-serif text-2xl font-bold text-gray-900">
+                    2. Choose Date & Visit Time
+                  </h2>
+                  <p className="text-xs sm:text-sm text-gray-500 mt-1">
+                    Select a date and available slot. Booked slots are locked to prevent double reservations.
+                  </p>
+                </div>
+
+                {/* Calendar Navigation & Grid */}
+                <div className="space-y-4">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <span className="text-xs font-bold uppercase tracking-wider text-gray-700">
+                      Pick a Consultation Date
+                    </span>
+
+                    <div className="flex items-center gap-2 bg-gray-50 rounded-xl p-1 border border-gray-100">
+                      <button
+                        onClick={prevMonth}
+                        disabled={isBefore(currentMonth, startOfMonth(today))}
+                        className="p-1.5 rounded-lg hover:bg-white text-gray-600 disabled:opacity-30 disabled:hover:bg-transparent transition-all"
+                        aria-label="Previous month"
                       >
-                        Back to Details
+                        <ArrowLeft className="w-4 h-4" />
+                      </button>
+
+                      <div className="flex items-center gap-1 bg-white px-2 py-1 rounded-lg border border-gray-100 text-xs font-bold">
+                        <select
+                          value={currentMonth.getMonth()}
+                          onChange={handleMonthChange}
+                          className="bg-transparent outline-none cursor-pointer"
+                        >
+                          {Array.from({ length: 12 }).map((_, i) => (
+                            <option key={i} value={i}>
+                              {format(new Date(2026, i, 1), "MMMM")}
+                            </option>
+                          ))}
+                        </select>
+                        <span className="text-gray-300">/</span>
+                        <select
+                          value={currentMonth.getFullYear()}
+                          onChange={handleYearChange}
+                          className="bg-transparent outline-none cursor-pointer"
+                        >
+                          {Array.from({ length: 4 }).map((_, i) => {
+                            const year = today.getFullYear() + i;
+                            return (
+                              <option key={year} value={year}>
+                                {year}
+                              </option>
+                            );
+                          })}
+                        </select>
+                      </div>
+
+                      <button
+                        onClick={nextMonth}
+                        className="p-1.5 rounded-lg hover:bg-white text-gray-600 transition-all"
+                        aria-label="Next month"
+                      >
+                        <ArrowRight className="w-4 h-4" />
                       </button>
                     </div>
+                  </div>
 
-                    <div className="space-y-8">
-                      {/* Date Selection */}
-                      <div>
-                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-                          <label className="block text-sm font-bold text-gray-900 uppercase tracking-wider">1. Select Date</label>
-                          <div className="flex items-center gap-1 sm:gap-2 bg-gray-50/80 rounded-xl p-1 border border-gray-100 shadow-sm w-full sm:w-auto justify-between sm:justify-start">
-                            <button 
-                              onClick={prevMonth} 
-                              disabled={isBefore(currentMonth, startOfMonth(today))} 
-                              className="p-2 rounded-lg hover:bg-white hover:shadow-sm hover:text-primary disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:shadow-none disabled:hover:text-gray-600 transition-all"
-                            >
-                              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
-                            </button>
-                            <div className="flex gap-1.5 justify-center bg-white p-1 rounded-lg border border-gray-100 shadow-sm">
-                              <select 
-                                value={currentMonth.getMonth()} 
-                                onChange={handleMonthChange}
-                                className="appearance-none bg-transparent text-gray-800 font-bold text-sm sm:text-base cursor-pointer outline-none hover:text-primary transition-colors focus:ring-2 focus:ring-primary/20 rounded px-2 py-1 text-center"
-                              >
-                                {Array.from({ length: 12 }).map((_, i) => (
-                                  <option key={i} value={i} className="text-gray-900">{format(new Date(2026, i, 1), 'MMMM')}</option>
-                                ))}
-                              </select>
-                              <span className="text-gray-300 font-light select-none py-1">/</span>
-                              <select 
-                                value={currentMonth.getFullYear()} 
-                                onChange={handleYearChange}
-                                className="appearance-none bg-transparent text-gray-800 font-bold text-sm sm:text-base cursor-pointer outline-none hover:text-primary transition-colors focus:ring-2 focus:ring-primary/20 rounded px-2 py-1 text-center"
-                              >
-                                {Array.from({ length: 5 }).map((_, i) => {
-                                  const year = today.getFullYear() + i;
-                                  return <option key={year} value={year} className="text-gray-900">{year}</option>;
-                                })}
-                              </select>
-                            </div>
-                            <button 
-                              onClick={nextMonth} 
-                              className="p-2 rounded-lg hover:bg-white hover:shadow-sm hover:text-primary transition-all"
-                            >
-                              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
-                            </button>
-                          </div>
-                        </div>
-
-                        <div className="border border-gray-200 rounded-3xl overflow-hidden bg-white shadow-sm">
-                          <div className="grid grid-cols-7 border-b border-gray-100 bg-gray-50/80">
-                            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                              <div key={day} className="py-2.5 sm:py-3 text-center text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-widest">
-                                {day}
-                              </div>
-                            ))}
-                          </div>
-                          <div className="grid grid-cols-7 p-1.5 sm:p-3 gap-1 sm:gap-1.5">
-                            {daysInMonth.map(date => {
-                              const isPast = isBefore(date, today);
-                              const isCurrentMonth = isSameMonth(date, currentMonth);
-                              const isSelected = isSameDay(date, selectedDate);
-                              
-                              return (
-                                <button
-                                  key={date.toISOString()}
-                                  disabled={isPast || !isCurrentMonth}
-                                  onClick={() => {
-                                    setSelectedDate(date);
-                                    setSelectedTime('');
-                                  }}
-                                  className={`aspect-square flex flex-col items-center justify-center rounded-xl sm:rounded-2xl text-xs sm:text-sm transition-all duration-200 ${
-                                    isSelected ? 'bg-primary text-white font-bold shadow-lg shadow-primary/30 ring-2 ring-primary ring-offset-2 scale-95' :
-                                    isPast || !isCurrentMonth ? 'text-gray-300 cursor-not-allowed opacity-30 bg-transparent' :
-                                    'text-gray-700 bg-gray-50 hover:bg-primary/10 hover:text-primary font-medium hover:scale-105 active:scale-95'
-                                  }`}
-                                >
-                                  <span>{format(date, 'd')}</span>
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Time Selection */}
-                      <div className="pt-2">
-                        <label className="block text-sm font-bold text-gray-900 mb-4 uppercase tracking-wider flex items-center justify-between">
-                          <span>2. Select Time</span>
-                          <span className="text-primary font-medium bg-primary/10 px-3 py-1 rounded-full normal-case text-xs">
-                            {format(selectedDate, 'MMM d, yyyy')}
-                          </span>
-                        </label>
-                        
-                        {isLoadingSlots ? (
-                          <div className="flex items-center justify-center p-8 text-primary">
-                            <Loader2 className="animate-spin w-8 h-8" />
-                          </div>
-                        ) : (
-                          <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-                            {getAvailableTimeSlots(selectedDate).map(time => {
-                              const isTaken = isTimeSlotTaken(time);
-                              return (
-                                <button
-                                  key={time}
-                                  disabled={isTaken}
-                                  onClick={() => setSelectedTime(time)}
-                                  className={`py-3 rounded-xl border text-sm font-medium transition-all ${
-                                    isTaken ? 'border-gray-100 bg-gray-50 text-gray-300 cursor-not-allowed' :
-                                    selectedTime === time 
-                                      ? 'border-primary bg-primary/10 text-primary ring-2 ring-primary ring-offset-1' 
-                                      : 'border-gray-200 bg-white text-gray-700 hover:border-primary/50'
-                                  }`}
-                                >
-                                  {time}
-                                  {isTaken && <span className="block text-[10px] mt-0.5">Booked</span>}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="pt-6 border-t border-gray-100">
-                      {showActionButtons ? (
-                        <div className="grid grid-cols-2 gap-3">
-                          <Button
-                            type="button"
-                            variant="primary"
-                            className="w-full py-4 text-base bg-[#25D366] hover:bg-[#128C7E] border-transparent shadow-md gap-2"
-                            onClick={() => {
-                              const data = formData;
-                              if (!data || !selectedTime) return;
-                              const message = `*New Booking Request*\n\n*Name:* ${data.fullName}\n*Email:* ${data.email}\n*Phone:* ${data.phone}\n*Treatments:* ${data.treatments.join(', ')}\n*Notes:* ${data.moreInfo || '-'}\n*Date:* ${format(selectedDate, 'MMMM d, yyyy')}\n*Time:* ${selectedTime}`;
-                              window.open(`https://api.whatsapp.com/send/?phone=6281288882828&text=${encodeURIComponent(message)}&type=phone_number&app_absent=0`, '_blank');
-                            }}
-                          >
-                            WhatsApp
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="primary"
-                            className="w-full py-4 text-base gap-2 shadow-lg shadow-primary/20"
-                            onClick={onFinalSubmit}
-                            disabled={!selectedTime || isSubmitting}
-                          >
-                            {isSubmitting ? <><Loader2 className="animate-spin w-5 h-5" /> Processing...</> : "Email"}
-                          </Button>
-                        </div>
-                      ) : (
-                        <Button
-                          variant="primary"
-                          className="w-full py-4 text-base gap-2 shadow-lg shadow-primary/20"
-                          onClick={() => setShowActionButtons(true)}
-                          disabled={!selectedTime}
+                  {/* Calendar Grid */}
+                  <div className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-2xs">
+                    <div className="grid grid-cols-7 border-b border-gray-100 bg-gray-50/70">
+                      {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+                        <div
+                          key={day}
+                          className="py-2 text-center text-[10px] font-bold text-gray-400 uppercase tracking-widest"
                         >
-                          Confirm Booking Request
-                        </Button>
-                      )}
+                          {day}
+                        </div>
+                      ))}
                     </div>
 
-                  </motion.div>
+                    <div className="grid grid-cols-7 p-2 gap-1 sm:gap-1.5">
+                      {daysInMonth.map((date) => {
+                        const isPast = isBefore(date, today);
+                        const isCurrentMonth = isSameMonth(date, currentMonth);
+                        const isSelected = isSameDay(date, selectedDate);
+
+                        return (
+                          <button
+                            key={date.toISOString()}
+                            disabled={isPast || !isCurrentMonth}
+                            onClick={() => {
+                              setSelectedDate(date);
+                            }}
+                            className={`aspect-square flex flex-col items-center justify-center rounded-xl text-xs sm:text-sm transition-all duration-150 cursor-pointer ${
+                              isSelected
+                                ? "bg-primary text-white font-bold shadow-sm ring-2 ring-primary ring-offset-1"
+                                : isPast || !isCurrentMonth
+                                ? "text-gray-300 cursor-not-allowed opacity-30 bg-transparent"
+                                : "text-gray-700 bg-gray-50/80 hover:bg-primary/10 hover:text-primary font-medium"
+                            }`}
+                          >
+                            <span>{format(date, "d")}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Time Slots Selection */}
+                <div className="pt-2 border-t border-gray-100">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-bold uppercase tracking-wider text-gray-700">
+                      Select Available Time Slot
+                    </span>
+                    <span className="text-xs font-semibold text-primary bg-primary/10 px-2.5 py-0.5 rounded-full">
+                      {format(selectedDate, "EEEE, MMMM d, yyyy")}
+                    </span>
+                  </div>
+
+                  {isLoadingSlots ? (
+                    <div className="p-8 text-center text-primary flex items-center justify-center gap-2">
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <span className="text-xs">Checking real-time slot availability...</span>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
+                      {getAvailableTimeSlots(selectedDate).map((time) => {
+                        const isTaken = isTimeSlotTaken(time);
+                        const isSelected = selectedTime === time;
+                        const recommendation = getSlotRecommendation(time);
+
+                        return (
+                          <button
+                            key={time}
+                            disabled={isTaken}
+                            onClick={() => setSelectedTime(time)}
+                            className={`p-3 rounded-xl border text-left transition-all relative flex flex-col justify-between cursor-pointer ${
+                              isSelected
+                                ? "bg-primary text-white border-primary shadow-xs ring-1 ring-primary/20"
+                                : isTaken
+                                ? "bg-gray-100/70 border-gray-200 text-gray-400 cursor-not-allowed opacity-60"
+                                : "bg-white border-gray-200 text-gray-700 hover:border-primary hover:bg-primary/5"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="font-mono font-bold text-sm">{time} WIB</span>
+                              {isTaken && (
+                                <span className="text-[9px] bg-red-100 text-red-600 font-bold px-1.5 py-0.5 rounded">
+                                  Booked
+                                </span>
+                              )}
+                              {isSelected && !isTaken && (
+                                <Check className="w-4 h-4 text-white" />
+                              )}
+                            </div>
+
+                            {recommendation && !isTaken && (
+                              <span
+                                className={`text-[10px] font-medium mt-1 truncate ${
+                                  isSelected ? "text-white/80" : "text-amber-600"
+                                }`}
+                              >
+                                {recommendation}
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* Back / Next Buttons */}
+                <div className="pt-4 border-t border-gray-100 flex items-center justify-between">
+                  <button
+                    type="button"
+                    onClick={() => setCurrentStep(1)}
+                    className="px-5 py-2.5 rounded-xl border border-gray-200 text-xs sm:text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+                  >
+                    ← Back to Treatments
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={!selectedTime}
+                    onClick={() => setCurrentStep(3)}
+                    className="px-6 py-3 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-primary/90 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 shadow-xs cursor-pointer"
+                  >
+                    <span>Continue to Your Details</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {/* STEP 3: PERSONAL INFORMATION */}
+            {currentStep === 3 && (
+              <motion.div
+                key="step-3"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-xs space-y-6"
+              >
+                <div>
+                  <h2 className="font-serif text-2xl font-bold text-gray-900">
+                    3. Personal Contact Details
+                  </h2>
+                  <p className="text-xs sm:text-sm text-gray-500 mt-1">
+                    Your information is protected by medical confidentiality. We use this to send your booking confirmation pass.
+                  </p>
+                </div>
+
+                <div className="space-y-4 max-w-xl">
+                  {/* Full Name */}
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                      Full Name *
+                    </label>
+                    <div className="relative">
+                      <User className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        value={fullName}
+                        onChange={(e) => {
+                          setFullName(e.target.value);
+                          if (contactErrors.fullName) {
+                            setContactErrors((prev) => ({ ...prev, fullName: "" }));
+                          }
+                        }}
+                        placeholder="e.g. Jessica Widjaja"
+                        className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary transition-all ${
+                          contactErrors.fullName ? "border-red-500 bg-red-50/20" : "border-gray-200"
+                        }`}
+                      />
+                    </div>
+                    {contactErrors.fullName && (
+                      <p className="text-[11px] text-red-600 mt-1">{contactErrors.fullName}</p>
+                    )}
+                  </div>
+
+                  {/* Email */}
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                      Email Address *
+                    </label>
+                    <div className="relative">
+                      <Mail className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => {
+                          setEmail(e.target.value);
+                          if (contactErrors.email) {
+                            setContactErrors((prev) => ({ ...prev, email: "" }));
+                          }
+                        }}
+                        placeholder="e.g. jessica@example.com"
+                        className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary transition-all ${
+                          contactErrors.email ? "border-red-500 bg-red-50/20" : "border-gray-200"
+                        }`}
+                      />
+                    </div>
+                    {contactErrors.email && (
+                      <p className="text-[11px] text-red-600 mt-1">{contactErrors.email}</p>
+                    )}
+                    <p className="text-[11px] text-gray-400 mt-1">
+                      Your booking confirmation and live calendar pass will be emailed here.
+                    </p>
+                  </div>
+
+                  {/* Phone / WhatsApp */}
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                      WhatsApp / Phone Number *
+                    </label>
+                    <div className="relative">
+                      <Phone className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => {
+                          setPhone(e.target.value);
+                          if (contactErrors.phone) {
+                            setContactErrors((prev) => ({ ...prev, phone: "" }));
+                          }
+                        }}
+                        placeholder="e.g. 0812-3456-7890 or +62 812..."
+                        className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary transition-all ${
+                          contactErrors.phone ? "border-red-500 bg-red-50/20" : "border-gray-200"
+                        }`}
+                      />
+                    </div>
+                    {contactErrors.phone && (
+                      <p className="text-[11px] text-red-600 mt-1">{contactErrors.phone}</p>
+                    )}
+                    <p className="text-[11px] text-gray-400 mt-1">
+                      Our clinic will send visit reminders and location coordinates via WhatsApp.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Back / Next Buttons */}
+                <div className="pt-4 border-t border-gray-100 flex items-center justify-between">
+                  <button
+                    type="button"
+                    onClick={() => setCurrentStep(2)}
+                    className="px-5 py-2.5 rounded-xl border border-gray-200 text-xs sm:text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+                  >
+                    ← Back to Schedule
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (validateContactInfo()) {
+                        setCurrentStep(4);
+                      }
+                    }}
+                    className="px-6 py-3 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-primary/90 transition-all flex items-center gap-2 shadow-xs cursor-pointer"
+                  >
+                    <span>Review & Confirm</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {/* STEP 4: REVIEW & CONFIRMATION */}
+            {currentStep === 4 && (
+              <motion.div
+                key="step-4"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-xs space-y-6"
+              >
+                <div>
+                  <h2 className="font-serif text-2xl font-bold text-gray-900">
+                    4. Final Review & Confirmation
+                  </h2>
+                  <p className="text-xs sm:text-sm text-gray-500 mt-1">
+                    Please review your consultation request. No payment is required today for free consultations.
+                  </p>
+                </div>
+
+                {submitError && (
+                  <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs sm:text-sm flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+                    <span>{submitError}</span>
+                  </div>
                 )}
-              </AnimatePresence>
+
+                {/* Breakdown Card */}
+                <div className="bg-gray-50/80 rounded-2xl p-5 border border-gray-100 space-y-4">
+                  {/* Treatments list */}
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-2">
+                      Selected Treatments ({selectedTreatments.length})
+                    </span>
+                    <div className="divide-y divide-gray-200/60 bg-white rounded-xl border border-gray-200/80 overflow-hidden">
+                      {selectedTreatments.map((t) => (
+                        <div key={t.id} className="p-3 flex items-center justify-between text-xs sm:text-sm">
+                          <div>
+                            <p className="font-semibold text-gray-900">{t.name}</p>
+                            <p className="text-[11px] text-gray-400">⏱ {t.duration} • {t.category}</p>
+                          </div>
+                          <span className="font-mono font-bold text-primary">{t.price}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Schedule Details */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-gray-200/60 text-xs sm:text-sm">
+                    <div className="bg-white p-3 rounded-xl border border-gray-200/80">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-1">
+                        Date & Visit Time
+                      </span>
+                      <p className="font-semibold text-gray-900">
+                        {format(selectedDate, "EEEE, MMMM d, yyyy")}
+                      </p>
+                      <p className="text-xs text-primary font-mono font-bold mt-0.5">
+                        {selectedTime} WIB
+                      </p>
+                    </div>
+
+                    <div className="bg-white p-3 rounded-xl border border-gray-200/80">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-1">
+                        Patient Details
+                      </span>
+                      <p className="font-semibold text-gray-900">{fullName}</p>
+                      <p className="text-xs text-gray-500 truncate">{email}</p>
+                      <p className="text-xs text-gray-500 font-mono">{phone}</p>
+                    </div>
+                  </div>
+
+                  {additionalNotes && (
+                    <div className="bg-white p-3 rounded-xl border border-gray-200/80 text-xs">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-1">
+                        Notes & Skin Concerns
+                      </span>
+                      <p className="text-gray-700 italic">"{additionalNotes}"</p>
+                    </div>
+                  )}
+
+                  {/* Summary Totals */}
+                  <div className="pt-2 border-t border-gray-200/80 flex items-center justify-between text-sm sm:text-base font-bold">
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-700">Total Investment:</span>
+                      <span className="text-xs font-normal text-gray-400">({totalMinutes} mins)</span>
+                    </div>
+                    <span className="text-primary font-mono text-lg sm:text-xl">
+                      {formatIDR(totalPrice)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* What Happens After Booking Guide */}
+                <div className="bg-primary/5 rounded-2xl p-5 border border-primary/20 space-y-3">
+                  <div className="flex items-center gap-2 text-primary font-bold text-sm">
+                    <ShieldCheck className="w-5 h-5 text-primary" />
+                    <span>What Happens After Submitting:</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-gray-600 leading-relaxed">
+                    <div className="flex items-start gap-2">
+                      <span className="w-5 h-5 rounded-full bg-primary text-white flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">
+                        1
+                      </span>
+                      <p>
+                        <strong>Automated Booking Pass:</strong> You will immediately receive a Booking ID code and digital confirmation via email.
+                      </p>
+                    </div>
+
+                    <div className="flex items-start gap-2">
+                      <span className="w-5 h-5 rounded-full bg-primary text-white flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">
+                        2
+                      </span>
+                      <p>
+                        <strong>Live Status Tracker:</strong> Access your real-time booking tracker at <code>/appointment/[id]</code> anytime.
+                      </p>
+                    </div>
+
+                    <div className="flex items-start gap-2">
+                      <span className="w-5 h-5 rounded-full bg-primary text-white flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">
+                        3
+                      </span>
+                      <p>
+                        <strong>WhatsApp Coordination:</strong> Our aesthetic concierge coordinates any specific requests via WhatsApp.
+                      </p>
+                    </div>
+
+                    <div className="flex items-start gap-2">
+                      <span className="w-5 h-5 rounded-full bg-primary text-white flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">
+                        4
+                      </span>
+                      <p>
+                        <strong>Complimentary Clinic Care:</strong> Skin barrier herbal tea and free valet parking upon arrival.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Back / Confirm Submission Buttons */}
+                <div className="pt-4 border-t border-gray-100 flex items-center justify-between">
+                  <button
+                    type="button"
+                    onClick={() => setCurrentStep(3)}
+                    disabled={isSubmitting}
+                    className="px-5 py-2.5 rounded-xl border border-gray-200 text-xs sm:text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+                  >
+                    ← Back to Details
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={isSubmitting}
+                    onClick={handleFinalSubmit}
+                    className="px-7 py-3.5 rounded-xl bg-primary text-white font-bold text-sm sm:text-base hover:bg-primary/90 transition-all disabled:opacity-50 flex items-center gap-2 shadow-md cursor-pointer"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        <span>Sending Request...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4 fill-white" />
+                        <span>Confirm & Send Booking Request</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+          </div>
+
+          {/* RIGHT 4 COLUMNS: Sticky Live Summary Card (Small modal on the right side) */}
+          <div className="lg:col-span-4 sticky top-24 space-y-4">
+            <div className="bg-white rounded-3xl p-5 sm:p-6 border border-gray-100 shadow-sm space-y-4">
+              
+              <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-primary" />
+                  <h3 className="font-serif font-bold text-gray-900 text-base">
+                    Live Booking Overview
+                  </h3>
+                </div>
+                <span className="text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                  Step {currentStep} of 4
+                </span>
+              </div>
+
+              {/* Treatments Itemization */}
+              <div>
+                <div className="flex items-center justify-between text-xs font-semibold text-gray-500 mb-2">
+                  <span>Treatments</span>
+                  <span>{selectedTreatments.length} chosen</span>
+                </div>
+
+                {selectedTreatments.length === 0 ? (
+                  <p className="text-xs text-amber-600 bg-amber-50 p-2.5 rounded-xl border border-amber-200">
+                    Please select at least 1 treatment to proceed.
+                  </p>
+                ) : (
+                  <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                    {selectedTreatments.map((t) => (
+                      <div
+                        key={t.id}
+                        className="flex items-center justify-between p-2 rounded-xl bg-gray-50 border border-gray-100 text-xs group"
+                      >
+                        <div className="min-w-0 pr-2">
+                          <p className="font-semibold text-gray-800 truncate">{t.name}</p>
+                          <p className="text-[10px] text-gray-400">⏱ {t.duration}</p>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className="font-mono font-bold text-primary">{t.price}</span>
+                          <button
+                            type="button"
+                            onClick={() => toggleTreatment(t.id)}
+                            className="text-gray-300 hover:text-red-500 p-0.5 transition-colors cursor-pointer"
+                            title="Remove treatment"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Schedule Summary */}
+              <div className="pt-3 border-t border-gray-100 space-y-1 text-xs">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block">
+                  Chosen Schedule
+                </span>
+                <div className="flex items-center justify-between text-gray-800 font-medium">
+                  <span className="flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5 text-primary" />
+                    {format(selectedDate, "MMM d, yyyy")}
+                  </span>
+                  <span className="flex items-center gap-1 font-mono font-bold text-primary">
+                    <Clock className="w-3.5 h-3.5 text-primary" />
+                    {selectedTime} WIB
+                  </span>
+                </div>
+              </div>
+
+              {/* Patient Info Summary (if filled) */}
+              {fullName && (
+                <div className="pt-3 border-t border-gray-100 space-y-1 text-xs">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block">
+                    Patient Profile
+                  </span>
+                  <p className="font-semibold text-gray-900 truncate">{fullName}</p>
+                  {phone && <p className="text-gray-500 font-mono text-[11px] truncate">{phone}</p>}
+                </div>
+              )}
+
+              {/* Live Totals Box */}
+              <div className="pt-3 border-t border-gray-100 bg-gray-50 -mx-5 -mb-5 sm:-mx-6 sm:-mb-6 p-4 sm:p-5 rounded-b-3xl">
+                <div className="flex items-center justify-between mb-1 text-xs text-gray-500">
+                  <span>Est. Duration:</span>
+                  <span className="font-bold text-gray-800">⏱ {totalMinutes} mins</span>
+                </div>
+                <div className="flex items-center justify-between font-bold text-base text-gray-900">
+                  <span>Total Investment:</span>
+                  <span className="font-mono text-primary text-lg">{formatIDR(totalPrice)}</span>
+                </div>
+
+                {/* Primary Shortcut Button within Summary Card */}
+                {currentStep < 4 ? (
+                  <button
+                    type="button"
+                    disabled={selectedTreatments.length === 0}
+                    onClick={() => {
+                      if (currentStep === 1) setCurrentStep(2);
+                      else if (currentStep === 2) setCurrentStep(3);
+                      else if (currentStep === 3) {
+                        if (validateContactInfo()) setCurrentStep(4);
+                      }
+                    }}
+                    className="w-full mt-3 py-2.5 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary/90 transition-all disabled:opacity-40 flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
+                  >
+                    <span>
+                      {currentStep === 1
+                        ? "Next: Select Schedule"
+                        : currentStep === 2
+                        ? "Next: Fill Contact"
+                        : "Next: Review Summary"}
+                    </span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={isSubmitting}
+                    onClick={handleFinalSubmit}
+                    className="w-full mt-3 py-3 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary/90 transition-all disabled:opacity-50 flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
+                  >
+                    {isSubmitting ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Sparkles className="w-3.5 h-3.5 fill-white" />
+                    )}
+                    <span>Confirm & Send Request</span>
+                  </button>
+                )}
+              </div>
+
             </div>
+
+            {/* Quality & Trust Signals */}
+            <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-2xs space-y-2 text-xs text-gray-500">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>Zero obligation & honest medical advice</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Star className="w-4 h-4 text-amber-500 shrink-0 fill-amber-500" />
+                <span>Rated 4.9/5 by 1,500+ SCBD patients</span>
+              </div>
+            </div>
+
           </div>
 
         </div>
