@@ -42,19 +42,29 @@ export const BRAND_CONFIG = {
 };
 ```
 
-### Environment Variables (`.env`)
+### Fast-Track: Infrastructure Already Connected! 🚀
+Since your other project is **already connected to Vercel, Upstash Redis, and Gmail/SMTP App Passwords**, you don't need to provision any new databases or mail servers! You can immediately paste these code modules into your project.
+
+Just verify that your other project's `.env` contains matching variable names:
+
 ```bash
-# Vercel KV / Upstash Redis for database storage
+# Upstash Redis / Vercel KV (Already connected)
 KV_REST_API_URL="https://your-upstash-instance.upstash.io"
 KV_REST_API_TOKEN="your_upstash_rest_token"
 
-# Automated Email Notifications (Gmail or SMTP)
+# (Optional: If your project uses the standard Upstash names instead, our helper automatically supports both!)
+# UPSTASH_REDIS_REST_URL="https://..."
+# UPSTASH_REDIS_REST_TOKEN="..."
+
+# Email App Password (Already connected)
 EMAIL_USER="your-email@gmail.com"
-EMAIL_PASS="your-app-password"
+EMAIL_PASS="your-16-char-app-password"
 
 # Live App URL
 NEXT_PUBLIC_APP_URL="https://your-domain.vercel.app"
 ```
+
+> **Pro Tip:** In `src/actions/booking.ts`, the database helper automatically checks for `KV_REST_API_URL` or `UPSTASH_REDIS_REST_URL`, so it will work seamlessly with your existing Upstash Redis connection without any re-configuration!
 
 ---
 
@@ -791,3 +801,4 @@ When pasting into your new project:
 2. ✅ Update `src/config/brand.ts` with your new business name, WhatsApp number, and address.
 3. ✅ Run `npx tsc --noEmit` to ensure all imported icons and types compile with 0 errors.
 4. ✅ Test a booking at `/book-consultation`: check the live sticky sidebar, booking code generation, instant WhatsApp button, and email reception!
+
